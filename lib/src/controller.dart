@@ -1,33 +1,17 @@
-import 'package:assets_picker/src/assets.dart';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
 enum AssetsType {
   image,
   video,
   audio,
-  all,
-
-  /// image and video
-  common
 }
 enum FileLoadType { network, file, assets }
-
-class AssetsEntry {
-  AssetsEntry({
-    required this.path,
-    required this.assetsType,
-    this.size,
-    this.thumbnail,
-  });
-
-  String path;
-
-  AssetsType assetsType;
-
-  String? thumbnail;
-
-  Size? size;
-}
 
 enum ImageCompressionRatio {
   /// 最高画质
@@ -40,47 +24,215 @@ enum ImageCompressionRatio {
   low,
 }
 
+class AssetsPickerView extends StatefulWidget {
+  const AssetsPickerView({Key? key}) : super(key: key);
+
+  @override
+  State<AssetsPickerView> createState() => _AssetsPickerViewState();
+}
+
+class _AssetsPickerViewState extends State<AssetsPickerView> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
+
+typedef AssetsRepeatBuild = Future<String?> Function(AssetEntity entity);
+
 class AssetsPickerController with ChangeNotifier {
   AssetsPickerController(
-      {this.cropAspectRatio = 1,
-      this.enableCrop = true,
-      this.assetsType = AssetsType.image,
-      this.canDelete = true,
-      this.maxVideoCount = 1,
-      this.maxCount = 9,
-      this.minCount = 1,
-      this.maxSinglePass = 3,
-      this.compressionRatio = ImageCompressionRatio.medium});
+      {this.assetConfig = const AssetPickerConfig(),
+      this.cameraConfig = const CameraPickerConfig()});
 
-  List<AssetsEntry> currentSelectAssets = [];
+  final List<AssetEntry> currentAssetsEntry = [];
 
-  /// 图片剪切宽高比
-  final double cropAspectRatio;
+  /// 资源选择器配置信息
+  AssetPickerConfig assetConfig;
 
-  ///选择的类型
-  final AssetsType assetsType;
+  /// 相机配置信息
+  CameraPickerConfig cameraConfig;
 
-  /// 仅显示的时候 是否可以删除 删除后无法恢复
-  final bool canDelete;
+  /// 压缩视频
+  AssetsRepeatBuild? _videoCompress;
 
-  /// 初始显示的资源
-  final List<AssetsEntry> assets = [];
+  /// 压缩图片
+  AssetsRepeatBuild? _imageCompress;
 
-  /// 最大选择视频数量
-  final int maxVideoCount;
+  /// 裁剪图片
+  AssetsRepeatBuild? _imageCrop;
 
-  /// 最多选择数量
-  final int maxCount;
+  /// 压缩音频
+  AssetsRepeatBuild? _audioCompress;
 
-  /// 最少选择数量
-  final int minCount;
+  /// 设置 资源 压缩构造方法
+  void setAssetBuild(
+      {AssetsRepeatBuild? video,
+      AssetsRepeatBuild? image,
+      AssetsRepeatBuild? imageCrop,
+      AssetsRepeatBuild? audio}) {
+    if (video != null) _videoCompress = video;
+    if (image != null) _imageCompress = image;
+    if (imageCrop != null) _imageCrop = imageCrop;
+    if (audio != null) _audioCompress = audio;
+  }
 
-  /// 单次最多选择几个资源
-  final int maxSinglePass;
+  /// 更新配置信息
+  void updateConfig(
+      {AssetPickerConfig? assetConfig, CameraPickerConfig? cameraConfig}) {
+    if (assetConfig != null) this.assetConfig = assetConfig;
+    if (cameraConfig != null) this.cameraConfig = cameraConfig;
+  }
 
-  /// 图片剪切压缩比
-  final ImageCompressionRatio compressionRatio;
+  /// 选择图片
+  Future<List<AssetEntry>?> pickAssets(BuildContext context,
+      {bool useRootNavigator = true,
+      AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
+    final List<AssetEntity>? assets = await AssetPicker.pickAssets(context,
+        pickerConfig: assetConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+    if (assets != null && assets.isNotEmpty) {
+      List<AssetEntry> assetsEntryList = [];
+      for (var entity in assets) {
+        final assetsEntry = await toAssetEntry(entity);
+        assetsEntryList.add(assetsEntry);
+        currentAssetsEntry.add(assetsEntry);
+      }
+      notifyListeners();
+      return assetsEntryList;
+    }
+    return null;
+  }
 
-  /// 启动图片裁剪
-  final bool enableCrop;
+  /// 通过相机拍照
+  Future<AssetEntry?> pickFromCamera(
+    BuildContext context, {
+    bool useRootNavigator = true,
+    CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilder,
+  }) async {
+    final AssetEntity? entity = await CameraPicker.pickFromCamera(context,
+        pickerConfig: cameraConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+    if (entity != null) {
+      final assetsEntry = await toAssetEntry(entity);
+      currentAssetsEntry.add(assetsEntry);
+      notifyListeners();
+      return assetsEntry;
+    }
+    return null;
+  }
+
+  /// AssetEntity to AssetEntry;
+  Future<AssetEntry> toAssetEntry(AssetEntity entity) async {
+    String? compressPath;
+    String? imageCropPath;
+    if (entity.type == AssetsType.image) {
+      imageCropPath = await _imageCrop?.call(entity);
+      compressPath = await _imageCompress?.call(entity);
+    } else if (entity.type == AssetsType.video) {
+      compressPath = await _videoCompress?.call(entity);
+    } else if (entity.type == AssetsType.audio) {
+      compressPath = await _audioCompress?.call(entity);
+    }
+    final file = await entity.file;
+    final originFile = await entity.originFile;
+    final originBytes = await entity.originBytes;
+    final thumbnailData = await entity.thumbnailData;
+    return AssetEntry.fromEntity(entity,
+        fileAsync: file,
+        originFileAsync: originFile,
+        originBytes: originBytes,
+        thumbnailData: thumbnailData,
+        compressPath: compressPath,
+        imageCropPath: imageCropPath);
+  }
+}
+
+class AssetEntry extends AssetEntity {
+  const AssetEntry({
+    this.originBytesAsync,
+    this.thumbnailDataAsync,
+    this.compressPath,
+    this.imageCropPath,
+    this.fileAsync,
+    this.originFileAsync,
+    required String id,
+    required int typeInt,
+    required int width,
+    required int height,
+    int duration = 0,
+    int orientation = 0,
+    bool isFavorite = false,
+    String? title,
+    int? createDateSecond,
+    int? modifiedDateSecond,
+    String? relativePath,
+    double? latitude,
+    double? longitude,
+    String? mimeType,
+    int subtype = 0,
+  }) : super(
+            id: id,
+            typeInt: typeInt,
+            width: width,
+            height: height,
+            duration: duration,
+            orientation: orientation,
+            isFavorite: isFavorite,
+            title: title,
+            createDateSecond: createDateSecond,
+            modifiedDateSecond: modifiedDateSecond,
+            relativePath: relativePath,
+            latitude: latitude,
+            longitude: longitude,
+            mimeType: mimeType,
+            subtype: subtype);
+
+  factory AssetEntry.fromEntity(
+    AssetEntity entity, {
+    String? compressPath,
+    String? imageCropPath,
+    File? fileAsync,
+    File? originFileAsync,
+    Uint8List? originBytes,
+    Uint8List? thumbnailData,
+  }) =>
+      AssetEntry(
+          originBytesAsync: originBytes,
+          thumbnailDataAsync: thumbnailData,
+          fileAsync: fileAsync,
+          originFileAsync: originFileAsync,
+          id: entity.id,
+          typeInt: entity.typeInt,
+          width: entity.width,
+          height: entity.height,
+          compressPath: compressPath,
+          imageCropPath: imageCropPath,
+          duration: entity.duration,
+          orientation: entity.orientation,
+          isFavorite: entity.isFavorite,
+          title: entity.title,
+          createDateSecond: entity.createDateSecond,
+          modifiedDateSecond: entity.modifiedDateSecond,
+          relativePath: entity.relativePath,
+          latitude: entity.latitude,
+          longitude: entity.longitude,
+          mimeType: entity.mimeType,
+          subtype: entity.subtype);
+
+  final Uint8List? originBytesAsync;
+
+  final Uint8List? thumbnailDataAsync;
+
+  final File? fileAsync;
+
+  final File? originFileAsync;
+
+  /// 压缩后的路径
+  final String? compressPath;
+
+  /// 图片裁剪后的路径
+  final String? imageCropPath;
 }
