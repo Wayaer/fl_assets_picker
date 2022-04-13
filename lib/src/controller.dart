@@ -6,11 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
-enum AssetsType {
-  image,
-  video,
-  audio,
-}
 enum FileLoadType { network, file, assets }
 
 enum ImageCompressionRatio {
@@ -56,6 +51,9 @@ class AssetsPickerController with ChangeNotifier {
   /// 压缩视频
   AssetsRepeatBuild? _videoCompress;
 
+  /// 获取视频封面
+  AssetsRepeatBuild? _videoCover;
+
   /// 压缩图片
   AssetsRepeatBuild? _imageCompress;
 
@@ -68,10 +66,12 @@ class AssetsPickerController with ChangeNotifier {
   /// 设置 资源 压缩构造方法
   void setAssetBuild(
       {AssetsRepeatBuild? video,
+      AssetsRepeatBuild? videoCover,
       AssetsRepeatBuild? image,
       AssetsRepeatBuild? imageCrop,
       AssetsRepeatBuild? audio}) {
     if (video != null) _videoCompress = video;
+    if (videoCover != null) _videoCover = videoCover;
     if (image != null) _imageCompress = image;
     if (imageCrop != null) _imageCrop = imageCrop;
     if (audio != null) _audioCompress = audio;
@@ -128,12 +128,14 @@ class AssetsPickerController with ChangeNotifier {
   Future<AssetEntry> toAssetEntry(AssetEntity entity) async {
     String? compressPath;
     String? imageCropPath;
-    if (entity.type == AssetsType.image) {
+    String? videoCoverPath;
+    if (entity.type == AssetType.image) {
       imageCropPath = await _imageCrop?.call(entity);
       compressPath = await _imageCompress?.call(entity);
-    } else if (entity.type == AssetsType.video) {
+    } else if (entity.type == AssetType.video) {
       compressPath = await _videoCompress?.call(entity);
-    } else if (entity.type == AssetsType.audio) {
+      videoCoverPath = await _videoCover?.call(entity);
+    } else if (entity.type == AssetType.audio) {
       compressPath = await _audioCompress?.call(entity);
     }
     final file = await entity.file;
@@ -146,6 +148,7 @@ class AssetsPickerController with ChangeNotifier {
         originBytes: originBytes,
         thumbnailData: thumbnailData,
         compressPath: compressPath,
+        videoCoverPath: videoCoverPath,
         imageCropPath: imageCropPath);
   }
 }
@@ -158,6 +161,7 @@ class AssetEntry extends AssetEntity {
     this.imageCropPath,
     this.fileAsync,
     this.originFileAsync,
+    this.videoCoverPath,
     required String id,
     required int typeInt,
     required int width,
@@ -194,6 +198,7 @@ class AssetEntry extends AssetEntity {
     AssetEntity entity, {
     String? compressPath,
     String? imageCropPath,
+    String? videoCoverPath,
     File? fileAsync,
     File? originFileAsync,
     Uint8List? originBytes,
@@ -210,6 +215,7 @@ class AssetEntry extends AssetEntity {
           height: entity.height,
           compressPath: compressPath,
           imageCropPath: imageCropPath,
+          videoCoverPath: videoCoverPath,
           duration: entity.duration,
           orientation: entity.orientation,
           isFavorite: entity.isFavorite,
@@ -232,6 +238,9 @@ class AssetEntry extends AssetEntity {
 
   /// 压缩后的路径
   final String? compressPath;
+
+  /// 视频封面
+  final String? videoCoverPath;
 
   /// 图片裁剪后的路径
   final String? imageCropPath;

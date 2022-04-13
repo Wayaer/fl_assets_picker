@@ -99,6 +99,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.17.1"
+  cupertino_icons:
+    dependency: transitive
+    description:
+      name: cupertino_icons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.4"
   dio:
     dependency: transitive
     description:
@@ -141,6 +148,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.1.2"
+  fl_video:
+    dependency: transitive
+    description:
+      name: fl_video
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.3"
   flutter:
     dependency: "direct main"
     description: flutter

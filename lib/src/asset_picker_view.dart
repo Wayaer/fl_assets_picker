@@ -1,29 +1,60 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:assets_picker/src/controller.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
-class PickerIconConfig {
-  const PickerIconConfig(
-      {this.color = const Color(0x204D4D4D),
-      this.icon = const Icon(Icons.add, size: 30, color: Color(0x804D4D4D)),
-      this.radius = 6,
-      this.decoration,
-      this.size = const Size(65, 65)});
+class AssetModel {
+  AssetModel(
+      {required this.assetType, this.path, this.file, this.url, this.bytes})
+      : assert(path != null || file != null || url != null || bytes != null);
 
-  final Color color;
-  final double radius;
-  final Icon icon;
-  final Size size;
-  final Decoration? decoration;
+  /// 本地资源路径
+  final String? path;
+
+  /// 内置存储文件路径
+  final File? file;
+
+  /// 网络链接
+  final String? url;
+
+  /// bytes 数组 仅支持图片预览
+  final Uint8List? bytes;
+
+  /// 资源类型  [AssetType.image]、[AssetType.video]、[AssetType.audio]、[AssetType.other]
+  final AssetType assetType;
+}
+
+class AssetOriginModel extends AssetModel {
+  AssetOriginModel({
+    this.thumbnail,
+    required AssetType assetType,
+    String? path,
+    File? file,
+    String? url,
+    Uint8List? bytes,
+  }) : super(
+            assetType: assetType,
+            path: path,
+            file: file,
+            url: url,
+            bytes: bytes);
+
+  /// 缩略图
+  AssetModel? thumbnail;
 }
 
 class PickerAssetEntryBuilderConfig {
   const PickerAssetEntryBuilderConfig(
       {this.decoration,
       this.size = const Size(65, 65),
+      this.pickerIcon =
+          const Icon(Icons.add, size: 30, color: Color(0x804D4D4D)),
       this.color,
+      this.borderColor = const Color(0x804D4D4D),
       this.overlay,
       this.playIcon = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D)),
@@ -32,16 +63,55 @@ class PickerAssetEntryBuilderConfig {
   final Decoration? decoration;
   final Size size;
   final Color? color;
+  final Color borderColor;
   final double? radius;
   final Icon playIcon;
   final Widget? overlay;
+  final Icon pickerIcon;
+}
+
+class PickerWrapBuilderConfig {
+  const PickerWrapBuilderConfig(
+      {this.direction = Axis.horizontal,
+      this.alignment = WrapAlignment.start,
+      this.crossAxisAlignment = WrapCrossAlignment.start,
+      this.verticalDirection = VerticalDirection.down,
+      this.runAlignment = WrapAlignment.start,
+      this.width = double.infinity,
+      this.height,
+      this.constraints,
+      this.decoration,
+      this.spacing = 10,
+      this.runSpacing = 10,
+      this.margin = const EdgeInsets.all(10)});
+
+  /// [Wrap]
+  final double spacing;
+  final double runSpacing;
+  final WrapCrossAlignment crossAxisAlignment;
+  final WrapAlignment alignment;
+  final WrapAlignment runAlignment;
+  final Axis direction;
+  final VerticalDirection verticalDirection;
+
+  /// [Container]
+  final double? width;
+  final double? height;
+  final BoxConstraints? constraints;
+  final Decoration? decoration;
+  final EdgeInsetsGeometry? margin;
 }
 
 typedef PickerIconBuilder = Widget Function();
+
+typedef PickerWrapBuilder = Widget Function(List<Widget>);
+
 typedef PickerFromRequestTypesBuilder = Widget Function(
     BuildContext context, List<AssetPickerFromRequestTypes> fromTypes);
+
 typedef PickerErrorCallback = void Function(String msg);
-typedef PickerEntryBuilder = Widget Function(AssetEntry entry, int index);
+
+typedef PickerEntryBuilder = Widget Function(AssetModel entry, int index);
 
 enum AssetPickerFromType {
   /// 从图库中选择
@@ -61,33 +131,38 @@ class AssetPickerFromRequestTypes {
 }
 
 class AssetPickerView extends StatefulWidget {
-  const AssetPickerView(
-      {Key? key,
-      this.onChanged,
-      this.controller,
-      this.enablePicker = true,
-      this.pickerIconConfig = const PickerIconConfig(),
-      this.pickerIconBuilder,
-      this.entryBuilder,
-      this.errorCallback,
-      this.maxVideoCount = 1,
-      this.maxCount = 9,
-      this.maxSingleCount = 1,
-      this.fromRequestTypes = const [
-        AssetPickerFromRequestTypes(
-            fromType: AssetPickerFromType.assets,
-            text: '图库选择',
-            requestTypes: [RequestType.image, RequestType.video]),
-        AssetPickerFromRequestTypes(
-            fromType: AssetPickerFromType.camera,
-            text: '相机拍摄',
-            requestTypes: [RequestType.image, RequestType.video]),
-      ],
-      this.pageRouteBuilderForCameraPicker,
-      this.pageRouteBuilderForAssetPicker,
-      this.fromRequestTypesBuilder,
-      this.entryConfig = const PickerAssetEntryBuilderConfig()})
-      : super(key: key);
+  const AssetPickerView({
+    Key? key,
+    this.onChanged,
+    this.controller,
+    this.enablePicker = true,
+    this.pickerIconBuilder,
+    this.entryBuilder,
+    this.errorCallback,
+    this.maxVideoCount = 1,
+    this.maxCount = 9,
+    this.maxSingleCount = 1,
+    this.wrapConfig = const PickerWrapBuilderConfig(),
+    this.wrapBuilder,
+    this.fromRequestTypes = const [
+      AssetPickerFromRequestTypes(
+          fromType: AssetPickerFromType.assets,
+          text: '图库选择',
+          requestTypes: [RequestType.image, RequestType.video]),
+      AssetPickerFromRequestTypes(
+          fromType: AssetPickerFromType.camera,
+          text: '相机拍摄',
+          requestTypes: [RequestType.image, RequestType.video]),
+    ],
+    this.pageRouteBuilderForCameraPicker,
+    this.pageRouteBuilderForAssetPicker,
+    this.fromRequestTypesBuilder,
+    this.entryConfig = const PickerAssetEntryBuilderConfig(),
+    this.initList = const [],
+  }) : super(key: key);
+
+  /// 默认初始资源
+  final List<AssetOriginModel> initList;
 
   /// 请求类型
   final List<AssetPickerFromRequestTypes> fromRequestTypes;
@@ -98,11 +173,12 @@ class AssetPickerView extends StatefulWidget {
   /// 资源控制器
   final AssetsPickerController? controller;
 
+  final PickerWrapBuilderConfig wrapConfig;
+
+  final PickerWrapBuilder? wrapBuilder;
+
   /// 是否开始 资源选择
   final bool enablePicker;
-
-  ///  资源选择 icon 配置
-  final PickerIconConfig pickerIconConfig;
 
   /// 资源选择 icon 自定义构造
   final PickerIconBuilder? pickerIconBuilder;
@@ -166,37 +242,60 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     }
   }
 
+  List<AssetOriginModel> get currentAssetsEntryToAsset =>
+      controller.currentAssetsEntry.map((entry) {
+        AssetModel? thumbnail;
+        if (entry.thumbnailDataAsync != null) {
+          File? file;
+          if (entry.type == AssetType.video && entry.videoCoverPath != null) {
+            file = File(entry.videoCoverPath!);
+          }
+          thumbnail = AssetModel(
+              assetType: AssetType.image,
+              file: file,
+              bytes: entry.thumbnailDataAsync);
+        }
+        return AssetOriginModel(
+            assetType: entry.type,
+            file: entry.originFileAsync,
+            thumbnail: thumbnail);
+      }).toList();
+
   @override
   Widget build(BuildContext context) {
-    final children = controller.currentAssetsEntry
-        .asMap()
-        .entries
-        .map((entry) => entryBuilder(entry))
-        .toList();
+    final assets = currentAssetsEntryToAsset..insertAll(0, widget.initList);
+    final children =
+        assets.asMap().entries.map((entry) => entryBuilder(entry)).toList();
     if (widget.enablePicker) children.add(pickerBuilder);
+    if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
+    final wrapConfig = widget.wrapConfig;
     return Container(
-        margin: const EdgeInsets.all(10),
-        width: double.infinity,
+        margin: wrapConfig.margin,
+        width: wrapConfig.width,
+        height: wrapConfig.height,
+        decoration: wrapConfig.decoration,
+        constraints: wrapConfig.constraints,
         child: Wrap(
-            direction: Axis.horizontal,
-            alignment: WrapAlignment.start,
-            crossAxisAlignment: WrapCrossAlignment.start,
-            runSpacing: 16,
-            spacing: 16,
+            direction: wrapConfig.direction,
+            alignment: wrapConfig.alignment,
+            crossAxisAlignment: wrapConfig.crossAxisAlignment,
+            verticalDirection: wrapConfig.verticalDirection,
+            runSpacing: wrapConfig.runSpacing,
+            spacing: wrapConfig.spacing,
             children: children));
   }
 
-  Widget entryBuilder(MapEntry<int, AssetEntry> entry) {
+  Widget entryBuilder(MapEntry<int, AssetOriginModel> entry) {
     final assetEntry = entry.value;
-    Widget builder = buildAssetEntry(assetEntry);
+    Widget builder = _BuildAssetEntry(assetEntry);
     final config = widget.entryConfig;
     if (config.overlay != null ||
-        assetEntry.type == AssetType.video ||
-        assetEntry.type == AssetType.audio) {
+        assetEntry.assetType == AssetType.video ||
+        assetEntry.assetType == AssetType.audio) {
       builder = Stack(children: [
         builder,
         if (config.overlay != null) config.overlay!,
-        config.playIcon,
+        Align(alignment: Alignment.center, child: config.playIcon),
       ]);
     }
     builder = Container(
@@ -214,32 +313,6 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     return widget.entryBuilder?.call(entry.value, entry.key) ?? builder;
   }
 
-  Widget buildAssetEntry(AssetEntry entry, {bool isThumbnail = true}) {
-    Widget current = const SizedBox();
-    switch (entry.type) {
-      case AssetType.other:
-        break;
-      case AssetType.image:
-        current = Image(
-            fit: BoxFit.cover,
-            image: AssetEntityImageProvider(entry, isOriginal: isThumbnail));
-        break;
-      case AssetType.video:
-        final thumbnailData = entry.thumbnailDataAsync;
-        if (thumbnailData != null) {
-          current = Image(image: MemoryImage(thumbnailData));
-        }
-        break;
-      case AssetType.audio:
-        final thumbnailData = entry.thumbnailDataAsync;
-        if (thumbnailData != null) {
-          current = Image(image: MemoryImage(thumbnailData));
-        }
-        break;
-    }
-    return current;
-  }
-
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsEntry = controller.currentAssetsEntry;
@@ -248,7 +321,6 @@ class _AssetPickerViewState extends State<AssetPickerView> {
       return;
     }
     final requestType = controller.assetConfig.requestType;
-
     if (requestType.containsVideo()) {
       int hasVideo = 0;
       for (var element in assetsEntry) {
@@ -262,17 +334,24 @@ class _AssetPickerViewState extends State<AssetPickerView> {
   }
 
   Widget get pickerBuilder {
-    final config = widget.pickerIconConfig;
-    final icon = widget.pickerIconBuilder?.call() ??
-        Container(
-            width: config.size.width,
-            height: config.size.height,
-            decoration: config.decoration ??
-                BoxDecoration(
-                    border: Border.all(color: config.color),
-                    borderRadius: BorderRadius.circular(config.radius)),
-            child: config.icon);
-    return GestureDetector(onTap: pickerAsset, child: icon);
+    final config = widget.entryConfig;
+    Widget icon = Container(
+        width: config.size.width,
+        height: config.size.height,
+        decoration: config.decoration ??
+            BoxDecoration(
+                borderRadius: BorderRadius.circular(config.radius ?? 0),
+                border: Border.all(color: config.borderColor)),
+        child: config.pickerIcon);
+    if (config.color != null) {
+      icon = ColoredBox(color: config.color!, child: icon);
+    }
+    if (config.radius != null) {
+      icon = ClipRRect(
+          child: icon, borderRadius: BorderRadius.circular(config.radius!));
+    }
+    return GestureDetector(
+        onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? icon);
   }
 
   void showSelectType() async {
@@ -309,6 +388,62 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     super.dispose();
     controller.removeListener(listener);
     controller.dispose();
+  }
+}
+
+class _BuildAssetEntry extends StatelessWidget {
+  const _BuildAssetEntry(this.entry, {Key? key, this.isThumbnail = true})
+      : super(key: key);
+  final AssetOriginModel entry;
+  final bool isThumbnail;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget current = const SizedBox();
+    ImageProvider? thumbnailProvider;
+    if (entry.thumbnail != null) {
+      thumbnailProvider = getImageProvider(entry.thumbnail!);
+    }
+    switch (entry.assetType) {
+      case AssetType.other:
+        if (isThumbnail && thumbnailProvider != null) {
+          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
+        }
+        break;
+      case AssetType.image:
+        current = Image(
+            fit: BoxFit.cover,
+            image: isThumbnail && thumbnailProvider != null
+                ? thumbnailProvider
+                : getImageProvider(entry));
+        break;
+      case AssetType.video:
+        print(entry.file?.path);
+        if (isThumbnail && thumbnailProvider != null) {
+          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
+        }
+        break;
+      case AssetType.audio:
+        if (isThumbnail && thumbnailProvider != null) {
+          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
+        }
+        break;
+    }
+    return current;
+  }
+
+  ImageProvider getImageProvider(AssetModel asset) {
+    ImageProvider? provider;
+    if (asset.path != null) {
+      provider = AssetImage(asset.path!);
+    } else if (asset.file != null) {
+      provider = FileImage(asset.file!);
+    } else if (asset.bytes != null) {
+      provider = MemoryImage(asset.bytes!);
+    } else if (asset.url != null) {
+      provider = NetworkImage(asset.url!);
+    }
+    return provider!;
   }
 }
 
