@@ -256,9 +256,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
               bytes: entry.thumbnailDataAsync);
         }
         return AssetOriginModel(
-            assetType: entry.type,
-            file: entry.originFileAsync,
-            thumbnail: thumbnail);
+            assetType: entry.type, file: entry.fileAsync, thumbnail: thumbnail);
       }).toList();
 
   @override
