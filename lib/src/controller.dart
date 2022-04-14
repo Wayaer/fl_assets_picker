@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:assets_picker/src/asset_picker_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -33,7 +34,7 @@ class _AssetsPickerViewState extends State<AssetsPickerView> {
   }
 }
 
-typedef AssetsRepeatBuild = Future<String?> Function(AssetEntity entity);
+typedef AssetsRepeatBuild = Future<File?> Function(AssetEntity entity);
 
 class AssetsPickerController with ChangeNotifier {
   AssetsPickerController(
@@ -126,9 +127,9 @@ class AssetsPickerController with ChangeNotifier {
 
   /// AssetEntity to AssetEntry;
   Future<AssetEntry> toAssetEntry(AssetEntity entity) async {
-    String? compressPath;
-    String? imageCropPath;
-    String? videoCoverPath;
+    File? compressPath;
+    File? imageCropPath;
+    File? videoCoverPath;
     if (entity.type == AssetType.image) {
       imageCropPath = await _imageCrop?.call(entity);
       compressPath = await _imageCompress?.call(entity);
@@ -150,6 +151,41 @@ class AssetsPickerController with ChangeNotifier {
         compressPath: compressPath,
         videoCoverPath: videoCoverPath,
         imageCropPath: imageCropPath);
+  }
+
+  void showPickFromType(
+    BuildContext context,
+    List<AssetPickerFromRequestTypes> fromRequestTypes, {
+    PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
+    bool useRootNavigator = true,
+    CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilderForCameraPicker,
+    AssetPickerPageRouteBuilder<List<AssetEntity>>?
+        pageRouteBuilderForAssetPicker,
+  }) async {
+    AssetPickerFromRequestTypes? type;
+    if (fromRequestTypes.length == 1) {
+      type = fromRequestTypes.first;
+    } else {
+      type = await showModalBottomSheet<AssetPickerFromRequestTypes?>(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (BuildContext context) =>
+              fromRequestTypesBuilder?.call(context, fromRequestTypes) ??
+              PickFromTypeBuild(fromRequestTypes));
+    }
+    if (type == null) return;
+    switch (type.fromType) {
+      case AssetPickerFromType.assets:
+        pickAssets(context,
+            useRootNavigator: useRootNavigator,
+            pageRouteBuilder: pageRouteBuilderForAssetPicker);
+        break;
+      case AssetPickerFromType.camera:
+        pickFromCamera(context,
+            useRootNavigator: useRootNavigator,
+            pageRouteBuilder: pageRouteBuilderForCameraPicker);
+        break;
+    }
   }
 }
 
@@ -196,9 +232,9 @@ class AssetEntry extends AssetEntity {
 
   factory AssetEntry.fromEntity(
     AssetEntity entity, {
-    String? compressPath,
-    String? imageCropPath,
-    String? videoCoverPath,
+    File? compressPath,
+    File? imageCropPath,
+    File? videoCoverPath,
     File? fileAsync,
     File? originFileAsync,
     Uint8List? originBytes,
@@ -237,11 +273,11 @@ class AssetEntry extends AssetEntity {
   final File? originFileAsync;
 
   /// 压缩后的路径
-  final String? compressPath;
+  final File? compressPath;
 
   /// 视频封面
-  final String? videoCoverPath;
+  final File? videoCoverPath;
 
   /// 图片裁剪后的路径
-  final String? imageCropPath;
+  final File? imageCropPath;
 }

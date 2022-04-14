@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:assets_picker/src/asset_entry_builder.dart';
 import 'package:assets_picker/src/controller.dart';
+import 'package:assets_picker/src/preview.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -28,9 +31,13 @@ class AssetModel {
   final AssetType assetType;
 }
 
-class AssetOriginModel extends AssetModel {
-  AssetOriginModel({
+class ExtendedAssetModel extends AssetModel {
+  ExtendedAssetModel({
     this.thumbnail,
+    this.originFile,
+    this.compressPath,
+    this.videoCoverPath,
+    this.imageCropPath,
     required AssetType assetType,
     String? path,
     File? file,
@@ -44,7 +51,22 @@ class AssetOriginModel extends AssetModel {
             bytes: bytes);
 
   /// 缩略图
-  AssetModel? thumbnail;
+  final AssetModel? thumbnail;
+
+  /// 只有通过本地选择的资源才原始文件
+  final File? originFile;
+
+  /// 压缩后的路径
+  /// 只有通过本地选择的资源 并添加了压缩方法
+  final File? compressPath;
+
+  /// 视频封面
+  /// 只有通过本地选择的资源 并添加了获取封面的方法
+  final File? videoCoverPath;
+
+  /// 图片裁剪后的路径
+  /// 只有通过本地选择的资源 并添加了裁剪的方法
+  final File? imageCropPath;
 }
 
 class PickerAssetEntryBuilderConfig {
@@ -162,7 +184,7 @@ class AssetPickerView extends StatefulWidget {
   }) : super(key: key);
 
   /// 默认初始资源
-  final List<AssetOriginModel> initList;
+  final List<ExtendedAssetModel> initList;
 
   /// 请求类型
   final List<AssetPickerFromRequestTypes> fromRequestTypes;
@@ -214,6 +236,7 @@ class AssetPickerView extends StatefulWidget {
 
 class _AssetPickerViewState extends State<AssetPickerView> {
   late AssetsPickerController controller;
+  List<ExtendedAssetModel> allAsset = [];
 
   @override
   void initState() {
@@ -242,28 +265,31 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     }
   }
 
-  List<AssetOriginModel> get currentAssetsEntryToAsset =>
+  List<ExtendedAssetModel> get currentAssetsEntryToAsset =>
       controller.currentAssetsEntry.map((entry) {
         AssetModel? thumbnail;
         if (entry.thumbnailDataAsync != null) {
-          File? file;
-          if (entry.type == AssetType.video && entry.videoCoverPath != null) {
-            file = File(entry.videoCoverPath!);
-          }
+          entry.title;
           thumbnail = AssetModel(
               assetType: AssetType.image,
-              file: file,
+              file: entry.videoCoverPath,
               bytes: entry.thumbnailDataAsync);
         }
-        return AssetOriginModel(
-            assetType: entry.type, file: entry.fileAsync, thumbnail: thumbnail);
+        return ExtendedAssetModel(
+            originFile: entry.originFileAsync,
+            assetType: entry.type,
+            compressPath: entry.compressPath,
+            videoCoverPath: entry.videoCoverPath,
+            imageCropPath: entry.imageCropPath,
+            file: entry.fileAsync,
+            thumbnail: thumbnail);
       }).toList();
 
   @override
   Widget build(BuildContext context) {
-    final assets = currentAssetsEntryToAsset..insertAll(0, widget.initList);
+    allAsset = currentAssetsEntryToAsset..insertAll(0, widget.initList);
     final children =
-        assets.asMap().entries.map((entry) => entryBuilder(entry)).toList();
+        allAsset.asMap().entries.map((entry) => entryBuilder(entry)).toList();
     if (widget.enablePicker) children.add(pickerBuilder);
     if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
     final wrapConfig = widget.wrapConfig;
@@ -283,9 +309,9 @@ class _AssetPickerViewState extends State<AssetPickerView> {
             children: children));
   }
 
-  Widget entryBuilder(MapEntry<int, AssetOriginModel> entry) {
+  Widget entryBuilder(MapEntry<int, ExtendedAssetModel> entry) {
     final assetEntry = entry.value;
-    Widget builder = _BuildAssetEntry(assetEntry);
+    Widget builder = BuildAssetEntry(assetEntry);
     final config = widget.entryConfig;
     if (config.overlay != null ||
         assetEntry.assetType == AssetType.video ||
@@ -308,7 +334,23 @@ class _AssetPickerViewState extends State<AssetPickerView> {
       builder = ClipRRect(
           child: builder, borderRadius: BorderRadius.circular(config.radius!));
     }
-    return widget.entryBuilder?.call(entry.value, entry.key) ?? builder;
+    return GestureDetector(
+        onTap: () => previewAssets(entry.value),
+        child: widget.entryBuilder?.call(entry.value, entry.key) ?? builder);
+  }
+
+  void previewAssets(ExtendedAssetModel asset) async {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) => PreviewAssets(
+              itemCount: allAsset.length,
+              controller:
+                  ExtendedPageController(initialPage: allAsset.indexOf(asset)),
+              itemBuilder: (_, int index) => Center(
+                  child: BuildAssetEntry(allAsset[index], isThumbnail: false)),
+            ));
   }
 
   void pickerAsset() async {
@@ -328,7 +370,11 @@ class _AssetPickerViewState extends State<AssetPickerView> {
         widget.errorCallback?.call('最多添加${widget.maxVideoCount}个视频');
       }
     }
-    showSelectType();
+    controller.showPickFromType(context, widget.fromRequestTypes,
+        fromRequestTypesBuilder: widget.fromRequestTypesBuilder,
+        useRootNavigator: widget.useRootNavigator,
+        pageRouteBuilderForCameraPicker: widget.pageRouteBuilderForCameraPicker,
+        pageRouteBuilderForAssetPicker: widget.pageRouteBuilderForAssetPicker);
   }
 
   Widget get pickerBuilder {
@@ -352,35 +398,6 @@ class _AssetPickerViewState extends State<AssetPickerView> {
         onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? icon);
   }
 
-  void showSelectType() async {
-    final fromRequestTypes = widget.fromRequestTypes;
-    AssetPickerFromRequestTypes? type;
-    if (fromRequestTypes.length == 1) {
-      type = fromRequestTypes.first;
-    } else {
-      type = await showModalBottomSheet<AssetPickerFromRequestTypes?>(
-          context: context,
-          backgroundColor: Colors.transparent,
-          builder: (BuildContext context) =>
-              widget.fromRequestTypesBuilder?.call(context, fromRequestTypes) ??
-              _AlertSelectTypeChoice(fromRequestTypes));
-    }
-
-    if (type == null) return;
-    switch (type.fromType) {
-      case AssetPickerFromType.assets:
-        controller.pickAssets(context,
-            useRootNavigator: widget.useRootNavigator,
-            pageRouteBuilder: widget.pageRouteBuilderForAssetPicker);
-        break;
-      case AssetPickerFromType.camera:
-        controller.pickFromCamera(context,
-            useRootNavigator: widget.useRootNavigator,
-            pageRouteBuilder: widget.pageRouteBuilderForCameraPicker);
-        break;
-    }
-  }
-
   @override
   void dispose() {
     super.dispose();
@@ -389,64 +406,8 @@ class _AssetPickerViewState extends State<AssetPickerView> {
   }
 }
 
-class _BuildAssetEntry extends StatelessWidget {
-  const _BuildAssetEntry(this.entry, {Key? key, this.isThumbnail = true})
-      : super(key: key);
-  final AssetOriginModel entry;
-  final bool isThumbnail;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget current = const SizedBox();
-    ImageProvider? thumbnailProvider;
-    if (entry.thumbnail != null) {
-      thumbnailProvider = getImageProvider(entry.thumbnail!);
-    }
-    switch (entry.assetType) {
-      case AssetType.other:
-        if (isThumbnail && thumbnailProvider != null) {
-          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
-        }
-        break;
-      case AssetType.image:
-        current = Image(
-            fit: BoxFit.cover,
-            image: isThumbnail && thumbnailProvider != null
-                ? thumbnailProvider
-                : getImageProvider(entry));
-        break;
-      case AssetType.video:
-        print(entry.file?.path);
-        if (isThumbnail && thumbnailProvider != null) {
-          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
-        }
-        break;
-      case AssetType.audio:
-        if (isThumbnail && thumbnailProvider != null) {
-          current = Image(fit: BoxFit.cover, image: thumbnailProvider);
-        }
-        break;
-    }
-    return current;
-  }
-
-  ImageProvider getImageProvider(AssetModel asset) {
-    ImageProvider? provider;
-    if (asset.path != null) {
-      provider = AssetImage(asset.path!);
-    } else if (asset.file != null) {
-      provider = FileImage(asset.file!);
-    } else if (asset.bytes != null) {
-      provider = MemoryImage(asset.bytes!);
-    } else if (asset.url != null) {
-      provider = NetworkImage(asset.url!);
-    }
-    return provider!;
-  }
-}
-
-class _AlertSelectTypeChoice extends StatelessWidget {
-  const _AlertSelectTypeChoice(this.list, {Key? key}) : super(key: key);
+class PickFromTypeBuild extends StatelessWidget {
+  const PickFromTypeBuild(this.list, {Key? key}) : super(key: key);
 
   final List<AssetPickerFromRequestTypes> list;
 

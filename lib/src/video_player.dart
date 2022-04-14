@@ -44,7 +44,8 @@ enum _VideoPlayState {
   isInitialized,
 }
 
-class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
+class _PickerVideoPlayerState extends State<PickerVideoPlayer>
+    with WidgetsBindingObserver {
   VideoPlayerController? controller;
 
   ValueNotifier<_VideoPlayState> playState =
@@ -56,14 +57,19 @@ class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    initController();
+    WidgetsBinding.instance?.addObserver(this);
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      initController();
+    });
   }
 
-  void initController() {
-    controller?.removeListener(listener);
+  void initController() async {
     file = widget.file;
     path = widget.path;
     url = widget.url;
+    controller?.pause();
+    controller?.removeListener(listener);
+    controller?.dispose();
     if (path != null) {
       controller = VideoPlayerController.asset(path!);
     } else if (file != null) {
@@ -71,8 +77,12 @@ class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
     } else if (url != null) {
       controller = VideoPlayerController.network(url!);
     }
-    controller?.addListener(listener);
-    controller?.play();
+    controller!.addListener(listener);
+    await controller!.initialize();
+    if (mounted) setState(() {});
+    Future.delayed(const Duration(milliseconds: 200), () {
+      controller?.play();
+    });
   }
 
   void listener() {
@@ -96,11 +106,16 @@ class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
   Widget build(BuildContext context) {
     Widget current = controller == null
         ? widget.cover ?? const SizedBox()
-        : VideoPlayer(controller!);
-    return Stack(children: [
-      current,
-      Center(child: controls),
-    ]);
+        : AspectRatio(
+            aspectRatio: controller!.value.aspectRatio,
+            child: VideoPlayer(controller!));
+    return GestureDetector(
+      onDoubleTap: controlsTap,
+      child: Stack(children: [
+        current,
+        Center(child: controls),
+      ]),
+    );
   }
 
   Widget get controls => ValueListenableBuilder(
@@ -120,13 +135,24 @@ class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
         }
       });
 
+  void controlsTap() {
+    bool? isPlaying = controller?.value.isPlaying;
+    if (isPlaying == true) {
+      controller?.pause();
+    } else if (isPlaying == false) {
+      controller?.play();
+    }
+  }
+
   Widget centerPlayButton(
           {bool show = false,
           bool isPlaying = false,
           bool isFinished = false}) =>
       _CenterPlayButton(
-          backgroundColor: Colors.black45,
+          backgroundColor: Colors.black87,
           show: show,
+          onPressed: controlsTap,
+          iconColor: Colors.white,
           isPlaying: isPlaying,
           isFinished: isFinished);
 
@@ -137,8 +163,34 @@ class _PickerVideoPlayerState extends State<PickerVideoPlayer> {
         (widget.path != null && widget.path != path) ||
         (widget.url != null && widget.url != url)) {
       initController();
-      setState(() {});
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.inactive:
+        controller?.pause();
+        break;
+      case AppLifecycleState.paused:
+        break;
+      case AppLifecycleState.resumed:
+        controller?.pause();
+        break;
+      case AppLifecycleState.detached:
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    controller?.pause();
+    controller?.removeListener(listener);
+    controller?.dispose();
+    playState.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
   }
 }
 
@@ -171,12 +223,12 @@ class _CenterPlayButton extends StatelessWidget {
               decoration:
                   BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
               child: IconButton(
-                iconSize: 32,
-                icon: isFinished
-                    ? Icon(Icons.replay, color: iconColor)
-                    : _AnimatedPlayPause(color: iconColor, playing: isPlaying),
-                onPressed: onPressed,
-              ))));
+                  iconSize: 32,
+                  icon: isFinished
+                      ? Icon(Icons.replay, color: iconColor)
+                      : _AnimatedPlayPause(
+                          color: iconColor, playing: isPlaying),
+                  onPressed: onPressed))));
 }
 
 class _AnimatedPlayPause extends StatefulWidget {

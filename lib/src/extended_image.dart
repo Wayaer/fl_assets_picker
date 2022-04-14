@@ -60,13 +60,13 @@ class PickerExtendedImage extends StatelessWidget {
   static ImageProvider getImageProvider(AssetModel asset) {
     ImageProvider? provider;
     if (asset.path != null) {
-      provider = AssetImage(asset.path!);
+      provider = ExtendedAssetImageProvider(asset.path!);
     } else if (asset.file != null) {
-      provider = FileImage(asset.file!);
+      provider = ExtendedFileImageProvider(asset.file!);
     } else if (asset.bytes != null) {
-      provider = MemoryImage(asset.bytes!);
+      provider = ExtendedMemoryImageProvider(asset.bytes!);
     } else if (asset.url != null) {
-      provider = NetworkImage(asset.url!);
+      provider = ExtendedNetworkImageProvider(asset.url!);
     }
     return provider!;
   }
