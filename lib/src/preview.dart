@@ -40,7 +40,7 @@ class PreviewAssets extends StatelessWidget {
               Container(
                   alignment: Alignment.bottomRight,
                   margin: const EdgeInsets.only(right: 12),
-                  height: MediaQueryData.fromWindow(ui.window).padding.top + 44,
+                  height: MediaQueryData.fromWindow(ui.window).padding.top + 26,
                   child: const CloseButton(color: Colors.white)),
           Expanded(
               child: ExtendedImageGesturePageView.builder(

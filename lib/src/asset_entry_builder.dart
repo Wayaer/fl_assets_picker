@@ -1,6 +1,6 @@
 import 'package:assets_picker/assets_picker.dart';
 import 'package:assets_picker/src/extended_image.dart';
-import 'package:assets_picker/src/video_player.dart';
+import 'package:assets_picker/src/fl_video_player.dart';
 import 'package:flutter/material.dart';
 
 class BuildAssetEntry extends StatelessWidget {
@@ -32,23 +32,26 @@ class AssetEntryVideoBuild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget? current;
-    ImageProvider? imageProvider;
-    if (asset.thumbnail != null) {
-      imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
+    if (asset.assetType == AssetType.video) {
+      Widget? current;
+      ImageProvider? imageProvider;
+      if (asset.thumbnail != null) {
+        imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
+      }
+      if (asset.videoCoverPath != null) {
+        imageProvider = ExtendedFileImageProvider(asset.videoCoverPath!);
+      }
+      BoxFit fit = BoxFit.cover;
+      if (!isThumbnail) fit = BoxFit.contain;
+      if (isThumbnail && imageProvider != null) {
+        current = PickerExtendedImage(imageProvider, fit: fit);
+      } else {
+        current = PickerFlVideoPlayer(
+            file: asset.file, path: asset.path, url: asset.url, cover: current);
+      }
+      return current;
     }
-    if (asset.videoCoverPath != null) {
-      imageProvider = ExtendedFileImageProvider(asset.videoCoverPath!);
-    }
-    BoxFit fit = BoxFit.cover;
-    if (!isThumbnail) fit = BoxFit.contain;
-    if (isThumbnail && imageProvider != null) {
-      current = PickerExtendedImage(imageProvider, fit: fit);
-    } else {
-      current = PickerVideoPlayer(
-          file: asset.file, path: asset.path, url: asset.url, cover: current);
-    }
-    return current;
+    return const PreviewSupported();
   }
 }
 
@@ -60,18 +63,21 @@ class AssetEntryImageBuild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider? imageProvider;
-    if (asset.thumbnail != null) {
-      imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
-    }
-    BoxFit fit = BoxFit.cover;
-    if (!isThumbnail) fit = BoxFit.contain;
+    if (asset.assetType == AssetType.image) {
+      ImageProvider? imageProvider;
+      if (asset.thumbnail != null) {
+        imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
+      }
+      BoxFit fit = BoxFit.cover;
+      if (!isThumbnail) fit = BoxFit.contain;
 
-    return PickerExtendedImage(
-        isThumbnail && imageProvider != null
-            ? imageProvider
-            : PickerExtendedImage.getImageProvider(asset),
-        fit: fit);
+      return PickerExtendedImage(
+          isThumbnail && imageProvider != null
+              ? imageProvider
+              : PickerExtendedImage.getImageProvider(asset),
+          fit: fit);
+    }
+    return const PreviewSupported();
   }
 }
 
@@ -83,18 +89,28 @@ class AssetEntryOtherBuild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ImageProvider? thumbnailProvider;
-    if (asset.thumbnail != null) {
-      thumbnailProvider =
-          PickerExtendedImage.getImageProvider(asset.thumbnail!);
-    }
-    BoxFit fit = BoxFit.cover;
-    if (!isThumbnail) fit = BoxFit.contain;
+    if (asset.assetType == AssetType.other ||
+        asset.assetType == AssetType.audio) {
+      ImageProvider? thumbnailProvider;
+      if (asset.thumbnail != null) {
+        thumbnailProvider =
+            PickerExtendedImage.getImageProvider(asset.thumbnail!);
+      }
+      BoxFit fit = BoxFit.cover;
+      if (!isThumbnail) fit = BoxFit.contain;
 
-    if (isThumbnail && thumbnailProvider != null) {
-      return PickerExtendedImage(thumbnailProvider, fit: fit);
+      if (isThumbnail && thumbnailProvider != null) {
+        return PickerExtendedImage(thumbnailProvider, fit: fit);
+      }
     }
-
-    return const Center(child: Text('无法预览'));
+    return const PreviewSupported();
   }
+}
+
+class PreviewSupported extends StatelessWidget {
+  const PreviewSupported({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) =>
+      const Center(child: Text('Preview not supported'));
 }
