@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_waya: ^1.20.3
-  flutter_curiosity: ^3.5.0
+  flutter_waya: ^2.0.0
+  flutter_curiosity: ^4.0.0
   assets_picker:
     path: ../
 

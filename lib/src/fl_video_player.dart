@@ -55,8 +55,8 @@ class _PickerFlVideoPlayerState extends State<PickerFlVideoPlayer>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addObserver(this);
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       initController();
     });
   }
@@ -132,6 +132,6 @@ class _PickerFlVideoPlayerState extends State<PickerFlVideoPlayer>
     super.dispose();
     flController?.pause();
     flController?.dispose();
-    WidgetsBinding.instance?.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
   }
 }
