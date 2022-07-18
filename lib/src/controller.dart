@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:assets_picker/src/asset_picker_view.dart';
+import 'package:fl_assets_picker/src/asset_picker_view.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
@@ -19,24 +19,24 @@ enum ImageCompressionRatio {
   low,
 }
 
-class AssetsPickerView extends StatefulWidget {
-  const AssetsPickerView({Key? key}) : super(key: key);
+class FlAssetsPickerView extends StatefulWidget {
+  const FlAssetsPickerView({Key? key}) : super(key: key);
 
   @override
-  State<AssetsPickerView> createState() => _AssetsPickerViewState();
+  State<FlAssetsPickerView> createState() => _FlAssetsPickerViewState();
 }
 
-class _AssetsPickerViewState extends State<AssetsPickerView> {
+class _FlAssetsPickerViewState extends State<FlAssetsPickerView> {
   @override
   Widget build(BuildContext context) {
     return Container();
   }
 }
 
-typedef AssetsRepeatBuild = Future<File?> Function(AssetEntity entity);
+typedef FlAssetsRepeatBuild = Future<File?> Function(AssetEntity entity);
 
-class AssetsPickerController with ChangeNotifier {
-  AssetsPickerController(
+class FlAssetsPickerController with ChangeNotifier {
+  FlAssetsPickerController(
       {this.assetConfig = const AssetPickerConfig(),
       this.cameraConfig = const CameraPickerConfig()});
 
@@ -49,27 +49,27 @@ class AssetsPickerController with ChangeNotifier {
   CameraPickerConfig cameraConfig;
 
   /// 压缩视频
-  AssetsRepeatBuild? _videoCompress;
+  FlAssetsRepeatBuild? _videoCompress;
 
   /// 获取视频封面
-  AssetsRepeatBuild? _videoCover;
+  FlAssetsRepeatBuild? _videoCover;
 
   /// 压缩图片
-  AssetsRepeatBuild? _imageCompress;
+  FlAssetsRepeatBuild? _imageCompress;
 
   /// 裁剪图片
-  AssetsRepeatBuild? _imageCrop;
+  FlAssetsRepeatBuild? _imageCrop;
 
   /// 压缩音频
-  AssetsRepeatBuild? _audioCompress;
+  FlAssetsRepeatBuild? _audioCompress;
 
   /// 设置 资源 压缩构造方法
   void setAssetBuild(
-      {AssetsRepeatBuild? video,
-      AssetsRepeatBuild? videoCover,
-      AssetsRepeatBuild? image,
-      AssetsRepeatBuild? imageCrop,
-      AssetsRepeatBuild? audio}) {
+      {FlAssetsRepeatBuild? video,
+      FlAssetsRepeatBuild? videoCover,
+      FlAssetsRepeatBuild? image,
+      FlAssetsRepeatBuild? imageCrop,
+      FlAssetsRepeatBuild? audio}) {
     if (video != null) _videoCompress = video;
     if (videoCover != null) _videoCover = videoCover;
     if (image != null) _imageCompress = image;
@@ -152,20 +152,21 @@ class AssetsPickerController with ChangeNotifier {
         imageCropPath: imageCropPath);
   }
 
-  void showPickFromType(
+  Future<void> showPickFromType(
     BuildContext context,
-    List<AssetPickerFromRequestTypes> fromRequestTypes, {
+    bool mounted,
+    List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
     PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
     bool useRootNavigator = true,
     CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilderForCameraPicker,
     AssetPickerPageRouteBuilder<List<AssetEntity>>?
         pageRouteBuilderForAssetPicker,
   }) async {
-    AssetPickerFromRequestTypes? type;
+    FlAssetPickerFromRequestTypes? type;
     if (fromRequestTypes.length == 1) {
       type = fromRequestTypes.first;
     } else {
-      type = await showModalBottomSheet<AssetPickerFromRequestTypes?>(
+      type = await showModalBottomSheet<FlAssetPickerFromRequestTypes?>(
           context: context,
           backgroundColor: Colors.transparent,
           builder: (BuildContext context) =>
@@ -173,13 +174,14 @@ class AssetsPickerController with ChangeNotifier {
               PickFromTypeBuild(fromRequestTypes));
     }
     if (type == null) return;
+    if (!mounted) return;
     switch (type.fromType) {
-      case AssetPickerFromType.assets:
+      case FlAssetPickerFromType.assets:
         pickAssets(context,
             useRootNavigator: useRootNavigator,
             pageRouteBuilder: pageRouteBuilderForAssetPicker);
         break;
-      case AssetPickerFromType.camera:
+      case FlAssetPickerFromType.camera:
         pickFromCamera(context,
             useRootNavigator: useRootNavigator,
             pageRouteBuilder: pageRouteBuilderForCameraPicker);

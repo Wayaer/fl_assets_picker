@@ -1,4 +1,4 @@
-import 'package:assets_picker/assets_picker.dart';
+import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_waya/flutter_waya.dart';
 
@@ -19,7 +19,7 @@ class _HomePageState extends State<_HomePage> {
     return ExtendedScaffold(
         appBar: AppBar(title: const Text('Assets Picker')),
         children: [
-          AssetPickerView(
+          FlAssetPickerView(
               entryConfig: const PickerAssetEntryBuilderConfig(radius: 6),
               onChanged: (List<AssetEntry> value) {
                 log(value.length);

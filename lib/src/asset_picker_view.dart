@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:assets_picker/src/asset_entry_builder.dart';
-import 'package:assets_picker/src/controller.dart';
-import 'package:assets_picker/src/preview.dart';
 import 'package:extended_image/extended_image.dart';
+import 'package:fl_assets_picker/src/asset_entry_builder.dart';
+import 'package:fl_assets_picker/src/controller.dart';
+import 'package:fl_assets_picker/src/preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -129,13 +129,13 @@ typedef PickerIconBuilder = Widget Function();
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
 typedef PickerFromRequestTypesBuilder = Widget Function(
-    BuildContext context, List<AssetPickerFromRequestTypes> fromTypes);
+    BuildContext context, List<FlAssetPickerFromRequestTypes> fromTypes);
 
 typedef PickerErrorCallback = void Function(String msg);
 
 typedef PickerEntryBuilder = Widget Function(AssetModel entry, int index);
 
-enum AssetPickerFromType {
+enum FlAssetPickerFromType {
   /// 从图库中选择
   assets,
 
@@ -143,17 +143,17 @@ enum AssetPickerFromType {
   camera,
 }
 
-class AssetPickerFromRequestTypes {
-  const AssetPickerFromRequestTypes(
+class FlAssetPickerFromRequestTypes {
+  const FlAssetPickerFromRequestTypes(
       {required this.fromType, required this.text, required this.requestTypes});
 
-  final AssetPickerFromType fromType;
+  final FlAssetPickerFromType fromType;
   final String text;
   final List<RequestType> requestTypes;
 }
 
-class AssetPickerView extends StatefulWidget {
-  const AssetPickerView({
+class FlAssetPickerView extends StatefulWidget {
+  const FlAssetPickerView({
     Key? key,
     this.onChanged,
     this.controller,
@@ -167,12 +167,12 @@ class AssetPickerView extends StatefulWidget {
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
     this.fromRequestTypes = const [
-      AssetPickerFromRequestTypes(
-          fromType: AssetPickerFromType.assets,
+      FlAssetPickerFromRequestTypes(
+          fromType: FlAssetPickerFromType.assets,
           text: '图库选择',
           requestTypes: [RequestType.image, RequestType.video]),
-      AssetPickerFromRequestTypes(
-          fromType: AssetPickerFromType.camera,
+      FlAssetPickerFromRequestTypes(
+          fromType: FlAssetPickerFromType.camera,
           text: '相机拍摄',
           requestTypes: [RequestType.image, RequestType.video]),
     ],
@@ -187,13 +187,13 @@ class AssetPickerView extends StatefulWidget {
   final List<ExtendedAssetModel> initList;
 
   /// 请求类型
-  final List<AssetPickerFromRequestTypes> fromRequestTypes;
+  final List<FlAssetPickerFromRequestTypes> fromRequestTypes;
 
   /// 资源选择变化
   final ValueChanged<List<AssetEntry>>? onChanged;
 
   /// 资源控制器
-  final AssetsPickerController? controller;
+  final FlAssetsPickerController? controller;
 
   final PickerWrapBuilderConfig wrapConfig;
 
@@ -231,11 +231,11 @@ class AssetPickerView extends StatefulWidget {
       pageRouteBuilderForAssetPicker;
 
   @override
-  _AssetPickerViewState createState() => _AssetPickerViewState();
+  State<FlAssetPickerView> createState() => _FlAssetPickerViewState();
 }
 
-class _AssetPickerViewState extends State<AssetPickerView> {
-  late AssetsPickerController controller;
+class _FlAssetPickerViewState extends State<FlAssetPickerView> {
+  late FlAssetsPickerController controller;
   List<ExtendedAssetModel> allAsset = [];
 
   @override
@@ -245,7 +245,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
   }
 
   void initialize() {
-    controller = widget.controller ?? AssetsPickerController();
+    controller = widget.controller ?? FlAssetsPickerController();
     controller.addListener(listener);
   }
 
@@ -254,7 +254,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
   }
 
   @override
-  void didUpdateWidget(covariant AssetPickerView oldWidget) {
+  void didUpdateWidget(covariant FlAssetPickerView oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != null &&
         controller.hashCode != widget.controller.hashCode) {
@@ -332,7 +332,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     }
     if (config.radius != null) {
       builder = ClipRRect(
-          child: builder, borderRadius: BorderRadius.circular(config.radius!));
+          borderRadius: BorderRadius.circular(config.radius!), child: builder);
     }
     return GestureDetector(
         onTap: () => previewAssets(entry.value),
@@ -344,7 +344,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (BuildContext context) => PreviewAssets(
+        builder: (BuildContext context) => FlPreviewAssets(
               itemCount: allAsset.length,
               controller:
                   ExtendedPageController(initialPage: allAsset.indexOf(asset)),
@@ -370,7 +370,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
         widget.errorCallback?.call('最多添加${widget.maxVideoCount}个视频');
       }
     }
-    controller.showPickFromType(context, widget.fromRequestTypes,
+    controller.showPickFromType(context, mounted, widget.fromRequestTypes,
         fromRequestTypesBuilder: widget.fromRequestTypesBuilder,
         useRootNavigator: widget.useRootNavigator,
         pageRouteBuilderForCameraPicker: widget.pageRouteBuilderForCameraPicker,
@@ -392,7 +392,7 @@ class _AssetPickerViewState extends State<AssetPickerView> {
     }
     if (config.radius != null) {
       icon = ClipRRect(
-          child: icon, borderRadius: BorderRadius.circular(config.radius!));
+          borderRadius: BorderRadius.circular(config.radius!), child: icon);
     }
     return GestureDetector(
         onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? icon);
@@ -409,20 +409,20 @@ class _AssetPickerViewState extends State<AssetPickerView> {
 class PickFromTypeBuild extends StatelessWidget {
   const PickFromTypeBuild(this.list, {Key? key}) : super(key: key);
 
-  final List<AssetPickerFromRequestTypes> list;
+  final List<FlAssetPickerFromRequestTypes> list;
 
   @override
   Widget build(BuildContext context) {
     final actions = list
         .map((entry) => CupertinoActionSheetAction(
-            child: Text(entry.text),
             onPressed: () => Navigator.of(context).maybePop(entry),
-            isDefaultAction: true))
+            isDefaultAction: true,
+            child: Text(entry.text)))
         .toList();
     actions.add(CupertinoActionSheetAction(
-        child: const Text('取消'),
         onPressed: Navigator.of(context).maybePop,
-        isDefaultAction: true));
+        isDefaultAction: true,
+        child: const Text('取消')));
     return CupertinoActionSheet(actions: actions);
   }
 }

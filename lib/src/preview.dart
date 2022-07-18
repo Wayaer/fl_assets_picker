@@ -3,14 +3,14 @@ import 'dart:ui' as ui;
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
-class PreviewAssets extends StatelessWidget {
-  const PreviewAssets(
+class FlPreviewAssets extends StatelessWidget {
+  const FlPreviewAssets(
       {Key? key,
       required this.itemCount,
       required this.itemBuilder,
       this.controller,
-      this.header,
-      this.footer,
+      this.close,
+      this.overlay,
       this.pageSnapping = true,
       this.reverse = false,
       this.scrollDirection = Axis.horizontal,
@@ -28,33 +28,45 @@ class PreviewAssets extends StatelessWidget {
   final CanScrollPage? canScrollPage;
   final ScrollPhysics? physics;
   final ValueChanged<int>? onPageChanged;
-  final Widget? header;
-  final Widget? footer;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
 
   @override
   Widget build(BuildContext context) {
     return Material(
         color: Colors.black.withOpacity(0.9),
-        child: Column(children: <Widget>[
-          header ??
+        child: Stack(children: <Widget>[
+          Container(
+              width: double.infinity,
+              height: double.infinity,
+              padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).viewPadding.top,
+                  bottom: MediaQuery.of(context).viewPadding.bottom),
+              child: ExtendedImageGesturePageView.builder(
+                  controller: controller,
+                  itemCount: itemCount,
+                  itemBuilder: itemBuilder,
+                  physics: physics,
+                  scrollDirection: scrollDirection,
+                  reverse: reverse,
+                  pageSnapping: pageSnapping,
+                  onPageChanged: onPageChanged,
+                  canScrollPage: canScrollPage)),
+          close ??
               Container(
                   alignment: Alignment.bottomRight,
-                  margin: const EdgeInsets.only(right: 12),
-                  height: MediaQueryData.fromWindow(ui.window).padding.top + 26,
+                  margin: EdgeInsets.only(
+                      right: 12,
+                      top:
+                          MediaQueryData.fromWindow(ui.window).viewPadding.top +
+                              12),
+                  height: 40,
                   child: const CloseButton(color: Colors.white)),
-          Expanded(
-              child: ExtendedImageGesturePageView.builder(
-            controller: controller,
-            itemCount: itemCount,
-            itemBuilder: itemBuilder,
-            physics: physics,
-            scrollDirection: scrollDirection,
-            reverse: reverse,
-            pageSnapping: pageSnapping,
-            onPageChanged: onPageChanged,
-            canScrollPage: canScrollPage,
-          )),
-          if (footer != null) footer!
+          if (overlay != null) overlay!,
         ]));
   }
 }

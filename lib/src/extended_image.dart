@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:assets_picker/assets_picker.dart';
+import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
 typedef ExtendedImageLoadStateBuilder = Widget Function(ExtendedImageState);
