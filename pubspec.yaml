@@ -14,7 +14,7 @@ dependencies:
   extended_image: ^6.2.1
   photo_manager: ^2.1.4
   video_player: ^2.4.5
-  fl_video: ^1.0.0
+  fl_video: ^1.0.1
   wakelock: ^0.6.2
 
 dev_dependencies:
