@@ -96,9 +96,7 @@ class PickerExtendedImage extends StatelessWidget {
                 fit: fit);
           case LoadState.failed:
             return GestureDetector(
-                onTap: () {
-                  state.reLoadImage();
-                },
+                onTap: state.reLoadImage,
                 child: Center(
                     child:
                         error?.call(state) ?? const Icon(Icons.info_outline)));

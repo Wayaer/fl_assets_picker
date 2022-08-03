@@ -15,6 +15,8 @@ class AssetModel {
       {required this.assetType, this.path, this.file, this.url, this.bytes})
       : assert(path != null || file != null || url != null || bytes != null);
 
+  /// [path]>[file]>[bytes]>[url]
+
   /// 本地资源路径
   final String? path;
 
@@ -38,6 +40,7 @@ class ExtendedAssetModel extends AssetModel {
     this.compressPath,
     this.videoCoverPath,
     this.imageCropPath,
+    required this.id,
     required AssetType assetType,
     String? path,
     File? file,
@@ -49,6 +52,7 @@ class ExtendedAssetModel extends AssetModel {
             file: file,
             url: url,
             bytes: bytes);
+  final String id;
 
   /// 缩略图
   final AssetModel? thumbnail;
@@ -181,7 +185,11 @@ class FlAssetPickerView extends StatefulWidget {
     this.fromRequestTypesBuilder,
     this.entryConfig = const PickerAssetEntryBuilderConfig(),
     this.initList = const [],
+    this.showDelete = true,
   }) : super(key: key);
+
+  /// 是否显示删除按钮
+  final bool showDelete;
 
   /// 默认初始资源
   final List<ExtendedAssetModel> initList;
@@ -276,6 +284,7 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
               bytes: entry.thumbnailDataAsync);
         }
         return ExtendedAssetModel(
+            id: entry.id,
             originFile: entry.originFileAsync,
             assetType: entry.type,
             compressPath: entry.compressPath,
@@ -334,9 +343,29 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
       builder = ClipRRect(
           borderRadius: BorderRadius.circular(config.radius!), child: builder);
     }
-    return GestureDetector(
+
+    builder = GestureDetector(
         onTap: () => previewAssets(entry.value),
         child: widget.entryBuilder?.call(entry.value, entry.key) ?? builder);
+    if (widget.showDelete) {
+      builder = Stack(children: [
+        builder,
+        Positioned(
+            right: 2,
+            top: 2,
+            child: GestureDetector(
+              onTap: () => controller.deleteAsset(assetEntry.id),
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.8),
+                      shape: BoxShape.circle),
+                  padding: const EdgeInsets.all(2),
+                  child:
+                      const Icon(Icons.clear, size: 12, color: Colors.white)),
+            ))
+      ]);
+    }
+    return builder;
   }
 
   void previewAssets(ExtendedAssetModel asset) async {
@@ -370,7 +399,10 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
         widget.errorCallback?.call('最多添加${widget.maxVideoCount}个视频');
       }
     }
-    controller.showPickFromType(context, mounted, widget.fromRequestTypes,
+    controller.pickFromType(
+        context,
+        mounted: mounted,
+        widget.fromRequestTypes,
         fromRequestTypesBuilder: widget.fromRequestTypesBuilder,
         useRootNavigator: widget.useRootNavigator,
         pageRouteBuilderForCameraPicker: widget.pageRouteBuilderForCameraPicker,
@@ -417,12 +449,15 @@ class PickFromTypeBuild extends StatelessWidget {
         .map((entry) => CupertinoActionSheetAction(
             onPressed: () => Navigator.of(context).maybePop(entry),
             isDefaultAction: true,
-            child: Text(entry.text)))
+            child: Text(entry.text,
+                style: const TextStyle(fontWeight: FontWeight.normal))))
         .toList();
     actions.add(CupertinoActionSheetAction(
         onPressed: Navigator.of(context).maybePop,
         isDefaultAction: true,
-        child: const Text('取消')));
+        child: const Text('取消',
+            style:
+                TextStyle(fontWeight: FontWeight.normal, color: Colors.red))));
     return CupertinoActionSheet(actions: actions);
   }
 }

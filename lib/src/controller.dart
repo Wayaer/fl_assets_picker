@@ -6,8 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
-enum FileLoadType { network, file, assets }
-
 enum ImageCompressionRatio {
   /// 最高画质
   high,
@@ -17,20 +15,6 @@ enum ImageCompressionRatio {
 
   ///最低
   low,
-}
-
-class FlAssetsPickerView extends StatefulWidget {
-  const FlAssetsPickerView({Key? key}) : super(key: key);
-
-  @override
-  State<FlAssetsPickerView> createState() => _FlAssetsPickerViewState();
-}
-
-class _FlAssetsPickerViewState extends State<FlAssetsPickerView> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
-  }
 }
 
 typedef FlAssetsRepeatBuild = Future<File?> Function(AssetEntity entity);
@@ -77,6 +61,11 @@ class FlAssetsPickerController with ChangeNotifier {
     if (audio != null) _audioCompress = audio;
   }
 
+  void deleteAsset(String id) {
+    currentAssetsEntry.removeWhere((element) => id == element.id);
+    notifyListeners();
+  }
+
   /// 更新配置信息
   void updateConfig(
       {AssetPickerConfig? assetConfig, CameraPickerConfig? cameraConfig}) {
@@ -88,7 +77,7 @@ class FlAssetsPickerController with ChangeNotifier {
   Future<List<AssetEntry>?> pickAssets(BuildContext context,
       {bool useRootNavigator = true,
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
-    final List<AssetEntity>? assets = await AssetPicker.pickAssets(context,
+    final List<AssetEntity>? assets = await showPickerAssets(context,
         pickerConfig: assetConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -111,7 +100,7 @@ class FlAssetsPickerController with ChangeNotifier {
     bool useRootNavigator = true,
     CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilder,
   }) async {
-    final AssetEntity? entity = await CameraPicker.pickFromCamera(context,
+    final AssetEntity? entity = await showPickerFromCamera(context,
         pickerConfig: cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -152,42 +141,80 @@ class FlAssetsPickerController with ChangeNotifier {
         imageCropPath: imageCropPath);
   }
 
-  Future<void> showPickFromType(
+  Future<void> pickFromType(
     BuildContext context,
-    bool mounted,
     List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
+    bool mounted = true,
     PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
     bool useRootNavigator = true,
     CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilderForCameraPicker,
     AssetPickerPageRouteBuilder<List<AssetEntity>>?
         pageRouteBuilderForAssetPicker,
   }) async {
-    FlAssetPickerFromRequestTypes? type;
-    if (fromRequestTypes.length == 1) {
-      type = fromRequestTypes.first;
-    } else {
-      type = await showModalBottomSheet<FlAssetPickerFromRequestTypes?>(
-          context: context,
-          backgroundColor: Colors.transparent,
-          builder: (BuildContext context) =>
-              fromRequestTypesBuilder?.call(context, fromRequestTypes) ??
-              PickFromTypeBuild(fromRequestTypes));
-    }
-    if (type == null) return;
-    if (!mounted) return;
-    switch (type.fromType) {
+    FlAssetPickerFromType? type = await showPickFromType(
+        context, fromRequestTypes,
+        fromRequestTypesBuilder: fromRequestTypesBuilder, mounted: mounted);
+    switch (type) {
       case FlAssetPickerFromType.assets:
+        if (!mounted) return;
         pickAssets(context,
             useRootNavigator: useRootNavigator,
             pageRouteBuilder: pageRouteBuilderForAssetPicker);
         break;
       case FlAssetPickerFromType.camera:
+        if (!mounted) return;
         pickFromCamera(context,
             useRootNavigator: useRootNavigator,
             pageRouteBuilder: pageRouteBuilderForCameraPicker);
         break;
+      default:
+        return;
     }
   }
+}
+
+/// 选择图片
+Future<List<AssetEntity>?> showPickerAssets(BuildContext context,
+        {bool useRootNavigator = true,
+        AssetPickerConfig pickerConfig = const AssetPickerConfig(),
+        AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) =>
+    AssetPicker.pickAssets(context,
+        pickerConfig: pickerConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+
+/// 通过相机拍照
+Future<AssetEntity?> showPickerFromCamera(
+  BuildContext context, {
+  bool useRootNavigator = true,
+  CameraPickerConfig pickerConfig = const CameraPickerConfig(),
+  CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilder,
+}) =>
+    CameraPicker.pickFromCamera(context,
+        pickerConfig: pickerConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+
+Future<FlAssetPickerFromType?> showPickFromType(
+  BuildContext context,
+  List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
+  bool mounted = true,
+  PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
+}) async {
+  FlAssetPickerFromRequestTypes? type;
+  if (fromRequestTypes.length == 1) {
+    type = fromRequestTypes.first;
+  } else {
+    type = await showModalBottomSheet<FlAssetPickerFromRequestTypes?>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) =>
+            fromRequestTypesBuilder?.call(context, fromRequestTypes) ??
+            PickFromTypeBuild(fromRequestTypes));
+  }
+  if (type == null) return null;
+  if (!mounted) return null;
+  return type.fromType;
 }
 
 class AssetEntry extends AssetEntity {

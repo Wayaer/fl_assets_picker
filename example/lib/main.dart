@@ -6,14 +6,9 @@ void main() {
   runApp(const ExtendedWidgetsApp(home: _HomePage()));
 }
 
-class _HomePage extends StatefulWidget {
+class _HomePage extends StatelessWidget {
   const _HomePage({Key? key}) : super(key: key);
 
-  @override
-  State<_HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<_HomePage> {
   @override
   Widget build(BuildContext context) {
     return ExtendedScaffold(
