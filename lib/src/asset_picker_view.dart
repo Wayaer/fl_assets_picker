@@ -233,7 +233,7 @@ class FlAssetPickerView extends StatefulWidget {
 
   final PickerFromRequestTypesBuilder? fromRequestTypesBuilder;
   final bool useRootNavigator = true;
-  final CameraPickerPageRouteBuilder<AssetEntity>?
+  final CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
       pageRouteBuilderForCameraPicker;
   final AssetPickerPageRouteBuilder<List<AssetEntity>>?
       pageRouteBuilderForAssetPicker;

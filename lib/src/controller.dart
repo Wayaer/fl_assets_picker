@@ -98,7 +98,8 @@ class FlAssetsPickerController with ChangeNotifier {
   Future<AssetEntry?> pickFromCamera(
     BuildContext context, {
     bool useRootNavigator = true,
-    CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilder,
+    CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
+        pageRouteBuilder,
   }) async {
     final AssetEntity? entity = await showPickerFromCamera(context,
         pickerConfig: cameraConfig,
@@ -147,7 +148,8 @@ class FlAssetsPickerController with ChangeNotifier {
     bool mounted = true,
     PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
     bool useRootNavigator = true,
-    CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilderForCameraPicker,
+    CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
+        pageRouteBuilderForCameraPicker,
     AssetPickerPageRouteBuilder<List<AssetEntity>>?
         pageRouteBuilderForAssetPicker,
   }) async {
@@ -188,7 +190,7 @@ Future<AssetEntity?> showPickerFromCamera(
   BuildContext context, {
   bool useRootNavigator = true,
   CameraPickerConfig pickerConfig = const CameraPickerConfig(),
-  CameraPickerPageRouteBuilder<AssetEntity>? pageRouteBuilder,
+  CameraPickerPageRoute<AssetEntity> Function(Widget picker)? pageRouteBuilder,
 }) =>
     CameraPicker.pickFromCamera(context,
         pickerConfig: pickerConfig,
