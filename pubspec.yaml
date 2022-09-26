@@ -1,9 +1,10 @@
 name: fl_assets_picker
-description: assets picker
+description: fl_assets_picker is used to take photos of the device assets selection and camera and record videos
 version: 0.1.0
+repository: https://github.com/Wayaer/fl_assets_picker.git
 
 environment:
-  sdk: '>=2.17.1 <3.0.0'
+  sdk: '>=2.18.0 <3.0.0'
   flutter: '>=3.0.0'
 
 dependencies:
