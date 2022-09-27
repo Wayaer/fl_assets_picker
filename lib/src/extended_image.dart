@@ -57,18 +57,17 @@ class PickerExtendedImage extends StatelessWidget {
             imageCacheName: bytes.hashCode.hashCode.toString()),
         super(key: key);
 
-  static ImageProvider getImageProvider(AssetModel asset) {
+  static ImageProvider? assetEntityToImageProvider(
+      ExtendedAssetEntity assetEntity) {
     ImageProvider? provider;
-    if (asset.path != null) {
-      provider = ExtendedAssetImageProvider(asset.path!);
-    } else if (asset.file != null) {
-      provider = ExtendedFileImageProvider(asset.file!);
-    } else if (asset.bytes != null) {
-      provider = ExtendedMemoryImageProvider(asset.bytes!);
-    } else if (asset.url != null) {
-      provider = ExtendedNetworkImageProvider(asset.url!);
+    if (assetEntity.path != null) {
+      provider = ExtendedAssetImageProvider(assetEntity.path!);
+    } else if (assetEntity.fileAsync != null) {
+      provider = ExtendedFileImageProvider(assetEntity.fileAsync!);
+    } else if (assetEntity.url != null) {
+      provider = ExtendedNetworkImageProvider(assetEntity.url!);
     }
-    return provider!;
+    return provider;
   }
 
   final ImageProvider image;

@@ -1,77 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:extended_image/extended_image.dart';
-import 'package:fl_assets_picker/src/asset_entry_builder.dart';
-import 'package:fl_assets_picker/src/controller.dart';
-import 'package:fl_assets_picker/src/preview.dart';
+import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-
-class AssetModel {
-  AssetModel(
-      {required this.assetType, this.path, this.file, this.url, this.bytes})
-      : assert(path != null || file != null || url != null || bytes != null);
-
-  /// [path]>[file]>[bytes]>[url]
-
-  /// 本地资源路径
-  final String? path;
-
-  /// 内置存储文件路径
-  final File? file;
-
-  /// 网络链接
-  final String? url;
-
-  /// bytes 数组 仅支持图片预览
-  final Uint8List? bytes;
-
-  /// 资源类型  [AssetType.image]、[AssetType.video]、[AssetType.audio]、[AssetType.other]
-  final AssetType assetType;
-}
-
-class ExtendedAssetModel extends AssetModel {
-  ExtendedAssetModel({
-    this.thumbnail,
-    this.originFile,
-    this.compressPath,
-    this.videoCoverPath,
-    this.imageCropPath,
-    required this.id,
-    required AssetType assetType,
-    String? path,
-    File? file,
-    String? url,
-    Uint8List? bytes,
-  }) : super(
-            assetType: assetType,
-            path: path,
-            file: file,
-            url: url,
-            bytes: bytes);
-  final String id;
-
-  /// 缩略图
-  final AssetModel? thumbnail;
-
-  /// 只有通过本地选择的资源才原始文件
-  final File? originFile;
-
-  /// 压缩后的路径
-  /// 只有通过本地选择的资源 并添加了压缩方法
-  final File? compressPath;
-
-  /// 视频封面
-  /// 只有通过本地选择的资源 并添加了获取封面的方法
-  final File? videoCoverPath;
-
-  /// 图片裁剪后的路径
-  /// 只有通过本地选择的资源 并添加了裁剪的方法
-  final File? imageCropPath;
-}
 
 class PickerAssetEntryBuilderConfig {
   const PickerAssetEntryBuilderConfig(
@@ -137,7 +68,8 @@ typedef PickerFromRequestTypesBuilder = Widget Function(
 
 typedef PickerErrorCallback = void Function(String msg);
 
-typedef PickerEntryBuilder = Widget Function(AssetModel entry, int index);
+typedef PickerEntryBuilder = Widget Function(
+    ExtendedAssetEntity entry, int index);
 
 enum FlAssetPickerFromType {
   /// 从图库中选择
@@ -149,11 +81,13 @@ enum FlAssetPickerFromType {
 
 class FlAssetPickerFromRequestTypes {
   const FlAssetPickerFromRequestTypes(
-      {required this.fromType, required this.text, required this.requestTypes});
+      {required this.fromType, required this.text, this.requestType});
 
   final FlAssetPickerFromType fromType;
   final String text;
-  final List<RequestType> requestTypes;
+
+  /// [FlAssetPickerFromType.values];
+  final RequestType? requestType;
 }
 
 class FlAssetPickerView extends StatefulWidget {
@@ -167,38 +101,37 @@ class FlAssetPickerView extends StatefulWidget {
     this.errorCallback,
     this.maxVideoCount = 1,
     this.maxCount = 9,
-    this.maxSingleCount = 1,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
     this.fromRequestTypes = const [
       FlAssetPickerFromRequestTypes(
           fromType: FlAssetPickerFromType.assets,
           text: '图库选择',
-          requestTypes: [RequestType.image, RequestType.video]),
+          requestType: RequestType.common),
       FlAssetPickerFromRequestTypes(
           fromType: FlAssetPickerFromType.camera,
           text: '相机拍摄',
-          requestTypes: [RequestType.image, RequestType.video]),
+          requestType: RequestType.common),
     ],
     this.pageRouteBuilderForCameraPicker,
     this.pageRouteBuilderForAssetPicker,
     this.fromRequestTypesBuilder,
     this.entryConfig = const PickerAssetEntryBuilderConfig(),
-    this.initList = const [],
-    this.showDelete = true,
+    this.initialData = const [],
+    this.allowDelete = true,
   }) : super(key: key);
 
   /// 是否显示删除按钮
-  final bool showDelete;
+  final bool allowDelete;
 
   /// 默认初始资源
-  final List<ExtendedAssetModel> initList;
+  final List<ExtendedAssetEntity> initialData;
 
   /// 请求类型
   final List<FlAssetPickerFromRequestTypes> fromRequestTypes;
 
   /// 资源选择变化
-  final ValueChanged<List<AssetEntry>>? onChanged;
+  final ValueChanged<List<ExtendedAssetEntity>>? onChanged;
 
   /// 资源控制器
   final FlAssetsPickerController? controller;
@@ -228,9 +161,6 @@ class FlAssetPickerView extends StatefulWidget {
   /// 最多选择几个资源
   final int maxCount;
 
-  /// 单次最多选择几个资源
-  final int maxSingleCount;
-
   final PickerFromRequestTypesBuilder? fromRequestTypesBuilder;
   final bool useRootNavigator = true;
   final CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
@@ -240,11 +170,77 @@ class FlAssetPickerView extends StatefulWidget {
 
   @override
   State<FlAssetPickerView> createState() => _FlAssetPickerViewState();
+
+  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  static List<ExtendedAssetEntity> convertFiles(List<File> paths,
+      {AssetType assetsType = AssetType.image}) {
+    List<ExtendedAssetEntity> list = [];
+    for (var element in paths) {
+      if (element.existsSync()) {
+        list.add(
+            ExtendedAssetEntity.fromFile(file: element, assetType: assetsType));
+      }
+    }
+    return list;
+  }
+
+  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  static List<ExtendedAssetEntity> convertPaths(List<String> paths,
+      {AssetType assetsType = AssetType.image}) {
+    List<ExtendedAssetEntity> list = [];
+    for (var element in paths) {
+      if (element.isNotEmpty) {
+        list.add(
+            ExtendedAssetEntity.fromPath(path: element, assetType: assetsType));
+      }
+    }
+    return list;
+  }
+
+  /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  static List<ExtendedAssetEntity> convertUrls(String url,
+      {AssetType assetsType = AssetType.image}) {
+    List<ExtendedAssetEntity> list = [];
+    if (url.isEmpty) return list;
+    if (url.contains(',')) {
+      final urls = url.split(',');
+      for (var element in urls) {
+        if (element.isNotEmpty) {
+          list.add(
+              ExtendedAssetEntity.fromUrl(url: element, assetType: assetsType));
+        }
+      }
+    } else {
+      list.add(ExtendedAssetEntity.fromUrl(assetType: assetsType, url: url));
+    }
+    return list;
+  }
+
+  /// 具体的数据  顺序为 url > path > file
+  static List<String> toStringList(List<ExtendedAssetEntity> list) {
+    List<String> value = [];
+    for (var element in list) {
+      if (element.realValueStr != null) {
+        value.add(element.realValueStr!);
+      }
+    }
+    return value;
+  }
+
+  /// 具体的数据  顺序为 url > path > file
+  static List<dynamic> toDynamicList(List<ExtendedAssetEntity> list) {
+    List<dynamic> value = [];
+    for (var element in list) {
+      if (element.realValue != null) {
+        value.add(element.realValue!);
+      }
+    }
+    return value;
+  }
 }
 
 class _FlAssetPickerViewState extends State<FlAssetPickerView> {
   late FlAssetsPickerController controller;
-  List<ExtendedAssetModel> allAsset = [];
 
   @override
   void initState() {
@@ -254,51 +250,23 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
 
   void initialize() {
     controller = widget.controller ?? FlAssetsPickerController();
+    controller.setWidget(widget);
+    controller.allAssetEntity.insertAll(0, widget.initialData);
     controller.addListener(listener);
   }
 
   void listener() {
-    setState(() {});
+    widget.onChanged?.call(controller.allAssetEntity);
+    if (mounted) setState(() {});
   }
-
-  @override
-  void didUpdateWidget(covariant FlAssetPickerView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.controller != null &&
-        controller.hashCode != widget.controller.hashCode) {
-      controller.removeListener(listener);
-      controller.dispose();
-      controller = widget.controller!;
-      setState(() {});
-    }
-  }
-
-  List<ExtendedAssetModel> get currentAssetsEntryToAsset =>
-      controller.currentAssetsEntry.map((entry) {
-        AssetModel? thumbnail;
-        if (entry.thumbnailDataAsync != null) {
-          entry.title;
-          thumbnail = AssetModel(
-              assetType: AssetType.image,
-              file: entry.videoCoverPath,
-              bytes: entry.thumbnailDataAsync);
-        }
-        return ExtendedAssetModel(
-            id: entry.id,
-            originFile: entry.originFileAsync,
-            assetType: entry.type,
-            compressPath: entry.compressPath,
-            videoCoverPath: entry.videoCoverPath,
-            imageCropPath: entry.imageCropPath,
-            file: entry.fileAsync,
-            thumbnail: thumbnail);
-      }).toList();
 
   @override
   Widget build(BuildContext context) {
-    allAsset = currentAssetsEntryToAsset..insertAll(0, widget.initList);
-    final children =
-        allAsset.asMap().entries.map((entry) => entryBuilder(entry)).toList();
+    final children = controller.allAssetEntity
+        .asMap()
+        .entries
+        .map((entry) => entryBuilder(entry))
+        .toList();
     if (widget.enablePicker) children.add(pickerBuilder);
     if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
     final wrapConfig = widget.wrapConfig;
@@ -318,13 +286,13 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
             children: children));
   }
 
-  Widget entryBuilder(MapEntry<int, ExtendedAssetModel> entry) {
+  Widget entryBuilder(MapEntry<int, ExtendedAssetEntity> entry) {
     final assetEntry = entry.value;
     Widget builder = BuildAssetEntry(assetEntry);
     final config = widget.entryConfig;
     if (config.overlay != null ||
-        assetEntry.assetType == AssetType.video ||
-        assetEntry.assetType == AssetType.audio) {
+        assetEntry.type == AssetType.video ||
+        assetEntry.type == AssetType.audio) {
       builder = Stack(children: [
         builder,
         if (config.overlay != null) config.overlay!,
@@ -347,7 +315,7 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
     builder = GestureDetector(
         onTap: () => previewAssets(entry.value),
         child: widget.entryBuilder?.call(entry.value, entry.key) ?? builder);
-    if (widget.showDelete) {
+    if (widget.allowDelete) {
       builder = Stack(children: [
         builder,
         Positioned(
@@ -368,45 +336,30 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
     return builder;
   }
 
-  void previewAssets(ExtendedAssetModel asset) async {
+  void previewAssets(ExtendedAssetEntity asset) async {
+    final currentAssetsEntry = controller.allAssetEntity;
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         builder: (BuildContext context) => FlPreviewAssets(
-              itemCount: allAsset.length,
-              controller:
-                  ExtendedPageController(initialPage: allAsset.indexOf(asset)),
+              itemCount: currentAssetsEntry.length,
+              controller: ExtendedPageController(
+                  initialPage: currentAssetsEntry.indexOf(asset)),
               itemBuilder: (_, int index) => Center(
-                  child: BuildAssetEntry(allAsset[index], isThumbnail: false)),
+                  child: BuildAssetEntry(currentAssetsEntry[index],
+                      isThumbnail: false)),
             ));
   }
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    final assetsEntry = controller.currentAssetsEntry;
+    final assetsEntry = controller.allAssetEntity;
     if (assetsEntry.length >= widget.maxCount) {
       widget.errorCallback?.call('最多选择${widget.maxCount}个');
       return;
     }
-    final requestType = controller.assetConfig.requestType;
-    if (requestType.containsVideo()) {
-      int hasVideo = 0;
-      for (var element in assetsEntry) {
-        if (element.type == AssetType.video) hasVideo += 1;
-      }
-      if (hasVideo >= widget.maxVideoCount) {
-        widget.errorCallback?.call('最多添加${widget.maxVideoCount}个视频');
-      }
-    }
-    controller.pickFromType(
-        context,
-        mounted: mounted,
-        widget.fromRequestTypes,
-        fromRequestTypesBuilder: widget.fromRequestTypesBuilder,
-        useRootNavigator: widget.useRootNavigator,
-        pageRouteBuilderForCameraPicker: widget.pageRouteBuilderForCameraPicker,
-        pageRouteBuilderForAssetPicker: widget.pageRouteBuilderForAssetPicker);
+    controller.pickFromType(context, mounted: mounted);
   }
 
   Widget get pickerBuilder {
@@ -452,12 +405,13 @@ class PickFromTypeBuild extends StatelessWidget {
             child: Text(entry.text,
                 style: const TextStyle(fontWeight: FontWeight.normal))))
         .toList();
-    actions.add(CupertinoActionSheetAction(
-        onPressed: Navigator.of(context).maybePop,
-        isDefaultAction: true,
-        child: const Text('取消',
-            style:
-                TextStyle(fontWeight: FontWeight.normal, color: Colors.red))));
-    return CupertinoActionSheet(actions: actions);
+    return CupertinoActionSheet(
+        cancelButton: CupertinoActionSheetAction(
+            onPressed: Navigator.of(context).maybePop,
+            isDefaultAction: true,
+            child: const Text('取消',
+                style: TextStyle(
+                    fontWeight: FontWeight.normal, color: Colors.red))),
+        actions: actions);
   }
 }

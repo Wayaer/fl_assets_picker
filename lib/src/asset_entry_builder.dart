@@ -5,12 +5,12 @@ import 'package:flutter/material.dart';
 class BuildAssetEntry extends StatelessWidget {
   const BuildAssetEntry(this.entry, {Key? key, this.isThumbnail = true})
       : super(key: key);
-  final ExtendedAssetModel entry;
+  final ExtendedAssetEntity entry;
   final bool isThumbnail;
 
   @override
   Widget build(BuildContext context) {
-    switch (entry.assetType) {
+    switch (entry.type) {
       case AssetType.other:
         return AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
       case AssetType.image:
@@ -26,16 +26,16 @@ class BuildAssetEntry extends StatelessWidget {
 class AssetEntryVideoBuild extends StatelessWidget {
   const AssetEntryVideoBuild(this.asset, {Key? key, this.isThumbnail = false})
       : super(key: key);
-  final ExtendedAssetModel asset;
+  final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
   @override
   Widget build(BuildContext context) {
-    if (asset.assetType == AssetType.video) {
+    if (asset.type == AssetType.video) {
       Widget? current;
       ImageProvider? imageProvider;
-      if (asset.thumbnail != null) {
-        imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
+      if (asset.thumbnailDataAsync != null) {
+        imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
       }
       if (asset.videoCoverPath != null) {
         imageProvider = ExtendedFileImageProvider(asset.videoCoverPath!);
@@ -46,7 +46,10 @@ class AssetEntryVideoBuild extends StatelessWidget {
         current = PickerExtendedImage(imageProvider, fit: fit);
       } else {
         current = PickerFlVideoPlayer(
-            file: asset.file, path: asset.path, url: asset.url, cover: current);
+            file: asset.fileAsync,
+            path: asset.path,
+            url: asset.url,
+            cover: current);
       }
       return current;
     }
@@ -57,24 +60,23 @@ class AssetEntryVideoBuild extends StatelessWidget {
 class AssetEntryImageBuild extends StatelessWidget {
   const AssetEntryImageBuild(this.asset, {Key? key, this.isThumbnail = false})
       : super(key: key);
-  final ExtendedAssetModel asset;
+  final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
   @override
   Widget build(BuildContext context) {
-    if (asset.assetType == AssetType.image) {
+    if (asset.type == AssetType.image) {
       ImageProvider? imageProvider;
-      if (asset.thumbnail != null) {
-        imageProvider = PickerExtendedImage.getImageProvider(asset.thumbnail!);
+      if (asset.thumbnailDataAsync != null) {
+        imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
       }
       BoxFit fit = BoxFit.cover;
       if (!isThumbnail) fit = BoxFit.contain;
-
-      return PickerExtendedImage(
-          isThumbnail && imageProvider != null
-              ? imageProvider
-              : PickerExtendedImage.getImageProvider(asset),
-          fit: fit);
+      imageProvider = isThumbnail && imageProvider != null
+          ? imageProvider
+          : PickerExtendedImage.assetEntityToImageProvider(asset);
+      if (imageProvider == null) return const SizedBox();
+      return PickerExtendedImage(imageProvider, fit: fit);
     }
     return const PreviewSupported();
   }
@@ -83,17 +85,16 @@ class AssetEntryImageBuild extends StatelessWidget {
 class AssetEntryOtherBuild extends StatelessWidget {
   const AssetEntryOtherBuild(this.asset, {Key? key, this.isThumbnail = false})
       : super(key: key);
-  final ExtendedAssetModel asset;
+  final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
   @override
   Widget build(BuildContext context) {
-    if (asset.assetType == AssetType.other ||
-        asset.assetType == AssetType.audio) {
+    if (asset.type == AssetType.other || asset.type == AssetType.audio) {
       ImageProvider? thumbnailProvider;
-      if (asset.thumbnail != null) {
+      if (asset.thumbnailDataAsync != null) {
         thumbnailProvider =
-            PickerExtendedImage.getImageProvider(asset.thumbnail!);
+            PickerExtendedImage.assetEntityToImageProvider(asset);
       }
       BoxFit fit = BoxFit.cover;
       if (!isThumbnail) fit = BoxFit.contain;

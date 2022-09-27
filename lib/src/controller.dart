@@ -1,12 +1,10 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fl_assets_picker/src/asset_picker_view.dart';
+import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
-enum ImageCompressionRatio {
+enum ImageCroppingQuality {
   /// 最高画质
   high,
 
@@ -24,7 +22,7 @@ class FlAssetsPickerController with ChangeNotifier {
       {this.assetConfig = const AssetPickerConfig(),
       this.cameraConfig = const CameraPickerConfig()});
 
-  final List<AssetEntry> currentAssetsEntry = [];
+  final List<ExtendedAssetEntity> allAssetEntity = [];
 
   /// 资源选择器配置信息
   AssetPickerConfig assetConfig;
@@ -61,8 +59,14 @@ class FlAssetsPickerController with ChangeNotifier {
     if (audio != null) _audioCompress = audio;
   }
 
+  late FlAssetPickerView _flAssetPickerView;
+
+  void setWidget(FlAssetPickerView flAssetPickerView) {
+    _flAssetPickerView = flAssetPickerView;
+  }
+
   void deleteAsset(String id) {
-    currentAssetsEntry.removeWhere((element) => id == element.id);
+    allAssetEntity.removeWhere((element) => id == element.id);
     notifyListeners();
   }
 
@@ -74,48 +78,42 @@ class FlAssetsPickerController with ChangeNotifier {
   }
 
   /// 选择图片
-  Future<List<AssetEntry>?> pickAssets(BuildContext context,
+  Future<List<ExtendedAssetEntity>?> pickAssets(BuildContext context,
       {bool useRootNavigator = true,
+      AssetPickerConfig? pickerConfig,
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
     final List<AssetEntity>? assets = await showPickerAssets(context,
-        pickerConfig: assetConfig,
+        pickerConfig: pickerConfig ?? assetConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
     if (assets != null && assets.isNotEmpty) {
-      List<AssetEntry> assetsEntryList = [];
-      for (var entity in assets) {
-        final assetsEntry = await toAssetEntry(entity);
-        assetsEntryList.add(assetsEntry);
-        currentAssetsEntry.add(assetsEntry);
+      List<ExtendedAssetEntity> list = [];
+      for (var element in assets) {
+        if (!allAssetEntity.contains(element)) {
+          list.add(await toExtendedAssetEntity(element));
+        }
       }
-      notifyListeners();
-      return assetsEntryList;
+      return list;
     }
     return null;
   }
 
   /// 通过相机拍照
-  Future<AssetEntry?> pickFromCamera(
-    BuildContext context, {
-    bool useRootNavigator = true,
-    CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
-        pageRouteBuilder,
-  }) async {
+  Future<ExtendedAssetEntity?> pickFromCamera(BuildContext context,
+      {bool useRootNavigator = true,
+      CameraPickerConfig? pickerConfig,
+      CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
+          pageRouteBuilder}) async {
     final AssetEntity? entity = await showPickerFromCamera(context,
-        pickerConfig: cameraConfig,
+        pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
-    if (entity != null) {
-      final assetsEntry = await toAssetEntry(entity);
-      currentAssetsEntry.add(assetsEntry);
-      notifyListeners();
-      return assetsEntry;
-    }
+    if (entity != null) return await toExtendedAssetEntity(entity);
     return null;
   }
 
-  /// AssetEntity to AssetEntry;
-  Future<AssetEntry> toAssetEntry(AssetEntity entity) async {
+  /// AssetEntity to ExtendedAssetEntity;
+  Future<ExtendedAssetEntity> toExtendedAssetEntity(AssetEntity entity) async {
     File? compressPath;
     File? imageCropPath;
     File? videoCoverPath;
@@ -132,7 +130,7 @@ class FlAssetsPickerController with ChangeNotifier {
     final originFile = await entity.originFile;
     final originBytes = await entity.originBytes;
     final thumbnailData = await entity.thumbnailData;
-    return AssetEntry.fromEntity(entity,
+    return entity.toExtendedAssetEntity(
         fileAsync: file,
         originFileAsync: originFile,
         originBytes: originBytes,
@@ -142,32 +140,75 @@ class FlAssetsPickerController with ChangeNotifier {
         imageCropPath: imageCropPath);
   }
 
-  Future<void> pickFromType(
-    BuildContext context,
-    List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
-    bool mounted = true,
-    PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
-    bool useRootNavigator = true,
-    CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
-        pageRouteBuilderForCameraPicker,
-    AssetPickerPageRouteBuilder<List<AssetEntity>>?
-        pageRouteBuilderForAssetPicker,
-  }) async {
-    FlAssetPickerFromType? type = await showPickFromType(
-        context, fromRequestTypes,
-        fromRequestTypesBuilder: fromRequestTypesBuilder, mounted: mounted);
-    switch (type) {
+  /// 弹窗选择类型
+  Future<void> pickFromType(BuildContext context, {bool mounted = true}) async {
+    if (allAssetEntity.length >= _flAssetPickerView.maxCount) {
+      _flAssetPickerView.errorCallback
+          ?.call('最多添加${_flAssetPickerView.maxCount}个资源');
+      return;
+    }
+    FlAssetPickerFromRequestTypes? type = await showPickFromType(
+        context, _flAssetPickerView.fromRequestTypes,
+        fromRequestTypesBuilder: _flAssetPickerView.fromRequestTypesBuilder,
+        mounted: mounted);
+    switch (type?.fromType) {
       case FlAssetPickerFromType.assets:
         if (!mounted) return;
-        pickAssets(context,
-            useRootNavigator: useRootNavigator,
-            pageRouteBuilder: pageRouteBuilderForAssetPicker);
+        List<AssetEntity> selectedAssets =
+            List.from(allAssetEntity.where((element) => element.isLocalData));
+        final assetsEntryList = await pickAssets(context,
+            pickerConfig: assetConfig.copyWith(
+                maxAssets: _flAssetPickerView.maxCount - selectedAssets.length,
+                requestType: type?.requestType,
+                selectedAssets: selectedAssets),
+            useRootNavigator: _flAssetPickerView.useRootNavigator,
+            pageRouteBuilder:
+                _flAssetPickerView.pageRouteBuilderForAssetPicker);
+        if (assetsEntryList == null) return;
+        if (assetsEntryList.length + allAssetEntity.length >
+            _flAssetPickerView.maxCount) {
+          _flAssetPickerView.errorCallback
+              ?.call('最多添加${_flAssetPickerView.maxCount}个资源');
+          return;
+        }
+        dynamic videos =
+            allAssetEntity.where((element) => element.type == AssetType.video);
+        for (var entity in assetsEntryList) {
+          if (entity.type == AssetType.video) {
+            videos = videos.toList().add(entity);
+          }
+          if (videos.length >= _flAssetPickerView.maxVideoCount) {
+            _flAssetPickerView.errorCallback
+                ?.call('最多添加${_flAssetPickerView.maxVideoCount}个视频');
+            return;
+          }
+          allAssetEntity.add(entity);
+        }
+        notifyListeners();
         break;
       case FlAssetPickerFromType.camera:
         if (!mounted) return;
-        pickFromCamera(context,
-            useRootNavigator: useRootNavigator,
-            pageRouteBuilder: pageRouteBuilderForCameraPicker);
+        if (type?.requestType?.containsImage() ?? false) {}
+        final assetsEntry = await pickFromCamera(context,
+            pickerConfig: cameraConfig.copyWith(
+                enableRecording: (type?.requestType?.containsVideo() ?? false),
+                onlyEnableRecording: type?.requestType == RequestType.video,
+                enableAudio: (type?.requestType?.containsVideo() ?? false) ||
+                    (type?.requestType?.containsAudio() ?? false)),
+            useRootNavigator: _flAssetPickerView.useRootNavigator,
+            pageRouteBuilder:
+                _flAssetPickerView.pageRouteBuilderForCameraPicker);
+        if (assetsEntry != null) {
+          final videos = allAssetEntity
+              .where((element) => element.type == AssetType.video);
+          if (videos.length >= _flAssetPickerView.maxVideoCount) {
+            _flAssetPickerView.errorCallback
+                ?.call('最多添加${_flAssetPickerView.maxVideoCount}个视频');
+            return;
+          }
+          allAssetEntity.add(assetsEntry);
+          notifyListeners();
+        }
         break;
       default:
         return;
@@ -197,7 +238,8 @@ Future<AssetEntity?> showPickerFromCamera(
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
 
-Future<FlAssetPickerFromType?> showPickFromType(
+/// show 选择弹窗
+Future<FlAssetPickerFromRequestTypes?> showPickFromType(
   BuildContext context,
   List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
   bool mounted = true,
@@ -216,11 +258,60 @@ Future<FlAssetPickerFromType?> showPickFromType(
   }
   if (type == null) return null;
   if (!mounted) return null;
-  return type.fromType;
+  return type;
 }
 
-class AssetEntry extends AssetEntity {
-  const AssetEntry({
+class ExtendedAssetEntity extends AssetEntity {
+  ExtendedAssetEntity.fromUrl({
+    this.url,
+    super.width = 0,
+    super.height = 0,
+    required AssetType assetType,
+  })  : originBytesAsync = null,
+        thumbnailDataAsync = null,
+        fileAsync = null,
+        originFileAsync = null,
+        compressPath = null,
+        videoCoverPath = null,
+        imageCropPath = null,
+        path = null,
+        isLocalData = false,
+        super(typeInt: assetType.index, id: url.hashCode.toString());
+
+  ExtendedAssetEntity.fromPath({
+    this.path,
+    super.width = 0,
+    super.height = 0,
+    required AssetType assetType,
+  })  : originBytesAsync = null,
+        thumbnailDataAsync = null,
+        fileAsync = null,
+        originFileAsync = null,
+        compressPath = null,
+        videoCoverPath = null,
+        imageCropPath = null,
+        url = null,
+        isLocalData = false,
+        super(typeInt: assetType.index, id: path.hashCode.toString());
+
+  ExtendedAssetEntity.fromFile({
+    required File file,
+    super.width = 0,
+    super.height = 0,
+    required AssetType assetType,
+  })  : originBytesAsync = null,
+        thumbnailDataAsync = null,
+        fileAsync = file,
+        originFileAsync = null,
+        compressPath = null,
+        videoCoverPath = null,
+        imageCropPath = null,
+        path = null,
+        url = null,
+        isLocalData = false,
+        super(typeInt: assetType.index, id: file.hashCode.toString());
+
+  const ExtendedAssetEntity({
     this.originBytesAsync,
     this.thumbnailDataAsync,
     this.compressPath,
@@ -228,86 +319,58 @@ class AssetEntry extends AssetEntity {
     this.fileAsync,
     this.originFileAsync,
     this.videoCoverPath,
-    required String id,
-    required int typeInt,
-    required int width,
-    required int height,
-    int duration = 0,
-    int orientation = 0,
-    bool isFavorite = false,
-    String? title,
-    int? createDateSecond,
-    int? modifiedDateSecond,
-    String? relativePath,
-    double? latitude,
-    double? longitude,
-    String? mimeType,
-    int subtype = 0,
-  }) : super(
-            id: id,
-            typeInt: typeInt,
-            width: width,
-            height: height,
-            duration: duration,
-            orientation: orientation,
-            isFavorite: isFavorite,
-            title: title,
-            createDateSecond: createDateSecond,
-            modifiedDateSecond: modifiedDateSecond,
-            relativePath: relativePath,
-            latitude: latitude,
-            longitude: longitude,
-            mimeType: mimeType,
-            subtype: subtype);
+    required super.id,
+    required super.typeInt,
+    required super.width,
+    required super.height,
+    super.duration = 0,
+    super.orientation = 0,
+    super.isFavorite = false,
+    super.title,
+    super.createDateSecond,
+    super.modifiedDateSecond,
+    super.relativePath,
+    super.latitude,
+    super.longitude,
+    super.mimeType,
+    super.subtype = 0,
+  })  : isLocalData = true,
+        url = null,
+        path = null;
 
-  factory AssetEntry.fromEntity(
-    AssetEntity entity, {
-    File? compressPath,
-    File? imageCropPath,
-    File? videoCoverPath,
-    File? fileAsync,
-    File? originFileAsync,
-    Uint8List? originBytes,
-    Uint8List? thumbnailData,
-  }) =>
-      AssetEntry(
-          originBytesAsync: originBytes,
-          thumbnailDataAsync: thumbnailData,
-          fileAsync: fileAsync,
-          originFileAsync: originFileAsync,
-          id: entity.id,
-          typeInt: entity.typeInt,
-          width: entity.width,
-          height: entity.height,
-          compressPath: compressPath,
-          imageCropPath: imageCropPath,
-          videoCoverPath: videoCoverPath,
-          duration: entity.duration,
-          orientation: entity.orientation,
-          isFavorite: entity.isFavorite,
-          title: entity.title,
-          createDateSecond: entity.createDateSecond,
-          modifiedDateSecond: entity.modifiedDateSecond,
-          relativePath: entity.relativePath,
-          latitude: entity.latitude,
-          longitude: entity.longitude,
-          mimeType: entity.mimeType,
-          subtype: entity.subtype);
+  final bool isLocalData;
 
+  /// [url] 主要用于网络图片复显
+  final String? url;
+
+  ///  [path] 主要用于资源文件复显
+  final String? path;
+
+  /// 原始数据 bytes
   final Uint8List? originBytesAsync;
 
+  /// 原始缩略图数据 bytes
   final Uint8List? thumbnailDataAsync;
 
+  /// file
   final File? fileAsync;
 
+  /// originFile
   final File? originFileAsync;
 
   /// 压缩后的路径
+  /// 只有通过本地选择的资源 并添加了压缩方法
   final File? compressPath;
 
   /// 视频封面
+  /// 只有通过本地选择的资源 并添加了获取封面的方法
   final File? videoCoverPath;
 
   /// 图片裁剪后的路径
+  /// 只有通过本地选择的资源 并添加了裁剪的方法
   final File? imageCropPath;
+
+  String? get realValueStr => url ?? path ?? fileAsync?.path;
+
+  dynamic get realValue => url ?? path ?? fileAsync;
 }

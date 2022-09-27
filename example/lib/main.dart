@@ -16,8 +16,8 @@ class _HomePage extends StatelessWidget {
         children: [
           FlAssetPickerView(
               entryConfig: const PickerAssetEntryBuilderConfig(radius: 6),
-              onChanged: (List<AssetEntry> value) {
-                log(value.length);
+              onChanged: (List<ExtendedAssetEntity> value) {
+                log('onChanged ${value.builder((item) => item.realValueStr)}');
               }),
         ]);
   }

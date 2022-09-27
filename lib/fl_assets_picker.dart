@@ -13,3 +13,4 @@ export 'src/asset_picker_view.dart';
 export 'src/controller.dart';
 export 'src/fl_video_player.dart';
 export 'src/preview.dart';
+export 'src/extension.dart';
