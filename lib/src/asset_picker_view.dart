@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class PickerAssetEntryBuilderConfig {
@@ -12,6 +11,7 @@ class PickerAssetEntryBuilderConfig {
           const Icon(Icons.add, size: 30, color: Color(0x804D4D4D)),
       this.color,
       this.borderColor = const Color(0x804D4D4D),
+      this.deleteColor = Colors.redAccent,
       this.overlay,
       this.playIcon = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D)),
@@ -21,6 +21,7 @@ class PickerAssetEntryBuilderConfig {
   final Size size;
   final Color? color;
   final Color borderColor;
+  final Color deleteColor;
   final double? radius;
   final Icon playIcon;
   final Widget? overlay;
@@ -63,32 +64,10 @@ typedef PickerIconBuilder = Widget Function();
 
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
-typedef PickerFromRequestTypesBuilder = Widget Function(
-    BuildContext context, List<FlAssetPickerFromRequestTypes> fromTypes);
-
 typedef PickerErrorCallback = void Function(String msg);
 
 typedef PickerEntryBuilder = Widget Function(
     ExtendedAssetEntity entry, int index);
-
-enum FlAssetPickerFromType {
-  /// 从图库中选择
-  assets,
-
-  /// 从相机拍摄
-  camera,
-}
-
-class FlAssetPickerFromRequestTypes {
-  const FlAssetPickerFromRequestTypes(
-      {required this.fromType, required this.text, this.requestType});
-
-  final FlAssetPickerFromType fromType;
-  final String text;
-
-  /// [FlAssetPickerFromType.values];
-  final RequestType? requestType;
-}
 
 class FlAssetPickerView extends StatefulWidget {
   const FlAssetPickerView({
@@ -97,26 +76,27 @@ class FlAssetPickerView extends StatefulWidget {
     this.controller,
     this.enablePicker = true,
     this.pickerIconBuilder,
-    this.entryBuilder,
     this.errorCallback,
     this.maxVideoCount = 1,
     this.maxCount = 9,
-    this.wrapConfig = const PickerWrapBuilderConfig(),
-    this.wrapBuilder,
     this.fromRequestTypes = const [
-      FlAssetPickerFromRequestTypes(
-          fromType: FlAssetPickerFromType.assets,
-          text: '图库选择',
+      PickerFromTypeConfig(
+          fromType: PickerFromType.assets,
+          text: Text('图库选择'),
           requestType: RequestType.common),
-      FlAssetPickerFromRequestTypes(
-          fromType: FlAssetPickerFromType.camera,
-          text: '相机拍摄',
+      PickerFromTypeConfig(
+          fromType: PickerFromType.camera,
+          text: Text('相机拍摄'),
           requestType: RequestType.common),
+      PickerFromTypeConfig(fromType: PickerFromType.cancel, text: Text('取消')),
     ],
     this.pageRouteBuilderForCameraPicker,
     this.pageRouteBuilderForAssetPicker,
     this.fromRequestTypesBuilder,
     this.entryConfig = const PickerAssetEntryBuilderConfig(),
+    this.entryBuilder,
+    this.wrapConfig = const PickerWrapBuilderConfig(),
+    this.wrapBuilder,
     this.initialData = const [],
     this.allowDelete = true,
   }) : super(key: key);
@@ -128,7 +108,7 @@ class FlAssetPickerView extends StatefulWidget {
   final List<ExtendedAssetEntity> initialData;
 
   /// 请求类型
-  final List<FlAssetPickerFromRequestTypes> fromRequestTypes;
+  final List<PickerFromTypeConfig> fromRequestTypes;
 
   /// 资源选择变化
   final ValueChanged<List<ExtendedAssetEntity>>? onChanged;
@@ -161,7 +141,7 @@ class FlAssetPickerView extends StatefulWidget {
   /// 最多选择几个资源
   final int maxCount;
 
-  final PickerFromRequestTypesBuilder? fromRequestTypesBuilder;
+  final PickerFromTypeBuilder? fromRequestTypesBuilder;
   final bool useRootNavigator = true;
   final CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
       pageRouteBuilderForCameraPicker;
@@ -190,8 +170,8 @@ class FlAssetPickerView extends StatefulWidget {
     List<ExtendedAssetEntity> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
-        list.add(
-            ExtendedAssetEntity.fromPath(path: element, assetType: assetsType));
+        list.add(ExtendedAssetEntity.fromPath(
+            previewPath: element, assetType: assetsType));
       }
     }
     return list;
@@ -206,12 +186,13 @@ class FlAssetPickerView extends StatefulWidget {
       final urls = url.split(',');
       for (var element in urls) {
         if (element.isNotEmpty) {
-          list.add(
-              ExtendedAssetEntity.fromUrl(url: element, assetType: assetsType));
+          list.add(ExtendedAssetEntity.fromUrl(
+              previewUrl: element, assetType: assetsType));
         }
       }
     } else {
-      list.add(ExtendedAssetEntity.fromUrl(assetType: assetsType, url: url));
+      list.add(
+          ExtendedAssetEntity.fromUrl(assetType: assetsType, previewUrl: url));
     }
     return list;
   }
@@ -325,7 +306,7 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
               onTap: () => controller.deleteAsset(assetEntry.id),
               child: Container(
                   decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.8),
+                      color: widget.entryConfig.deleteColor,
                       shape: BoxShape.circle),
                   padding: const EdgeInsets.all(2),
                   child:
@@ -388,30 +369,5 @@ class _FlAssetPickerViewState extends State<FlAssetPickerView> {
     super.dispose();
     controller.removeListener(listener);
     controller.dispose();
-  }
-}
-
-class PickFromTypeBuild extends StatelessWidget {
-  const PickFromTypeBuild(this.list, {Key? key}) : super(key: key);
-
-  final List<FlAssetPickerFromRequestTypes> list;
-
-  @override
-  Widget build(BuildContext context) {
-    final actions = list
-        .map((entry) => CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(context).maybePop(entry),
-            isDefaultAction: true,
-            child: Text(entry.text,
-                style: const TextStyle(fontWeight: FontWeight.normal))))
-        .toList();
-    return CupertinoActionSheet(
-        cancelButton: CupertinoActionSheetAction(
-            onPressed: Navigator.of(context).maybePop,
-            isDefaultAction: true,
-            child: const Text('取消',
-                style: TextStyle(
-                    fontWeight: FontWeight.normal, color: Colors.red))),
-        actions: actions);
   }
 }

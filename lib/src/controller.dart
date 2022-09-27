@@ -4,18 +4,40 @@ import 'dart:typed_data';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
-enum ImageCroppingQuality {
-  /// 最高画质
-  high,
+typedef FlAssetRepeatBuilder = Future<File?> Function(AssetEntity entity);
 
-  /// 中等
-  medium,
+class AssetRepeatBuilderConfig {
+  const AssetRepeatBuilderConfig({
+    this.videoCompress,
+    this.videoCover,
+    this.imageCompress,
+    this.imageCrop,
+    this.audioCompress,
+  });
 
-  ///最低
-  low,
+  /// 压缩视频
+  final FlAssetRepeatBuilder? videoCompress;
+
+  /// 获取视频封面
+  final FlAssetRepeatBuilder? videoCover;
+
+  /// 压缩图片
+  final FlAssetRepeatBuilder? imageCompress;
+
+  /// 裁剪图片
+  final FlAssetRepeatBuilder? imageCrop;
+
+  /// 压缩音频
+  final FlAssetRepeatBuilder? audioCompress;
+
+  AssetRepeatBuilderConfig merge(AssetRepeatBuilderConfig config) =>
+      AssetRepeatBuilderConfig(
+          videoCompress: config.videoCompress ?? videoCompress,
+          videoCover: config.videoCover ?? videoCover,
+          imageCompress: config.imageCompress ?? imageCompress,
+          imageCrop: config.imageCrop ?? imageCrop,
+          audioCompress: config.audioCompress ?? audioCompress);
 }
-
-typedef FlAssetsRepeatBuild = Future<File?> Function(AssetEntity entity);
 
 class FlAssetsPickerController with ChangeNotifier {
   FlAssetsPickerController(
@@ -30,33 +52,13 @@ class FlAssetsPickerController with ChangeNotifier {
   /// 相机配置信息
   CameraPickerConfig cameraConfig;
 
-  /// 压缩视频
-  FlAssetsRepeatBuild? _videoCompress;
-
-  /// 获取视频封面
-  FlAssetsRepeatBuild? _videoCover;
-
-  /// 压缩图片
-  FlAssetsRepeatBuild? _imageCompress;
-
-  /// 裁剪图片
-  FlAssetsRepeatBuild? _imageCrop;
-
-  /// 压缩音频
-  FlAssetsRepeatBuild? _audioCompress;
+  /// 资源重新编辑
+  AssetRepeatBuilderConfig repeatBuilderConfig =
+      const AssetRepeatBuilderConfig();
 
   /// 设置 资源 压缩构造方法
-  void setAssetBuild(
-      {FlAssetsRepeatBuild? video,
-      FlAssetsRepeatBuild? videoCover,
-      FlAssetsRepeatBuild? image,
-      FlAssetsRepeatBuild? imageCrop,
-      FlAssetsRepeatBuild? audio}) {
-    if (video != null) _videoCompress = video;
-    if (videoCover != null) _videoCover = videoCover;
-    if (image != null) _imageCompress = image;
-    if (imageCrop != null) _imageCrop = imageCrop;
-    if (audio != null) _audioCompress = audio;
+  void setAssetBuilder(AssetRepeatBuilderConfig config) {
+    repeatBuilderConfig.merge(config);
   }
 
   late FlAssetPickerView _flAssetPickerView;
@@ -90,7 +92,7 @@ class FlAssetsPickerController with ChangeNotifier {
       List<ExtendedAssetEntity> list = [];
       for (var element in assets) {
         if (!allAssetEntity.contains(element)) {
-          list.add(await toExtendedAssetEntity(element));
+          list.add(await element.repeatBuilder(repeatBuilderConfig));
         }
       }
       return list;
@@ -108,36 +110,8 @@ class FlAssetsPickerController with ChangeNotifier {
         pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
-    if (entity != null) return await toExtendedAssetEntity(entity);
+    if (entity != null) return await entity.repeatBuilder(repeatBuilderConfig);
     return null;
-  }
-
-  /// AssetEntity to ExtendedAssetEntity;
-  Future<ExtendedAssetEntity> toExtendedAssetEntity(AssetEntity entity) async {
-    File? compressPath;
-    File? imageCropPath;
-    File? videoCoverPath;
-    if (entity.type == AssetType.image) {
-      imageCropPath = await _imageCrop?.call(entity);
-      compressPath = await _imageCompress?.call(entity);
-    } else if (entity.type == AssetType.video) {
-      compressPath = await _videoCompress?.call(entity);
-      videoCoverPath = await _videoCover?.call(entity);
-    } else if (entity.type == AssetType.audio) {
-      compressPath = await _audioCompress?.call(entity);
-    }
-    final file = await entity.file;
-    final originFile = await entity.originFile;
-    final originBytes = await entity.originBytes;
-    final thumbnailData = await entity.thumbnailData;
-    return entity.toExtendedAssetEntity(
-        fileAsync: file,
-        originFileAsync: originFile,
-        originBytes: originBytes,
-        thumbnailData: thumbnailData,
-        compressPath: compressPath,
-        videoCoverPath: videoCoverPath,
-        imageCropPath: imageCropPath);
   }
 
   /// 弹窗选择类型
@@ -147,12 +121,11 @@ class FlAssetsPickerController with ChangeNotifier {
           ?.call('最多添加${_flAssetPickerView.maxCount}个资源');
       return;
     }
-    FlAssetPickerFromRequestTypes? type = await showPickFromType(
+    PickerFromTypeConfig? type = await showPickerFromType(
         context, _flAssetPickerView.fromRequestTypes,
-        fromRequestTypesBuilder: _flAssetPickerView.fromRequestTypesBuilder,
-        mounted: mounted);
+        fromRequestTypesBuilder: _flAssetPickerView.fromRequestTypesBuilder);
     switch (type?.fromType) {
-      case FlAssetPickerFromType.assets:
+      case PickerFromType.assets:
         if (!mounted) return;
         List<AssetEntity> selectedAssets =
             List.from(allAssetEntity.where((element) => element.isLocalData));
@@ -186,7 +159,7 @@ class FlAssetsPickerController with ChangeNotifier {
         }
         notifyListeners();
         break;
-      case FlAssetPickerFromType.camera:
+      case PickerFromType.camera:
         if (!mounted) return;
         if (type?.requestType?.containsImage() ?? false) {}
         final assetsEntry = await pickFromCamera(context,
@@ -209,6 +182,9 @@ class FlAssetsPickerController with ChangeNotifier {
           allAssetEntity.add(assetsEntry);
           notifyListeners();
         }
+        break;
+
+      case PickerFromType.cancel:
         break;
       default:
         return;
@@ -238,87 +214,56 @@ Future<AssetEntity?> showPickerFromCamera(
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
 
-/// show 选择弹窗
-Future<FlAssetPickerFromRequestTypes?> showPickFromType(
-  BuildContext context,
-  List<FlAssetPickerFromRequestTypes> fromRequestTypes, {
-  bool mounted = true,
-  PickerFromRequestTypesBuilder? fromRequestTypesBuilder,
-}) async {
-  FlAssetPickerFromRequestTypes? type;
-  if (fromRequestTypes.length == 1) {
-    type = fromRequestTypes.first;
-  } else {
-    type = await showModalBottomSheet<FlAssetPickerFromRequestTypes?>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext context) =>
-            fromRequestTypesBuilder?.call(context, fromRequestTypes) ??
-            PickFromTypeBuild(fromRequestTypes));
-  }
-  if (type == null) return null;
-  if (!mounted) return null;
-  return type;
-}
-
 class ExtendedAssetEntity extends AssetEntity {
   ExtendedAssetEntity.fromUrl({
-    this.url,
+    this.previewUrl,
     super.width = 0,
     super.height = 0,
     required AssetType assetType,
-  })  : originBytesAsync = null,
-        thumbnailDataAsync = null,
+  })  : thumbnailDataAsync = null,
         fileAsync = null,
-        originFileAsync = null,
-        compressPath = null,
-        videoCoverPath = null,
-        imageCropPath = null,
-        path = null,
+        compressFile = null,
+        videoCoverFile = null,
+        imageCropFile = null,
+        previewPath = null,
         isLocalData = false,
-        super(typeInt: assetType.index, id: url.hashCode.toString());
+        super(typeInt: assetType.index, id: previewUrl.hashCode.toString());
 
   ExtendedAssetEntity.fromPath({
-    this.path,
+    this.previewPath,
     super.width = 0,
     super.height = 0,
     required AssetType assetType,
-  })  : originBytesAsync = null,
-        thumbnailDataAsync = null,
+  })  : thumbnailDataAsync = null,
         fileAsync = null,
-        originFileAsync = null,
-        compressPath = null,
-        videoCoverPath = null,
-        imageCropPath = null,
-        url = null,
+        compressFile = null,
+        videoCoverFile = null,
+        imageCropFile = null,
+        previewUrl = null,
         isLocalData = false,
-        super(typeInt: assetType.index, id: path.hashCode.toString());
+        super(typeInt: assetType.index, id: previewPath.hashCode.toString());
 
   ExtendedAssetEntity.fromFile({
     required File file,
     super.width = 0,
     super.height = 0,
     required AssetType assetType,
-  })  : originBytesAsync = null,
-        thumbnailDataAsync = null,
+  })  : thumbnailDataAsync = null,
         fileAsync = file,
-        originFileAsync = null,
-        compressPath = null,
-        videoCoverPath = null,
-        imageCropPath = null,
-        path = null,
-        url = null,
+        compressFile = null,
+        videoCoverFile = null,
+        imageCropFile = null,
+        previewPath = null,
+        previewUrl = null,
         isLocalData = false,
         super(typeInt: assetType.index, id: file.hashCode.toString());
 
   const ExtendedAssetEntity({
-    this.originBytesAsync,
     this.thumbnailDataAsync,
-    this.compressPath,
-    this.imageCropPath,
+    this.compressFile,
+    this.imageCropFile,
     this.fileAsync,
-    this.originFileAsync,
-    this.videoCoverPath,
+    this.videoCoverFile,
     required super.id,
     required super.typeInt,
     required super.width,
@@ -335,19 +280,16 @@ class ExtendedAssetEntity extends AssetEntity {
     super.mimeType,
     super.subtype = 0,
   })  : isLocalData = true,
-        url = null,
-        path = null;
+        previewUrl = null,
+        previewPath = null;
 
   final bool isLocalData;
 
-  /// [url] 主要用于网络图片复显
-  final String? url;
+  /// [previewUrl] 主要用于网络图片复显
+  final String? previewUrl;
 
-  ///  [path] 主要用于资源文件复显
-  final String? path;
-
-  /// 原始数据 bytes
-  final Uint8List? originBytesAsync;
+  ///  [previewPath] 主要用于资源文件复显
+  final String? previewPath;
 
   /// 原始缩略图数据 bytes
   final Uint8List? thumbnailDataAsync;
@@ -355,22 +297,19 @@ class ExtendedAssetEntity extends AssetEntity {
   /// file
   final File? fileAsync;
 
-  /// originFile
-  final File? originFileAsync;
-
   /// 压缩后的路径
   /// 只有通过本地选择的资源 并添加了压缩方法
-  final File? compressPath;
+  final File? compressFile;
 
   /// 视频封面
   /// 只有通过本地选择的资源 并添加了获取封面的方法
-  final File? videoCoverPath;
+  final File? videoCoverFile;
 
   /// 图片裁剪后的路径
   /// 只有通过本地选择的资源 并添加了裁剪的方法
-  final File? imageCropPath;
+  final File? imageCropFile;
 
-  String? get realValueStr => url ?? path ?? fileAsync?.path;
+  String? get realValueStr => previewUrl ?? previewPath ?? fileAsync?.path;
 
-  dynamic get realValue => url ?? path ?? fileAsync;
+  dynamic get realValue => previewUrl ?? previewPath ?? fileAsync;
 }

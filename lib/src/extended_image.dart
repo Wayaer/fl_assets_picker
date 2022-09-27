@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
@@ -46,26 +45,15 @@ class PickerExtendedImage extends StatelessWidget {
       : image = ExtendedNetworkImageProvider(url, imageCacheName: url),
         super(key: key);
 
-  PickerExtendedImage.memory(Uint8List bytes,
-      {Key? key,
-      this.loading,
-      this.error,
-      this.width,
-      this.height,
-      this.fit = BoxFit.cover})
-      : image = ExtendedMemoryImageProvider(bytes,
-            imageCacheName: bytes.hashCode.hashCode.toString()),
-        super(key: key);
-
   static ImageProvider? assetEntityToImageProvider(
       ExtendedAssetEntity assetEntity) {
     ImageProvider? provider;
-    if (assetEntity.path != null) {
-      provider = ExtendedAssetImageProvider(assetEntity.path!);
+    if (assetEntity.previewPath != null) {
+      provider = ExtendedAssetImageProvider(assetEntity.previewPath!);
     } else if (assetEntity.fileAsync != null) {
       provider = ExtendedFileImageProvider(assetEntity.fileAsync!);
-    } else if (assetEntity.url != null) {
-      provider = ExtendedNetworkImageProvider(assetEntity.url!);
+    } else if (assetEntity.previewUrl != null) {
+      provider = ExtendedNetworkImageProvider(assetEntity.previewUrl!);
     }
     return provider;
   }

@@ -24,38 +24,45 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
 }
 
 extension ExtensionAssetEntity on AssetEntity {
-  ExtendedAssetEntity toExtendedAssetEntity({
-    File? compressPath,
-    File? imageCropPath,
-    File? videoCoverPath,
-    File? fileAsync,
-    File? originFileAsync,
-    Uint8List? originBytes,
-    Uint8List? thumbnailData,
-  }) =>
-      ExtendedAssetEntity(
-          originBytesAsync: originBytes,
-          thumbnailDataAsync: thumbnailData,
-          fileAsync: fileAsync,
-          originFileAsync: originFileAsync,
-          compressPath: compressPath,
-          imageCropPath: imageCropPath,
-          videoCoverPath: videoCoverPath,
-          id: id,
-          typeInt: typeInt,
-          width: width,
-          height: height,
-          duration: duration,
-          orientation: orientation,
-          isFavorite: isFavorite,
-          title: title,
-          createDateSecond: createDateSecond,
-          modifiedDateSecond: modifiedDateSecond,
-          relativePath: relativePath,
-          latitude: latitude,
-          longitude: longitude,
-          mimeType: mimeType,
-          subtype: subtype);
+  /// repeat builder [AssetEntity] and to [ExtendedAssetEntity];
+  Future<ExtendedAssetEntity> repeatBuilder(
+      [AssetRepeatBuilderConfig? buildConfig]) async {
+    File? compressFile;
+    File? imageCropFile;
+    File? videoCoverFile;
+    if (type == AssetType.image) {
+      imageCropFile = await buildConfig?.imageCrop?.call(this);
+      compressFile = await buildConfig?.imageCompress?.call(this);
+    } else if (type == AssetType.video) {
+      compressFile = await buildConfig?.videoCompress?.call(this);
+      videoCoverFile = await buildConfig?.videoCover?.call(this);
+    } else if (type == AssetType.audio) {
+      compressFile = await buildConfig?.audioCompress?.call(this);
+    }
+    final fileAsync = await file;
+    final thumbnailData = await this.thumbnailData;
+    return ExtendedAssetEntity(
+        thumbnailDataAsync: thumbnailData,
+        fileAsync: fileAsync,
+        compressFile: compressFile,
+        imageCropFile: imageCropFile,
+        videoCoverFile: videoCoverFile,
+        id: id,
+        typeInt: typeInt,
+        width: width,
+        height: height,
+        duration: duration,
+        orientation: orientation,
+        isFavorite: isFavorite,
+        title: title,
+        createDateSecond: createDateSecond,
+        modifiedDateSecond: modifiedDateSecond,
+        relativePath: relativePath,
+        latitude: latitude,
+        longitude: longitude,
+        mimeType: mimeType,
+        subtype: subtype);
+  }
 }
 
 extension ExtensionAssetPickerConfig on AssetPickerConfig {

@@ -37,8 +37,8 @@ class AssetEntryVideoBuild extends StatelessWidget {
       if (asset.thumbnailDataAsync != null) {
         imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
       }
-      if (asset.videoCoverPath != null) {
-        imageProvider = ExtendedFileImageProvider(asset.videoCoverPath!);
+      if (asset.videoCoverFile != null) {
+        imageProvider = ExtendedFileImageProvider(asset.videoCoverFile!);
       }
       BoxFit fit = BoxFit.cover;
       if (!isThumbnail) fit = BoxFit.contain;
@@ -47,8 +47,8 @@ class AssetEntryVideoBuild extends StatelessWidget {
       } else {
         current = PickerFlVideoPlayer(
             file: asset.fileAsync,
-            path: asset.path,
-            url: asset.url,
+            path: asset.previewPath,
+            url: asset.previewUrl,
             cover: current);
       }
       return current;
