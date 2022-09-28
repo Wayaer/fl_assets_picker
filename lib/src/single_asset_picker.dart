@@ -125,16 +125,12 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
     if (config.color != null) {
       current = ColoredBox(color: config.color!, child: current);
     }
-    if (config.decoration != null) {
-      current = DecoratedBox(decoration: config.decoration!, child: current);
-    }
     if (widget.enablePicker) {
       current = GestureDetector(onTap: pickerAsset, child: current);
     }
     current = SizedBox.fromSize(size: config.size, child: current);
-    if (config.radius != null) {
-      current = ClipRRect(
-          borderRadius: BorderRadius.circular(config.radius!), child: current);
+    if (config.borderRadius != null) {
+      current = ClipRRect(borderRadius: config.borderRadius, child: current);
     }
     return current;
   }

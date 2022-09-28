@@ -7,7 +7,7 @@ void main() {
 }
 
 const url =
-    'https://www.baidu.com/link?url=n9n-pQJwIQHrF2a7plaZcBZoBWnTzeKtDulF3wD4D_YyY4old-FkWpif7X4zEEGjOGva64S50RbclsR2F0cL8kj93L6zP42qwfxb-iWDXZfpht7SmweX0sZQJCqGjbp_lrDlAlmgMgF1p8v0TA7rQmCM-_CzmsKCJz77ytOZz3fSL2hBx2e067PGZUyXG3DJtxusmgwsHJW_IHNwd5NdkEWfx6jngoMtME86eeGo5VubN6DOjxYcNR-rRohxjM7kvMMC87mDO5lZrhWA3Juncluxvs7idmFam1uylhJIQUF6plJIMVtvlGmBVgsicIuSZh4w24qBA11XWWyB2OBTYnifQ42TQwPZM-QD4yAd4MgPv5iGmKT-0_PaGZq1NtQtylu6JbFJiZr2ikvZXgLbP2RVQITDTekXxtkvJqol6v8TLbnY2HAGUxCaEuCCNrzIa8ZbTcdy3EBjSmQj6FvYF31dogCmJMPvYi9w0UVdNPb3lakXZ-YwOTM1l8H12pe2uvc76mdiIyr5OXgFtDH1rKaynfXJKeZvLy9SbrsZ7Nb7J3gMTjlBxdGF_HL-xECZUjBt6po_RexaUJjkdACXRzT8tbQ7yY_uX3a42nrlgl1eIN_ae4PG2X2Kkj6ynOZ0LJ4lJutTjBS0KBws1VqADDKj3FnqqoCFqLdin8-rd42OmsEgeVaWrtSFCCLKJOf4&wd=&eqid=81455e940019f44a000000066333b67b';
+    'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201612%2F31%2F20161231205134_uVTex.thumb.400_0.jpeg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1666931842&t=44493a6c92d1ddda89367519c6206491';
 
 class _HomePage extends StatelessWidget {
   const _HomePage();
@@ -19,16 +19,31 @@ class _HomePage extends StatelessWidget {
         padding: const EdgeInsets.all(12),
         children: [
           const Text('单资源选择').marginAll(12),
-          SingleAssetPicker(
-              initialData: SingleAssetPicker.convertUrl(url),
-              config: const PickerAssetEntryBuilderConfig(
-                  radius: 6, pickerIcon: Icon(Icons.account_circle_rounded)),
-              onChanged: (ExtendedAssetEntity value) {
-                log('onChanged ${value.realValueStr}');
-              }),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+            SingleAssetPicker(
+                initialData: SingleAssetPicker.convertUrl(url),
+                config: PickerAssetEntryBuilderConfig(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.amberAccent),
+                onChanged: (ExtendedAssetEntity value) {
+                  log('onChanged ${value.realValueStr}');
+                }),
+            SingleAssetPicker(
+                initialData: SingleAssetPicker.convertUrl(url),
+                config: PickerAssetEntryBuilderConfig(
+                    borderRadius: BorderRadius.circular(40),
+                    color: Colors.amberAccent),
+                onChanged: (ExtendedAssetEntity value) {
+                  log('onChanged ${value.realValueStr}');
+                }),
+          ]),
+          const SizedBox(height: 20),
           const Text('多资源选择').marginAll(12),
           MultiAssetPicker(
-              entryConfig: const PickerAssetEntryBuilderConfig(radius: 6),
+              initialData: MultiAssetPicker.convertUrls(url),
+              entryConfig: PickerAssetEntryBuilderConfig(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.amberAccent),
               onChanged: (List<ExtendedAssetEntity> value) {
                 log('onChanged ${value.builder((item) => item.realValueStr)}');
               }),

@@ -6,27 +6,27 @@ typedef PickerFromTypeBuilder = Widget Function(
 
 class PickerAssetEntryBuilderConfig {
   const PickerAssetEntryBuilderConfig(
-      {this.decoration,
+      {this.color,
+      this.borderRadius,
       this.size = const Size(65, 65),
       this.pickerIcon =
           const Icon(Icons.add, size: 30, color: Color(0x804D4D4D)),
-      this.color,
-      this.borderColor = const Color(0x804D4D4D),
+      this.pickerBorderColor = const Color(0x804D4D4D),
       this.deleteColor = Colors.redAccent,
       this.overlay,
       this.playIcon = const Icon(Icons.play_circle_outline,
-          size: 30, color: Color(0x804D4D4D)),
-      this.radius});
+          size: 30, color: Color(0x804D4D4D))});
 
-  final Decoration? decoration;
-  final Size size;
   final Color? color;
-  final Color borderColor;
-  final Color deleteColor;
-  final double? radius;
-  final Icon playIcon;
+  final Size size;
+  final BorderRadiusGeometry? borderRadius;
+  final Widget playIcon;
   final Widget? overlay;
-  final Icon pickerIcon;
+  final Widget pickerIcon;
+
+  /// 添加框 borderColor
+  final Color pickerBorderColor;
+  final Color deleteColor;
 }
 
 abstract class FlAssetsPicker extends StatefulWidget {

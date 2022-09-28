@@ -127,10 +127,11 @@ class AssetsPickerController with ChangeNotifier {
     switch (type?.fromType) {
       case PickerFromType.assets:
         if (!mounted) return;
-        List<AssetEntity> selectedAssets =
-            List.from(allAssetEntity.where((element) => element.isLocalData));
+        List<AssetEntity> selectedAssets = [];
         int maxAssets = 1;
         if (_assetsPicker.maxCount > 1) {
+          selectedAssets =
+              List.from(allAssetEntity.where((element) => element.isLocalData));
           _assetsPicker.maxCount - selectedAssets.length;
         }
         final assetsEntryList = await pickAssets(context,

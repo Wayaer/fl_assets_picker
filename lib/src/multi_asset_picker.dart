@@ -133,11 +133,11 @@ class MultiAssetPicker extends FlAssetsPicker {
 
   /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static List<ExtendedAssetEntity> convertUrls(String url,
-      {AssetType assetsType = AssetType.image}) {
+      {AssetType assetsType = AssetType.image, String? splitPattern}) {
     List<ExtendedAssetEntity> list = [];
     if (url.isEmpty) return list;
-    if (url.contains(',')) {
-      final urls = url.split(',');
+    if (splitPattern != null && url.contains(splitPattern)) {
+      final urls = url.split(splitPattern);
       for (var element in urls) {
         if (element.isNotEmpty) {
           list.add(ExtendedAssetEntity.fromUrl(
@@ -238,9 +238,6 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
     if (config.color != null) {
       current = ColoredBox(color: config.color!, child: current);
     }
-    if (config.decoration != null) {
-      current = DecoratedBox(decoration: config.decoration!, child: current);
-    }
     current = GestureDetector(
         onTap: () => previewAssets(entry.value),
         child: widget.entryBuilder?.call(entry.value, entry.key) ?? current);
@@ -263,9 +260,8 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
       ]);
     }
     current = SizedBox.fromSize(size: config.size, child: current);
-    if (config.radius != null) {
-      current = ClipRRect(
-          borderRadius: BorderRadius.circular(config.radius!), child: current);
+    if (config.borderRadius != null) {
+      current = ClipRRect(borderRadius: config.borderRadius, child: current);
     }
     return current;
   }
@@ -299,23 +295,19 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
   /// 选择框
   Widget get buildPicker {
     final config = widget.entryConfig;
-    Widget icon = Container(
+    Widget current = SizedBox(
         width: config.size.width,
         height: config.size.height,
-        decoration: config.decoration ??
-            BoxDecoration(
-                borderRadius: BorderRadius.circular(config.radius ?? 0),
-                border: Border.all(color: config.borderColor)),
         child: config.pickerIcon);
     if (config.color != null) {
-      icon = ColoredBox(color: config.color!, child: icon);
+      current = ColoredBox(color: config.color!, child: current);
     }
-    if (config.radius != null) {
-      icon = ClipRRect(
-          borderRadius: BorderRadius.circular(config.radius!), child: icon);
+    if (config.borderRadius != null) {
+      current = ClipRRect(borderRadius: config.borderRadius, child: current);
     }
-    return GestureDetector(
-        onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? icon);
+    current = GestureDetector(
+        onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? current);
+    return current;
   }
 
   @override
