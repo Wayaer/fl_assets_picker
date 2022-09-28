@@ -38,9 +38,6 @@ class PickerFromTypeConfig {
   final RequestType? requestType;
 }
 
-typedef PickerFromTypeBuilder = Widget Function(
-    BuildContext context, List<PickerFromTypeConfig> fromTypes);
-
 /// show 选择弹窗
 Future<PickerFromTypeConfig?> showPickerFromType(
   BuildContext context,
@@ -63,7 +60,7 @@ Future<PickerFromTypeConfig?> showPickerFromType(
 }
 
 class _PickFromTypeBuilderWidget extends StatelessWidget {
-  const _PickFromTypeBuilderWidget(this.list, {Key? key}) : super(key: key);
+  const _PickFromTypeBuilderWidget(this.list);
 
   final List<PickerFromTypeConfig> list;
 

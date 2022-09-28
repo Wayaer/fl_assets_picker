@@ -7,53 +7,50 @@ typedef ExtendedImageLoadStateBuilder = Widget Function(ExtendedImageState);
 
 class PickerExtendedImage extends StatelessWidget {
   const PickerExtendedImage(this.image,
-      {Key? key,
+      {super.key,
       this.loading,
       this.error,
       this.width,
       this.height,
-      this.fit = BoxFit.cover})
-      : super(key: key);
+      this.fit = BoxFit.cover});
 
   PickerExtendedImage.asset(String name,
-      {Key? key,
+      {super.key,
       this.loading,
       this.error,
       this.width,
       this.height,
       this.fit = BoxFit.cover})
-      : image = ExtendedAssetImageProvider(name, imageCacheName: name),
-        super(key: key);
+      : image = ExtendedAssetImageProvider(name, imageCacheName: name);
 
   PickerExtendedImage.file(File file,
-      {Key? key,
+      {super.key,
       this.loading,
       this.error,
       this.width,
       this.height,
       this.fit = BoxFit.cover})
-      : image = ExtendedFileImageProvider(file, imageCacheName: file.path),
-        super(key: key);
+      : image = ExtendedFileImageProvider(file, imageCacheName: file.path);
 
   PickerExtendedImage.network(String url,
-      {Key? key,
+      {super.key,
       this.loading,
       this.error,
       this.width,
       this.height,
       this.fit = BoxFit.cover})
-      : image = ExtendedNetworkImageProvider(url, imageCacheName: url),
-        super(key: key);
+      : image = ExtendedNetworkImageProvider(url, imageCacheName: url);
 
+  /// fileAsync > previewUrl > previewPath
   static ImageProvider? assetEntityToImageProvider(
       ExtendedAssetEntity assetEntity) {
     ImageProvider? provider;
-    if (assetEntity.previewPath != null) {
-      provider = ExtendedAssetImageProvider(assetEntity.previewPath!);
-    } else if (assetEntity.fileAsync != null) {
+    if (assetEntity.fileAsync != null) {
       provider = ExtendedFileImageProvider(assetEntity.fileAsync!);
     } else if (assetEntity.previewUrl != null) {
       provider = ExtendedNetworkImageProvider(assetEntity.previewUrl!);
+    } else if (assetEntity.previewPath != null) {
+      provider = ExtendedAssetImageProvider(assetEntity.previewPath!);
     }
     return provider;
   }

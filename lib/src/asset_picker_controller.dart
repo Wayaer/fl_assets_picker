@@ -39,12 +39,12 @@ class AssetRepeatBuilderConfig {
           audioCompress: config.audioCompress ?? audioCompress);
 }
 
-class FlAssetsPickerController with ChangeNotifier {
-  FlAssetsPickerController(
+class AssetsPickerController with ChangeNotifier {
+  AssetsPickerController(
       {this.assetConfig = const AssetPickerConfig(),
       this.cameraConfig = const CameraPickerConfig()});
 
-  final List<ExtendedAssetEntity> allAssetEntity = [];
+  List<ExtendedAssetEntity> allAssetEntity = [];
 
   /// 资源选择器配置信息
   AssetPickerConfig assetConfig;
@@ -61,10 +61,10 @@ class FlAssetsPickerController with ChangeNotifier {
     repeatBuilderConfig.merge(config);
   }
 
-  late FlAssetPickerView _flAssetPickerView;
+  late FlAssetsPicker _assetsPicker;
 
-  void setWidget(FlAssetPickerView flAssetPickerView) {
-    _flAssetPickerView = flAssetPickerView;
+  void setWidget(FlAssetsPicker assetsPicker) {
+    _assetsPicker = assetsPicker;
   }
 
   void deleteAsset(String id) {
@@ -116,70 +116,81 @@ class FlAssetsPickerController with ChangeNotifier {
 
   /// 弹窗选择类型
   Future<void> pickFromType(BuildContext context, {bool mounted = true}) async {
-    if (allAssetEntity.length >= _flAssetPickerView.maxCount) {
-      _flAssetPickerView.errorCallback
-          ?.call('最多添加${_flAssetPickerView.maxCount}个资源');
+    if (_assetsPicker.maxCount > 1 &&
+        allAssetEntity.length >= _assetsPicker.maxCount) {
+      _assetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
       return;
     }
     PickerFromTypeConfig? type = await showPickerFromType(
-        context, _flAssetPickerView.fromRequestTypes,
-        fromRequestTypesBuilder: _flAssetPickerView.fromRequestTypesBuilder);
+        context, _assetsPicker.fromRequestTypes,
+        fromRequestTypesBuilder: _assetsPicker.fromRequestTypesBuilder);
     switch (type?.fromType) {
       case PickerFromType.assets:
         if (!mounted) return;
         List<AssetEntity> selectedAssets =
             List.from(allAssetEntity.where((element) => element.isLocalData));
+        int maxAssets = 1;
+        if (_assetsPicker.maxCount > 1) {
+          _assetsPicker.maxCount - selectedAssets.length;
+        }
         final assetsEntryList = await pickAssets(context,
             pickerConfig: assetConfig.copyWith(
-                maxAssets: _flAssetPickerView.maxCount - selectedAssets.length,
+                maxAssets: maxAssets,
                 requestType: type?.requestType,
                 selectedAssets: selectedAssets),
-            useRootNavigator: _flAssetPickerView.useRootNavigator,
-            pageRouteBuilder:
-                _flAssetPickerView.pageRouteBuilderForAssetPicker);
+            useRootNavigator: _assetsPicker.useRootNavigator,
+            pageRouteBuilder: _assetsPicker.pageRouteBuilderForAssetPicker);
         if (assetsEntryList == null) return;
-        if (assetsEntryList.length + allAssetEntity.length >
-            _flAssetPickerView.maxCount) {
-          _flAssetPickerView.errorCallback
-              ?.call('最多添加${_flAssetPickerView.maxCount}个资源');
-          return;
-        }
-        dynamic videos =
-            allAssetEntity.where((element) => element.type == AssetType.video);
-        for (var entity in assetsEntryList) {
-          if (entity.type == AssetType.video) {
-            videos = videos.toList().add(entity);
-          }
-          if (videos.length >= _flAssetPickerView.maxVideoCount) {
-            _flAssetPickerView.errorCallback
-                ?.call('最多添加${_flAssetPickerView.maxVideoCount}个视频');
+        if (_assetsPicker.maxCount > 1) {
+          /// 多资源选择
+          if (assetsEntryList.length + allAssetEntity.length >
+              _assetsPicker.maxCount) {
+            _assetsPicker.errorCallback
+                ?.call('最多添加${_assetsPicker.maxCount}个资源');
             return;
           }
-          allAssetEntity.add(entity);
+          dynamic videos = allAssetEntity
+              .where((element) => element.type == AssetType.video);
+          for (var entity in assetsEntryList) {
+            if (entity.type == AssetType.video) {
+              videos = videos.toList().add(entity);
+            }
+            if (videos.length >= _assetsPicker.maxVideoCount) {
+              _assetsPicker.errorCallback
+                  ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
+              return;
+            }
+            allAssetEntity.add(entity);
+          }
+        } else {
+          /// 单资源远着
+          allAssetEntity = assetsEntryList;
         }
         notifyListeners();
         break;
       case PickerFromType.camera:
         if (!mounted) return;
-        if (type?.requestType?.containsImage() ?? false) {}
         final assetsEntry = await pickFromCamera(context,
             pickerConfig: cameraConfig.copyWith(
                 enableRecording: (type?.requestType?.containsVideo() ?? false),
                 onlyEnableRecording: type?.requestType == RequestType.video,
                 enableAudio: (type?.requestType?.containsVideo() ?? false) ||
                     (type?.requestType?.containsAudio() ?? false)),
-            useRootNavigator: _flAssetPickerView.useRootNavigator,
-            pageRouteBuilder:
-                _flAssetPickerView.pageRouteBuilderForCameraPicker);
+            useRootNavigator: _assetsPicker.useRootNavigator,
+            pageRouteBuilder: _assetsPicker.pageRouteBuilderForCameraPicker);
         if (assetsEntry != null) {
-          final videos = allAssetEntity
-              .where((element) => element.type == AssetType.video);
-          if (videos.length >= _flAssetPickerView.maxVideoCount) {
-            _flAssetPickerView.errorCallback
-                ?.call('最多添加${_flAssetPickerView.maxVideoCount}个视频');
-            return;
+          if (_assetsPicker.maxCount > 1) {
+            final videos = allAssetEntity
+                .where((element) => element.type == AssetType.video);
+            if (videos.length >= _assetsPicker.maxVideoCount) {
+              _assetsPicker.errorCallback
+                  ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
+              return;
+            }
+            allAssetEntity.add(assetsEntry);
+          } else {
+            allAssetEntity = [assetsEntry];
           }
-          allAssetEntity.add(assetsEntry);
           notifyListeners();
         }
         break;

@@ -4,9 +4,9 @@ import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class PickerFlVideoPlayer extends StatefulWidget {
-  const PickerFlVideoPlayer({
-    Key? key,
+class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
+  const FlVideoPlayerWithAssetsPicker({
+    super.key,
     this.file,
     this.url,
     this.path,
@@ -16,8 +16,9 @@ class PickerFlVideoPlayer extends StatefulWidget {
     this.loading = const CircularProgressIndicator(),
     this.error = const Icon(Icons.info_outline),
     this.controls,
-  })  : assert(file != null || url != null || path != null),
-        super(key: key);
+  }) : assert(file != null || url != null || path != null);
+
+  /// url > path > file
   final File? file;
   final String? url;
   final String? path;
@@ -41,11 +42,12 @@ class PickerFlVideoPlayer extends StatefulWidget {
   final Widget? controls;
 
   @override
-  State<PickerFlVideoPlayer> createState() => _PickerFlVideoPlayerState();
+  State<FlVideoPlayerWithAssetsPicker> createState() =>
+      _FlVideoPlayerWithAssetsPickerState();
 }
 
-class _PickerFlVideoPlayerState extends State<PickerFlVideoPlayer>
-    with WidgetsBindingObserver {
+class _FlVideoPlayerWithAssetsPickerState
+    extends State<FlVideoPlayerWithAssetsPicker> with WidgetsBindingObserver {
   FlVideoPlayerController? flController;
 
   File? file;
@@ -68,12 +70,12 @@ class _PickerFlVideoPlayerState extends State<PickerFlVideoPlayer>
     flController?.pause();
     flController?.dispose();
     VideoPlayerController? videoPlayerController;
-    if (path != null) {
+    if (url != null) {
+      videoPlayerController = VideoPlayerController.network(url!);
+    } else if (path != null) {
       videoPlayerController = VideoPlayerController.asset(path!);
     } else if (file != null) {
       videoPlayerController = VideoPlayerController.file(file!);
-    } else if (url != null) {
-      videoPlayerController = VideoPlayerController.network(url!);
     }
     if (videoPlayerController == null) return;
     flController = FlVideoPlayerController(
@@ -101,7 +103,7 @@ class _PickerFlVideoPlayerState extends State<PickerFlVideoPlayer>
   }
 
   @override
-  void didUpdateWidget(covariant PickerFlVideoPlayer oldWidget) {
+  void didUpdateWidget(covariant FlVideoPlayerWithAssetsPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if ((widget.file != null && widget.file != file) ||
         (widget.path != null && widget.path != path) ||

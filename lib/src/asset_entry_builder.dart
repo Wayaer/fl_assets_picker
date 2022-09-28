@@ -2,30 +2,33 @@ import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:fl_assets_picker/src/extended_image.dart';
 import 'package:flutter/material.dart';
 
-class BuildAssetEntry extends StatelessWidget {
-  const BuildAssetEntry(this.entry, {Key? key, this.isThumbnail = true})
-      : super(key: key);
+class AssetsPickerEntryBuild extends StatelessWidget {
+  const AssetsPickerEntryBuild(this.entry,
+      {super.key, this.isThumbnail = true});
+
   final ExtendedAssetEntity entry;
+
+  /// 是否优先预览缩略图
   final bool isThumbnail;
 
   @override
   Widget build(BuildContext context) {
     switch (entry.type) {
       case AssetType.other:
-        return AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
       case AssetType.image:
-        return AssetEntryImageBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryImageBuild(entry, isThumbnail: isThumbnail);
       case AssetType.video:
-        return AssetEntryVideoBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryVideoBuild(entry, isThumbnail: isThumbnail);
       case AssetType.audio:
-        return AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
     }
   }
 }
 
-class AssetEntryVideoBuild extends StatelessWidget {
-  const AssetEntryVideoBuild(this.asset, {Key? key, this.isThumbnail = false})
-      : super(key: key);
+class _AssetEntryVideoBuild extends StatelessWidget {
+  const _AssetEntryVideoBuild(this.asset, {this.isThumbnail = false});
+
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
@@ -36,8 +39,7 @@ class AssetEntryVideoBuild extends StatelessWidget {
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
         imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
-      }
-      if (asset.videoCoverFile != null) {
+      } else if (asset.videoCoverFile != null) {
         imageProvider = ExtendedFileImageProvider(asset.videoCoverFile!);
       }
       BoxFit fit = BoxFit.cover;
@@ -45,7 +47,7 @@ class AssetEntryVideoBuild extends StatelessWidget {
       if (isThumbnail && imageProvider != null) {
         current = PickerExtendedImage(imageProvider, fit: fit);
       } else {
-        current = PickerFlVideoPlayer(
+        current = FlVideoPlayerWithAssetsPicker(
             file: asset.fileAsync,
             path: asset.previewPath,
             url: asset.previewUrl,
@@ -53,13 +55,13 @@ class AssetEntryVideoBuild extends StatelessWidget {
       }
       return current;
     }
-    return const PreviewSupported();
+    return const _PreviewSupported();
   }
 }
 
-class AssetEntryImageBuild extends StatelessWidget {
-  const AssetEntryImageBuild(this.asset, {Key? key, this.isThumbnail = false})
-      : super(key: key);
+class _AssetEntryImageBuild extends StatelessWidget {
+  const _AssetEntryImageBuild(this.asset, {this.isThumbnail = false});
+
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
@@ -78,13 +80,13 @@ class AssetEntryImageBuild extends StatelessWidget {
       if (imageProvider == null) return const SizedBox();
       return PickerExtendedImage(imageProvider, fit: fit);
     }
-    return const PreviewSupported();
+    return const _PreviewSupported();
   }
 }
 
-class AssetEntryOtherBuild extends StatelessWidget {
-  const AssetEntryOtherBuild(this.asset, {Key? key, this.isThumbnail = false})
-      : super(key: key);
+class _AssetEntryOtherBuild extends StatelessWidget {
+  const _AssetEntryOtherBuild(this.asset, {this.isThumbnail = false});
+
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
 
@@ -103,12 +105,12 @@ class AssetEntryOtherBuild extends StatelessWidget {
         return PickerExtendedImage(thumbnailProvider, fit: fit);
       }
     }
-    return const PreviewSupported();
+    return const _PreviewSupported();
   }
 }
 
-class PreviewSupported extends StatelessWidget {
-  const PreviewSupported({Key? key}) : super(key: key);
+class _PreviewSupported extends StatelessWidget {
+  const _PreviewSupported();
 
   @override
   Widget build(BuildContext context) =>

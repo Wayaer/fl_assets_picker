@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 class FlPreviewAssets extends StatelessWidget {
   const FlPreviewAssets(
-      {Key? key,
+      {super.key,
       required this.itemCount,
       required this.itemBuilder,
       this.controller,
@@ -16,8 +16,7 @@ class FlPreviewAssets extends StatelessWidget {
       this.scrollDirection = Axis.horizontal,
       this.canScrollPage,
       this.physics,
-      this.onPageChanged})
-      : super(key: key);
+      this.onPageChanged});
 
   final int? itemCount;
   final IndexedWidgetBuilder itemBuilder;
