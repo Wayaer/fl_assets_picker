@@ -132,7 +132,7 @@ class AssetsPickerController with ChangeNotifier {
         if (_assetsPicker.maxCount > 1) {
           selectedAssets =
               List.from(allAssetEntity.where((element) => element.isLocalData));
-          _assetsPicker.maxCount - selectedAssets.length;
+          maxAssets = _assetsPicker.maxCount - selectedAssets.length;
         }
         final assetsEntryList = await pickAssets(context,
             pickerConfig: assetConfig.copyWith(
@@ -150,18 +150,18 @@ class AssetsPickerController with ChangeNotifier {
                 ?.call('最多添加${_assetsPicker.maxCount}个资源');
             return;
           }
-          dynamic videos = allAssetEntity
-              .where((element) => element.type == AssetType.video);
+          var videos = allAssetEntity
+              .where((element) => element.type == AssetType.video)
+              .toList();
           for (var entity in assetsEntryList) {
-            if (entity.type == AssetType.video) {
-              videos = videos.toList().add(entity);
-            }
-            if (videos.length >= _assetsPicker.maxVideoCount) {
+            if (entity.type == AssetType.video) videos.add(entity);
+            if (videos.length > _assetsPicker.maxVideoCount) {
               _assetsPicker.errorCallback
                   ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
-              return;
+              continue;
+            } else {
+              allAssetEntity.add(entity);
             }
-            allAssetEntity.add(entity);
           }
         } else {
           /// 单资源远着
@@ -195,7 +195,6 @@ class AssetsPickerController with ChangeNotifier {
           notifyListeners();
         }
         break;
-
       case PickerFromType.cancel:
         break;
       default:

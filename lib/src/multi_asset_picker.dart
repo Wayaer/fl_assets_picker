@@ -224,8 +224,8 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
   /// 资源预览 entry
   Widget buildEntry(MapEntry<int, ExtendedAssetEntity> entry) {
     final assetEntry = entry.value;
-    Widget current = AssetsPickerEntryBuild(assetEntry);
     final config = widget.entryConfig;
+    Widget current = AssetsPickerEntryBuild(assetEntry, fit: config.fit);
     if (config.overlay != null ||
         assetEntry.type == AssetType.video ||
         assetEntry.type == AssetType.audio) {
@@ -278,7 +278,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
                   initialPage: currentAssetsEntry.indexOf(asset)),
               itemBuilder: (_, int index) => Center(
                   child: AssetsPickerEntryBuild(currentAssetsEntry[index],
-                      isThumbnail: false)),
+                      isThumbnail: false, fit: widget.entryConfig.previewFit)),
             ));
   }
 

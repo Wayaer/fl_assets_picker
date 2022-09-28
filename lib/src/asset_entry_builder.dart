@@ -4,33 +4,36 @@ import 'package:flutter/material.dart';
 
 class AssetsPickerEntryBuild extends StatelessWidget {
   const AssetsPickerEntryBuild(this.entry,
-      {super.key, this.isThumbnail = true});
+      {super.key, this.isThumbnail = true, required this.fit});
 
   final ExtendedAssetEntity entry;
 
   /// 是否优先预览缩略图
   final bool isThumbnail;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
     switch (entry.type) {
       case AssetType.other:
-        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.image:
-        return _AssetEntryImageBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryImageBuild(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.video:
-        return _AssetEntryVideoBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryVideoBuild(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.audio:
-        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail);
+        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail, fit: fit);
     }
   }
 }
 
 class _AssetEntryVideoBuild extends StatelessWidget {
-  const _AssetEntryVideoBuild(this.asset, {this.isThumbnail = false});
+  const _AssetEntryVideoBuild(this.asset,
+      {this.isThumbnail = false, required this.fit});
 
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +41,10 @@ class _AssetEntryVideoBuild extends StatelessWidget {
       Widget? current;
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
-        imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
+        imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
       } else if (asset.videoCoverFile != null) {
         imageProvider = ExtendedFileImageProvider(asset.videoCoverFile!);
       }
-      BoxFit fit = BoxFit.cover;
-      if (!isThumbnail) fit = BoxFit.contain;
       if (isThumbnail && imageProvider != null) {
         current = PickerExtendedImage(imageProvider, fit: fit);
       } else {
@@ -60,10 +61,12 @@ class _AssetEntryVideoBuild extends StatelessWidget {
 }
 
 class _AssetEntryImageBuild extends StatelessWidget {
-  const _AssetEntryImageBuild(this.asset, {this.isThumbnail = false});
+  const _AssetEntryImageBuild(this.asset,
+      {this.isThumbnail = false, required this.fit});
 
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +75,6 @@ class _AssetEntryImageBuild extends StatelessWidget {
       if (asset.thumbnailDataAsync != null) {
         imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
       }
-      BoxFit fit = BoxFit.cover;
-      if (!isThumbnail) fit = BoxFit.contain;
       imageProvider = isThumbnail && imageProvider != null
           ? imageProvider
           : PickerExtendedImage.assetEntityToImageProvider(asset);
@@ -85,10 +86,12 @@ class _AssetEntryImageBuild extends StatelessWidget {
 }
 
 class _AssetEntryOtherBuild extends StatelessWidget {
-  const _AssetEntryOtherBuild(this.asset, {this.isThumbnail = false});
+  const _AssetEntryOtherBuild(this.asset,
+      {this.isThumbnail = false, required this.fit});
 
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
+  final BoxFit fit;
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +101,6 @@ class _AssetEntryOtherBuild extends StatelessWidget {
         thumbnailProvider =
             PickerExtendedImage.assetEntityToImageProvider(asset);
       }
-      BoxFit fit = BoxFit.cover;
-      if (!isThumbnail) fit = BoxFit.contain;
-
       if (isThumbnail && thumbnailProvider != null) {
         return PickerExtendedImage(thumbnailProvider, fit: fit);
       }

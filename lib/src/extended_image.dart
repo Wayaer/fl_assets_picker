@@ -63,27 +63,29 @@ class PickerExtendedImage extends StatelessWidget {
   final BoxFit fit;
 
   @override
-  Widget build(BuildContext context) => ExtendedImage(
-      fit: fit,
-      image: image,
-      width: width,
-      height: height,
-      loadStateChanged: (ExtendedImageState state) {
-        switch (state.extendedImageLoadState) {
-          case LoadState.loading:
-            return Center(child: loading?.call(state) ?? const SizedBox());
-          case LoadState.completed:
-            return ExtendedRawImage(
-                width: width,
-                height: height,
-                image: state.extendedImageInfo?.image,
-                fit: fit);
-          case LoadState.failed:
-            return GestureDetector(
-                onTap: state.reLoadImage,
-                child: Center(
-                    child:
-                        error?.call(state) ?? const Icon(Icons.info_outline)));
-        }
-      });
+  Widget build(BuildContext context) {
+    return ExtendedImage(
+        fit: fit,
+        image: image,
+        width: width ?? double.infinity,
+        height: height ?? double.infinity,
+        loadStateChanged: (ExtendedImageState state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return Center(child: loading?.call(state) ?? const SizedBox());
+            case LoadState.completed:
+              return ExtendedRawImage(
+                  width: width,
+                  height: height,
+                  image: state.extendedImageInfo?.image,
+                  fit: fit);
+            case LoadState.failed:
+              return GestureDetector(
+                  onTap: state.reLoadImage,
+                  child: Center(
+                      child: error?.call(state) ??
+                          const Icon(Icons.info_outline)));
+          }
+        });
+  }
 }

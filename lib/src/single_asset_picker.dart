@@ -141,7 +141,8 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
         entity.fileAsync == null) {
       return widget.config.pickerIcon;
     }
-    return AssetsPickerEntryBuild(entity, isThumbnail: true);
+    return AssetsPickerEntryBuild(entity,
+        isThumbnail: true, fit: widget.config.fit);
   }
 
   void pickerAsset() async {

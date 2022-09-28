@@ -21,6 +21,9 @@ class _HomePage extends StatelessWidget {
           const Text('单资源选择').marginAll(12),
           Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
             SingleAssetPicker(
+                errorCallback: (String value) {
+                  showToast(value);
+                },
                 initialData: SingleAssetPicker.convertUrl(url),
                 config: PickerAssetEntryBuilderConfig(
                     borderRadius: BorderRadius.circular(10),
@@ -29,6 +32,9 @@ class _HomePage extends StatelessWidget {
                   log('onChanged ${value.realValueStr}');
                 }),
             SingleAssetPicker(
+                errorCallback: (String value) {
+                  showToast(value);
+                },
                 initialData: SingleAssetPicker.convertUrl(url),
                 config: PickerAssetEntryBuilderConfig(
                     borderRadius: BorderRadius.circular(40),
@@ -41,6 +47,9 @@ class _HomePage extends StatelessWidget {
           const Text('多资源选择').marginAll(12),
           MultiAssetPicker(
               initialData: MultiAssetPicker.convertUrls(url),
+              errorCallback: (String value) {
+                showToast(value);
+              },
               entryConfig: PickerAssetEntryBuilderConfig(
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.amberAccent),

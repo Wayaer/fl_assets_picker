@@ -7,6 +7,8 @@ typedef PickerFromTypeBuilder = Widget Function(
 class PickerAssetEntryBuilderConfig {
   const PickerAssetEntryBuilderConfig(
       {this.color,
+      this.fit = BoxFit.cover,
+      this.previewFit = BoxFit.contain,
       this.borderRadius,
       this.size = const Size(65, 65),
       this.pickerIcon =
@@ -20,9 +22,16 @@ class PickerAssetEntryBuilderConfig {
   final Color? color;
   final Size size;
   final BorderRadiusGeometry? borderRadius;
+
+  /// 视频预览 播放 icon
   final Widget playIcon;
-  final Widget? overlay;
+
+  /// pick 框的 icon
   final Widget pickerIcon;
+  final Widget? overlay;
+
+  final BoxFit fit;
+  final BoxFit previewFit;
 
   /// 添加框 borderColor
   final Color pickerBorderColor;
