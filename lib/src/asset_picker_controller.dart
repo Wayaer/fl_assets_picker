@@ -52,15 +52,6 @@ class AssetsPickerController with ChangeNotifier {
   /// 相机配置信息
   CameraPickerConfig cameraConfig;
 
-  /// 资源重新编辑
-  AssetRepeatBuilderConfig repeatBuilderConfig =
-      const AssetRepeatBuilderConfig();
-
-  /// 设置 资源 压缩构造方法
-  void setAssetBuilder(AssetRepeatBuilderConfig config) {
-    repeatBuilderConfig.merge(config);
-  }
-
   late FlAssetsPicker _assetsPicker;
 
   void setWidget(FlAssetsPicker assetsPicker) {
@@ -92,7 +83,7 @@ class AssetsPickerController with ChangeNotifier {
       List<ExtendedAssetEntity> list = [];
       for (var element in assets) {
         if (!allAssetEntity.contains(element)) {
-          list.add(await element.repeatBuilder(repeatBuilderConfig));
+          list.add(await element.repeatBuilder(_assetsPicker.repeatBuilder));
         }
       }
       return list;
@@ -110,7 +101,8 @@ class AssetsPickerController with ChangeNotifier {
         pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
-    if (entity != null) return await entity.repeatBuilder(repeatBuilderConfig);
+    if (entity != null)
+      return await entity.repeatBuilder(_assetsPicker.repeatBuilder);
     return null;
   }
 
