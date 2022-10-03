@@ -101,8 +101,9 @@ class AssetsPickerController with ChangeNotifier {
         pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
-    if (entity != null)
+    if (entity != null) {
       return await entity.repeatBuilder(_assetsPicker.repeatBuilder);
+    }
     return null;
   }
 
