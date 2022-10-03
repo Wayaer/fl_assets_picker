@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   wechat_assets_picker: ^8.1.1
-  wechat_camera_picker: ^3.6.0
+  wechat_camera_picker: ^3.6.1
   extended_image: ^6.3.1
   fl_video: ^1.0.1
   wakelock: ^0.6.2
