@@ -41,7 +41,7 @@ class PickerAssetEntryBuilderConfig {
 abstract class FlAssetsPicker extends StatefulWidget {
   const FlAssetsPicker(
       {super.key,
-      this.repeatBuilder,
+      this.renovate,
       required this.maxVideoCount,
       required this.maxCount,
       required this.fromRequestTypes,
@@ -76,5 +76,5 @@ abstract class FlAssetsPicker extends StatefulWidget {
       pageRouteBuilderForAssetPicker;
 
   /// 资源重新编辑
-  final AssetRepeatBuilderConfig? repeatBuilder;
+  final FlAssetFileRenovate? renovate;
 }

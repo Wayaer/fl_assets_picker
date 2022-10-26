@@ -71,7 +71,7 @@ class MultiAssetPicker extends FlAssetsPicker {
           requestType: RequestType.common),
       PickerFromTypeConfig(fromType: PickerFromType.cancel, text: Text('取消')),
     ],
-    super.repeatBuilder,
+    super.renovate,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
     super.fromRequestTypesBuilder,

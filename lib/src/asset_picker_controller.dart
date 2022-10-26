@@ -4,40 +4,7 @@ import 'dart:typed_data';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
-typedef FlAssetRepeatBuilder = Future<File?> Function(AssetEntity entity);
-
-class AssetRepeatBuilderConfig {
-  const AssetRepeatBuilderConfig({
-    this.videoCompress,
-    this.videoCover,
-    this.imageCompress,
-    this.imageCrop,
-    this.audioCompress,
-  });
-
-  /// 压缩视频
-  final FlAssetRepeatBuilder? videoCompress;
-
-  /// 获取视频封面
-  final FlAssetRepeatBuilder? videoCover;
-
-  /// 压缩图片
-  final FlAssetRepeatBuilder? imageCompress;
-
-  /// 裁剪图片
-  final FlAssetRepeatBuilder? imageCrop;
-
-  /// 压缩音频
-  final FlAssetRepeatBuilder? audioCompress;
-
-  AssetRepeatBuilderConfig merge(AssetRepeatBuilderConfig config) =>
-      AssetRepeatBuilderConfig(
-          videoCompress: config.videoCompress ?? videoCompress,
-          videoCover: config.videoCover ?? videoCover,
-          imageCompress: config.imageCompress ?? imageCompress,
-          imageCrop: config.imageCrop ?? imageCrop,
-          audioCompress: config.audioCompress ?? audioCompress);
-}
+typedef FlAssetFileRenovate = Future<File?> Function(AssetEntity entity);
 
 class AssetsPickerController with ChangeNotifier {
   AssetsPickerController(
@@ -83,7 +50,8 @@ class AssetsPickerController with ChangeNotifier {
       List<ExtendedAssetEntity> list = [];
       for (var element in assets) {
         if (!allAssetEntity.contains(element)) {
-          list.add(await element.repeatBuilder(_assetsPicker.repeatBuilder));
+          list.add(await element.toExtensionAssetEntity(
+              renovate: _assetsPicker.renovate));
         }
       }
       return list;
@@ -102,7 +70,8 @@ class AssetsPickerController with ChangeNotifier {
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
     if (entity != null) {
-      return await entity.repeatBuilder(_assetsPicker.repeatBuilder);
+      return await entity.toExtensionAssetEntity(
+          renovate: _assetsPicker.renovate);
     }
     return null;
   }
@@ -226,9 +195,7 @@ class ExtendedAssetEntity extends AssetEntity {
     required AssetType assetType,
   })  : thumbnailDataAsync = null,
         fileAsync = null,
-        compressFile = null,
-        videoCoverFile = null,
-        imageCropFile = null,
+        renovatedFile = null,
         previewPath = null,
         isLocalData = false,
         super(typeInt: assetType.index, id: previewUrl.hashCode.toString());
@@ -240,9 +207,7 @@ class ExtendedAssetEntity extends AssetEntity {
     required AssetType assetType,
   })  : thumbnailDataAsync = null,
         fileAsync = null,
-        compressFile = null,
-        videoCoverFile = null,
-        imageCropFile = null,
+        renovatedFile = null,
         previewUrl = null,
         isLocalData = false,
         super(typeInt: assetType.index, id: previewPath.hashCode.toString());
@@ -254,9 +219,7 @@ class ExtendedAssetEntity extends AssetEntity {
     required AssetType assetType,
   })  : thumbnailDataAsync = null,
         fileAsync = file,
-        compressFile = null,
-        videoCoverFile = null,
-        imageCropFile = null,
+        renovatedFile = null,
         previewPath = null,
         previewUrl = null,
         isLocalData = false,
@@ -264,10 +227,8 @@ class ExtendedAssetEntity extends AssetEntity {
 
   const ExtendedAssetEntity({
     this.thumbnailDataAsync,
-    this.compressFile,
-    this.imageCropFile,
+    this.renovatedFile,
     this.fileAsync,
-    this.videoCoverFile,
     required super.id,
     required super.typeInt,
     required super.width,
@@ -301,17 +262,8 @@ class ExtendedAssetEntity extends AssetEntity {
   /// file
   final File? fileAsync;
 
-  /// 压缩后的路径
-  /// 只有通过本地选择的资源 并添加了压缩方法
-  final File? compressFile;
-
-  /// 视频封面
-  /// 只有通过本地选择的资源 并添加了获取封面的方法
-  final File? videoCoverFile;
-
-  /// 图片裁剪后的路径
-  /// 只有通过本地选择的资源 并添加了裁剪的方法
-  final File? imageCropFile;
+  /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
+  final File? renovatedFile;
 
   String? get realValueStr => previewUrl ?? previewPath ?? fileAsync?.path;
 

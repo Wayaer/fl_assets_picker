@@ -24,29 +24,17 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
 }
 
 extension ExtensionAssetEntity on AssetEntity {
-  /// repeat builder [AssetEntity] and to [ExtendedAssetEntity];
-  Future<ExtendedAssetEntity> repeatBuilder(
-      [AssetRepeatBuilderConfig? buildConfig]) async {
-    File? compressFile;
-    File? imageCropFile;
-    File? videoCoverFile;
-    if (type == AssetType.image) {
-      imageCropFile = await buildConfig?.imageCrop?.call(this);
-      compressFile = await buildConfig?.imageCompress?.call(this);
-    } else if (type == AssetType.video) {
-      compressFile = await buildConfig?.videoCompress?.call(this);
-      videoCoverFile = await buildConfig?.videoCover?.call(this);
-    } else if (type == AssetType.audio) {
-      compressFile = await buildConfig?.audioCompress?.call(this);
-    }
+  ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
+  Future<ExtendedAssetEntity> toExtensionAssetEntity(
+      {FlAssetFileRenovate? renovate}) async {
+    File? renovatedFile;
+    if (renovate != null) renovatedFile = await renovate.call(this);
     final fileAsync = await file;
     final thumbnailData = await this.thumbnailData;
     return ExtendedAssetEntity(
         thumbnailDataAsync: thumbnailData,
         fileAsync: fileAsync,
-        compressFile: compressFile,
-        imageCropFile: imageCropFile,
-        videoCoverFile: videoCoverFile,
+        renovatedFile: renovatedFile,
         id: id,
         typeInt: typeInt,
         width: width,

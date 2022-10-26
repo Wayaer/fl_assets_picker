@@ -42,8 +42,8 @@ class _AssetEntryVideoBuild extends StatelessWidget {
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
         imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
-      } else if (asset.videoCoverFile != null) {
-        imageProvider = ExtendedFileImageProvider(asset.videoCoverFile!);
+      } else if (asset.renovatedFile != null) {
+        imageProvider = ExtendedFileImageProvider(asset.renovatedFile!);
       }
       if (isThumbnail && imageProvider != null) {
         current = PickerExtendedImage(imageProvider, fit: fit);
