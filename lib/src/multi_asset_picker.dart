@@ -3,6 +3,12 @@ import 'dart:io';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
+typedef FlPreviewAssetsSheetRouteBuilder = void Function(
+    BuildContext context, Widget previewAssets);
+
+typedef FlPreviewAssetsBuilder = Widget Function(
+    BuildContext context, List<ExtendedAssetEntity> entitys);
+
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
       {this.direction = Axis.horizontal,
@@ -75,6 +81,8 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
     super.fromRequestTypesBuilder,
+    this.previewBuilder,
+    this.previewSheetRouteBuilder,
   });
 
   /// 是否显示删除按钮
@@ -102,6 +110,12 @@ class MultiAssetPicker extends FlAssetsPicker {
 
   /// entry UI 样式配置
   final PickerAssetEntryBuilderConfig entryConfig;
+
+  /// 弹出预览框 builder
+  final FlPreviewAssetsSheetRouteBuilder? previewSheetRouteBuilder;
+
+  /// 预览框 builder
+  final FlPreviewAssetsBuilder? previewBuilder;
 
   @override
   State<MultiAssetPicker> createState() => _MultiAssetPickerState();
@@ -269,18 +283,25 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
 
   void previewAssets(ExtendedAssetEntity asset) async {
     final currentAssetsEntry = controller.allAssetEntity;
-    showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext context) => FlPreviewAssets(
-              itemCount: currentAssetsEntry.length,
-              controller: ExtendedPageController(
-                  initialPage: currentAssetsEntry.indexOf(asset)),
-              itemBuilder: (_, int index) => Center(
-                  child: AssetsPickerEntryBuild(currentAssetsEntry[index],
-                      isThumbnail: false, fit: widget.entryConfig.previewFit)),
-            ));
+    final previewAssets = FlPreviewAssets(
+        itemCount: currentAssetsEntry.length,
+        controller: ExtendedPageController(
+            initialPage: currentAssetsEntry.indexOf(asset)),
+        itemBuilder: (_, int index) => Center(
+            child: AssetsPickerEntryBuild(currentAssetsEntry[index],
+                isThumbnail: false, fit: widget.entryConfig.previewFit)));
+
+    if (widget.previewSheetRouteBuilder == null) {
+      showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (BuildContext context) =>
+              widget.previewBuilder?.call(context, currentAssetsEntry) ??
+              previewAssets);
+    } else {
+      widget.previewSheetRouteBuilder!.call(context, previewAssets);
+    }
   }
 
   void pickerAsset() async {

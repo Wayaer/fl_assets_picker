@@ -47,6 +47,8 @@ class _HomePage extends StatelessWidget {
           const Text('多资源选择').marginAll(12),
           MultiAssetPicker(
               initialData: MultiAssetPicker.convertUrls(url),
+              previewSheetRouteBuilder: (_, Widget previewAssets) =>
+                  showDialogPopup(widget: previewAssets),
               errorCallback: (String value) {
                 showToast(value);
               },
