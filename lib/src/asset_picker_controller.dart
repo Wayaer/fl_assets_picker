@@ -42,7 +42,8 @@ class AssetsPickerController with ChangeNotifier {
       {bool useRootNavigator = true,
       AssetPickerConfig? pickerConfig,
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
-    final List<AssetEntity>? assets = await showPickerAssets(context,
+    final List<AssetEntity>? assets = await FlAssetsPicker.showPickerAssets(
+        context,
         pickerConfig: pickerConfig ?? assetConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -65,7 +66,8 @@ class AssetsPickerController with ChangeNotifier {
       CameraPickerConfig? pickerConfig,
       CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
           pageRouteBuilder}) async {
-    final AssetEntity? entity = await showPickerFromCamera(context,
+    final AssetEntity? entity = await FlAssetsPicker.showPickerFromCamera(
+        context,
         pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -83,9 +85,9 @@ class AssetsPickerController with ChangeNotifier {
       _assetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
       return;
     }
-    PickerFromTypeConfig? type = await showPickerFromType(
+    PickerFromTypeConfig? type = await FlAssetsPicker.showPickerFromType(
         context, _assetsPicker.fromRequestTypes,
-        fromRequestTypesBuilder: _assetsPicker.fromRequestTypesBuilder);
+        fromTypesBuilder: _assetsPicker.fromTypesBuilder);
     switch (type?.fromType) {
       case PickerFromType.assets:
         if (!mounted) return;
@@ -164,28 +166,6 @@ class AssetsPickerController with ChangeNotifier {
     }
   }
 }
-
-/// 选择图片
-Future<List<AssetEntity>?> showPickerAssets(BuildContext context,
-        {bool useRootNavigator = true,
-        AssetPickerConfig pickerConfig = const AssetPickerConfig(),
-        AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) =>
-    AssetPicker.pickAssets(context,
-        pickerConfig: pickerConfig,
-        useRootNavigator: useRootNavigator,
-        pageRouteBuilder: pageRouteBuilder);
-
-/// 通过相机拍照
-Future<AssetEntity?> showPickerFromCamera(
-  BuildContext context, {
-  bool useRootNavigator = true,
-  CameraPickerConfig pickerConfig = const CameraPickerConfig(),
-  CameraPickerPageRoute<AssetEntity> Function(Widget picker)? pageRouteBuilder,
-}) =>
-    CameraPicker.pickFromCamera(context,
-        pickerConfig: pickerConfig,
-        useRootNavigator: useRootNavigator,
-        pageRouteBuilder: pageRouteBuilder);
 
 class ExtendedAssetEntity extends AssetEntity {
   ExtendedAssetEntity.fromUrl({

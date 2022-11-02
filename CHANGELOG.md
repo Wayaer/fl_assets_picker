@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Add some static methods for `FlAssetsPicker`
+
 ## 0.3.1
 
 * Added `previewBuilder` and `previewSheetRouteBuilder` for `MultiAssetPicker()`

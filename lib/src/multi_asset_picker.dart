@@ -80,7 +80,7 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.renovate,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
-    super.fromRequestTypesBuilder,
+    super.fromTypesBuilder,
     this.previewBuilder,
     this.previewSheetRouteBuilder,
   });

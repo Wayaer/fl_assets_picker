@@ -214,6 +214,36 @@ extension ExtensionAssetPickerConfig on AssetPickerConfig {
               limitedPermissionOverlayPredicate ??
                   this.limitedPermissionOverlayPredicate,
           pathNameBuilder: pathNameBuilder ?? this.pathNameBuilder);
+
+  AssetPickerConfig merge([AssetPickerConfig? config]) => AssetPickerConfig(
+      selectedAssets: config?.selectedAssets ?? selectedAssets,
+      maxAssets: config?.maxAssets ?? maxAssets,
+      pageSize: config?.pageSize ?? pageSize,
+      gridThumbnailSize: config?.gridThumbnailSize ?? gridThumbnailSize,
+      pathThumbnailSize: config?.pathThumbnailSize ?? pathThumbnailSize,
+      previewThumbnailSize:
+          config?.previewThumbnailSize ?? previewThumbnailSize,
+      requestType: config?.requestType ?? requestType,
+      specialPickerType: config?.specialPickerType ?? specialPickerType,
+      keepScrollOffset: config?.keepScrollOffset ?? keepScrollOffset,
+      sortPathDelegate: config?.sortPathDelegate ?? sortPathDelegate,
+      sortPathsByModifiedDate:
+          config?.sortPathsByModifiedDate ?? sortPathsByModifiedDate,
+      filterOptions: config?.filterOptions ?? filterOptions,
+      gridCount: config?.gridCount ?? gridCount,
+      themeColor: config?.themeColor ?? themeColor,
+      pickerTheme: config?.pickerTheme ?? pickerTheme,
+      textDelegate: config?.textDelegate ?? textDelegate,
+      specialItemPosition: config?.specialItemPosition ?? specialItemPosition,
+      specialItemBuilder: config?.specialItemBuilder ?? specialItemBuilder,
+      loadingIndicatorBuilder:
+          loadingIndicatorBuilder ?? loadingIndicatorBuilder,
+      selectPredicate: config?.selectPredicate ?? selectPredicate,
+      shouldRevertGrid: config?.shouldRevertGrid ?? shouldRevertGrid,
+      limitedPermissionOverlayPredicate:
+          config?.limitedPermissionOverlayPredicate ??
+              limitedPermissionOverlayPredicate,
+      pathNameBuilder: config?.pathNameBuilder ?? pathNameBuilder);
 }
 
 extension ExtensionCameraPickerConfig on CameraPickerConfig {
@@ -354,4 +384,38 @@ extension ExtensionCameraPickerConfig on CameraPickerConfig {
           onEntitySaving: onEntitySaving ?? this.onEntitySaving,
           onError: onError ?? this.onError,
           onXFileCaptured: onXFileCaptured ?? this.onXFileCaptured);
+
+  CameraPickerConfig merge([CameraPickerConfig? config]) => CameraPickerConfig(
+      enableRecording: config?.enableRecording ?? enableRecording,
+      onlyEnableRecording: config?.onlyEnableRecording ?? onlyEnableRecording,
+      enableTapRecording: config?.enableTapRecording ?? enableTapRecording,
+      enableAudio: config?.enableAudio ?? enableAudio,
+      enableSetExposure: config?.enableSetExposure ?? enableSetExposure,
+      enableExposureControlOnPoint:
+          config?.enableExposureControlOnPoint ?? enableExposureControlOnPoint,
+      enablePinchToZoom: config?.enablePinchToZoom ?? enablePinchToZoom,
+      enablePullToZoomInRecord:
+          config?.enablePullToZoomInRecord ?? enablePullToZoomInRecord,
+      enableScaledPreview: config?.enableScaledPreview ?? enableScaledPreview,
+      shouldDeletePreviewFile:
+          config?.shouldDeletePreviewFile ?? shouldDeletePreviewFile,
+      shouldAutoPreviewVideo:
+          config?.shouldAutoPreviewVideo ?? shouldAutoPreviewVideo,
+      maximumRecordingDuration:
+          config?.maximumRecordingDuration ?? maximumRecordingDuration,
+      theme: config?.theme ?? theme,
+      textDelegate: config?.textDelegate ?? textDelegate,
+      cameraQuarterTurns: config?.cameraQuarterTurns ?? cameraQuarterTurns,
+      resolutionPreset: config?.resolutionPreset ?? resolutionPreset,
+      imageFormatGroup: config?.imageFormatGroup ?? imageFormatGroup,
+      preferredLensDirection:
+          config?.preferredLensDirection ?? preferredLensDirection,
+      lockCaptureOrientation:
+          config?.lockCaptureOrientation ?? lockCaptureOrientation,
+      foregroundBuilder: config?.foregroundBuilder ?? foregroundBuilder,
+      previewTransformBuilder:
+          previewTransformBuilder ?? previewTransformBuilder,
+      onEntitySaving: config?.onEntitySaving ?? onEntitySaving,
+      onError: config?.onError ?? onError,
+      onXFileCaptured: config?.onXFileCaptured ?? onXFileCaptured);
 }

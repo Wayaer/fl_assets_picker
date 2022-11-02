@@ -24,7 +24,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     ],
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
-    super.fromRequestTypesBuilder,
+    super.fromTypesBuilder,
     super.renovate,
     this.config = const PickerAssetEntryBuilderConfig(),
     this.builder,

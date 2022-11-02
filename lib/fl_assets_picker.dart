@@ -11,7 +11,6 @@ export 'src/asset_picker.dart';
 export 'src/asset_picker_controller.dart';
 export 'src/extension.dart';
 export 'src/fl_video_player.dart';
-export 'src/from_type_builder.dart';
 export 'src/multi_asset_picker.dart';
 export 'src/preview.dart';
 export 'src/single_asset_picker.dart';
