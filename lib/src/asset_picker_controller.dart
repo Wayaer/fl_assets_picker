@@ -44,6 +44,7 @@ class AssetsPickerController with ChangeNotifier {
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
     final List<AssetEntity>? assets = await FlAssetsPicker.showPickerAssets(
         context,
+        checkPermission: _assetsPicker.checkPermission,
         pickerConfig: pickerConfig ?? assetConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -68,6 +69,7 @@ class AssetsPickerController with ChangeNotifier {
           pageRouteBuilder}) async {
     final AssetEntity? entity = await FlAssetsPicker.showPickerFromCamera(
         context,
+        checkPermission: _assetsPicker.checkPermission,
         pickerConfig: pickerConfig ?? cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);

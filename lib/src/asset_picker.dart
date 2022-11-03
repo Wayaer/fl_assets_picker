@@ -11,7 +11,7 @@ bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
 bool get _isMobile => _isAndroid || _isIOS;
 
-typedef FlAssetsPickerGetPermission = Future<bool> Function(
+typedef FlAssetsPickerCheckPermission = Future<bool> Function(
     PickerFromType fromType);
 
 typedef FlAssetsPickerErrorCallback = void Function(String erroe);
@@ -100,7 +100,8 @@ abstract class FlAssetsPicker extends StatefulWidget {
       this.errorCallback,
       this.fromTypesBuilder,
       this.pageRouteBuilderForCameraPicker,
-      this.pageRouteBuilderForAssetPicker});
+      this.pageRouteBuilderForAssetPicker,
+      this.checkPermission});
 
   /// 最大选择视频数量
   final int maxVideoCount;
@@ -131,6 +132,9 @@ abstract class FlAssetsPicker extends StatefulWidget {
   /// 资源重新编辑
   final FlAssetFileRenovate? renovate;
 
+  /// 获取权限
+  final FlAssetsPickerCheckPermission? checkPermission;
+
   /// 选择图片或者视频
   static Future<ExtendedAssetEntity?> showPickerWithFormType(
     BuildContext context, {
@@ -159,7 +163,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     PickerFromType? pickerFromType,
 
     /// 获取权限
-    FlAssetsPickerGetPermission? getPermission,
+    FlAssetsPickerCheckPermission? checkPermission,
 
     /// 选择器配置信息
     AssetPickerConfig? assetPickerConfig,
@@ -187,10 +191,10 @@ abstract class FlAssetsPicker extends StatefulWidget {
     AssetEntity? entity;
     switch (pickerFromType) {
       case PickerFromType.assets:
-        final permission = await getPermission?.call(pickerFromType!) ?? true;
-        if (!permission || !mounted) return null;
+        if (!mounted) return null;
         final assetsEntity = await showPickerAssets(context,
             pageRouteBuilder: pageRouteBuilderForAssetPicker,
+            checkPermission: checkPermission,
             pickerConfig: AssetPickerConfig(
                 maxAssets: 1,
                 requestType: requestType,
@@ -199,9 +203,9 @@ abstract class FlAssetsPicker extends StatefulWidget {
         entity = assetsEntity.first;
         break;
       case PickerFromType.camera:
-        final permission = await getPermission?.call(pickerFromType!) ?? true;
-        if (!permission || !mounted) return null;
+        if (!mounted) return null;
         entity = await showPickerFromCamera(context,
+            checkPermission: checkPermission,
             pageRouteBuilder: pageRouteBuilderForCameraPicker,
             pickerConfig: const CameraPickerConfig(
                     resolutionPreset: ResolutionPreset.high)
@@ -246,42 +250,61 @@ abstract class FlAssetsPicker extends StatefulWidget {
 
   /// 选择图片
   static Future<List<AssetEntity>?> showPickerAssets(BuildContext context,
-          {bool useRootNavigator = true,
-          Key? key,
-          AssetPickerConfig pickerConfig = const AssetPickerConfig(),
-          AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) =>
-      AssetPicker.pickAssets(context,
-          key: key,
-          pickerConfig: pickerConfig,
-          useRootNavigator: useRootNavigator,
-          pageRouteBuilder: pageRouteBuilder);
+      {bool useRootNavigator = true,
+      bool mounted = true,
+      FlAssetsPickerCheckPermission? checkPermission,
+      Key? key,
+      AssetPickerConfig pickerConfig = const AssetPickerConfig(),
+      AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
+    final permissionState =
+        await checkPermission?.call(PickerFromType.assets) ?? true;
+    if (!permissionState || !mounted) return null;
+    return await AssetPicker.pickAssets(context,
+        key: key,
+        pickerConfig: pickerConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+  }
 
   /// 选择图片
   static Future<List<Asset>?> showPickerAssetsWithDelegate<Asset, Path,
-              PickerProvider extends AssetPickerProvider<Asset, Path>>(
-          BuildContext context,
-          {Key? key,
-          required AssetPickerBuilderDelegate<Asset, Path> delegate,
-          bool useRootNavigator = true,
-          AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder}) =>
-      AssetPicker.pickAssetsWithDelegate<Asset, Path, PickerProvider>(context,
-          key: key,
-          delegate: delegate,
-          useRootNavigator: useRootNavigator,
-          pageRouteBuilder: pageRouteBuilder);
+          PickerProvider extends AssetPickerProvider<Asset, Path>>(
+      BuildContext context,
+      {Key? key,
+      bool mounted = true,
+      FlAssetsPickerCheckPermission? checkPermission,
+      required AssetPickerBuilderDelegate<Asset, Path> delegate,
+      bool useRootNavigator = true,
+      AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder}) async {
+    final permissionState =
+        await checkPermission?.call(PickerFromType.assets) ?? true;
+    if (!permissionState || !mounted) return null;
+    return await AssetPicker.pickAssetsWithDelegate<Asset, Path,
+            PickerProvider>(context,
+        key: key,
+        delegate: delegate,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+  }
 
   /// 通过相机拍照
   static Future<AssetEntity?> showPickerFromCamera(
     BuildContext context, {
     bool useRootNavigator = true,
+    bool mounted = true,
+    FlAssetsPickerCheckPermission? checkPermission,
     CameraPickerConfig pickerConfig = const CameraPickerConfig(),
     CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
         pageRouteBuilder,
-  }) =>
-      CameraPicker.pickFromCamera(context,
-          pickerConfig: pickerConfig,
-          useRootNavigator: useRootNavigator,
-          pageRouteBuilder: pageRouteBuilder);
+  }) async {
+    final permissionState =
+        await checkPermission?.call(PickerFromType.camera) ?? true;
+    if (!permissionState || !mounted) return null;
+    return await CameraPicker.pickFromCamera(context,
+        pickerConfig: pickerConfig,
+        useRootNavigator: useRootNavigator,
+        pageRouteBuilder: pageRouteBuilder);
+  }
 
   /// int 字节转 k MB GB
   static String _toSize(int size) {
