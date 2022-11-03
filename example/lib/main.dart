@@ -1,6 +1,8 @@
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_curiosity/flutter_curiosity.dart';
 import 'package:flutter_waya/flutter_waya.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const ExtendedWidgetsApp(home: _HomePage()));
@@ -11,6 +13,21 @@ const url =
 
 class _HomePage extends StatelessWidget {
   const _HomePage();
+
+  Future<bool> checkPermission(PickerFromType fromType) async {
+    switch (fromType) {
+      case PickerFromType.assets:
+        final permission = isIOS ? Permission.photos : Permission.storage;
+        final permissionState = await permission.request();
+        return permissionState.isGranted;
+      case PickerFromType.camera:
+        final permissionState = await Permission.camera.request();
+        return permissionState.isGranted;
+      case PickerFromType.cancel:
+        break;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +41,7 @@ class _HomePage extends StatelessWidget {
                 errorCallback: (String value) {
                   showToast(value);
                 },
+                checkPermission: checkPermission,
                 initialData: SingleAssetPicker.convertUrl(url),
                 config: PickerAssetEntryBuilderConfig(
                     borderRadius: BorderRadius.circular(10),
@@ -35,6 +53,7 @@ class _HomePage extends StatelessWidget {
                 errorCallback: (String value) {
                   showToast(value);
                 },
+                checkPermission: checkPermission,
                 initialData: SingleAssetPicker.convertUrl(url),
                 config: PickerAssetEntryBuilderConfig(
                     borderRadius: BorderRadius.circular(40),
@@ -52,6 +71,7 @@ class _HomePage extends StatelessWidget {
               errorCallback: (String value) {
                 showToast(value);
               },
+              checkPermission: checkPermission,
               entryConfig: PickerAssetEntryBuilderConfig(
                   borderRadius: BorderRadius.circular(10),
                   color: Colors.amberAccent),
