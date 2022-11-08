@@ -7,21 +7,17 @@ import 'package:flutter/services.dart';
 class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   const FlVideoPlayerWithAssetsPicker({
     super.key,
-    this.file,
-    this.url,
-    this.path,
+    required this.controller,
     this.autoPlay = true,
     this.looping = true,
     this.cover,
     this.loading = const CircularProgressIndicator(),
     this.error = const Icon(Icons.info_outline),
     this.controls,
-  }) : assert(file != null || url != null || path != null);
+  });
 
-  /// url > path > file
-  final File? file;
-  final String? url;
-  final String? path;
+  /// 预览
+  final VideoPlayerController controller;
 
   /// 是否自动播放
   final bool autoPlay;
@@ -44,15 +40,27 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   @override
   State<FlVideoPlayerWithAssetsPicker> createState() =>
       _FlVideoPlayerWithAssetsPickerState();
+
+  /// 根据 [value] 不同的值 转换不同的 [VideoPlayerController]
+  static VideoPlayerController? toVideoPlayerController(dynamic value) {
+    if (value != null) {
+      if (value is String && value.startsWith('http')) {
+        return VideoPlayerController.network(value);
+      } else if (value is File) {
+        return VideoPlayerController.file(value);
+      } else if (value is String) {
+        return VideoPlayerController.asset(value);
+      }
+    }
+    return null;
+  }
 }
 
 class _FlVideoPlayerWithAssetsPickerState
     extends State<FlVideoPlayerWithAssetsPicker> with WidgetsBindingObserver {
   FlVideoPlayerController? flController;
 
-  File? file;
-  String? url;
-  String? path;
+  late VideoPlayerController controller;
 
   @override
   void initState() {
@@ -64,29 +72,19 @@ class _FlVideoPlayerWithAssetsPickerState
   }
 
   void initController() async {
-    file = widget.file;
-    path = widget.path;
-    url = widget.url;
+    controller = widget.controller;
     flController?.pause();
     flController?.dispose();
-    VideoPlayerController? videoPlayerController;
-    if (url != null) {
-      videoPlayerController = VideoPlayerController.network(url!);
-    } else if (path != null) {
-      videoPlayerController = VideoPlayerController.asset(path!);
-    } else if (file != null) {
-      videoPlayerController = VideoPlayerController.file(file!);
-    }
-    if (videoPlayerController == null) return;
     flController = FlVideoPlayerController(
         placeholder: widget.cover,
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
-        controls: widget.controls ?? CupertinoControls(loading: widget.loading),
+        controls: widget.controls ??
+            CupertinoControls(loading: widget.loading, enableFullscreen: false),
         showControlsOnInitialize: true,
         allowedScreenSleep: false,
         autoInitialize: true,
         isLive: false,
-        videoPlayerController: videoPlayerController,
+        videoPlayerController: controller,
         autoPlay: widget.autoPlay,
         looping: widget.looping);
     if (mounted) setState(() {});
@@ -105,11 +103,7 @@ class _FlVideoPlayerWithAssetsPickerState
   @override
   void didUpdateWidget(covariant FlVideoPlayerWithAssetsPicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if ((widget.file != null && widget.file != file) ||
-        (widget.path != null && widget.path != path) ||
-        (widget.url != null && widget.url != url)) {
-      initController();
-    }
+    if (widget.controller != controller) initController();
   }
 
   @override

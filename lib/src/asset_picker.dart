@@ -19,6 +19,8 @@ typedef FlAssetsPickerErrorCallback = void Function(String erroe);
 typedef PickerFromTypeBuilder = Widget Function(
     BuildContext context, List<PickerFromTypeConfig> fromTypes);
 
+typedef FlAssetFileRenovate<T> = Future<T> Function(AssetEntity entity);
+
 enum ImageCroppingQuality {
   /// 最高画质
   high,

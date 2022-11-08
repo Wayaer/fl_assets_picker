@@ -61,8 +61,8 @@ class SingleAssetPicker extends FlAssetsPicker {
   static ExtendedAssetEntity? convertPaths(String path,
       {AssetType assetsType = AssetType.image}) {
     if (path.isNotEmpty) {
-      return ExtendedAssetEntity.fromPath(
-          previewPath: path, assetType: assetsType);
+      return ExtendedAssetEntity.fromPreviewed(
+          previewed: path, assetType: assetsType);
     }
     return null;
   }
@@ -71,8 +71,8 @@ class SingleAssetPicker extends FlAssetsPicker {
   static ExtendedAssetEntity? convertUrl(String url,
       {AssetType assetsType = AssetType.image}) {
     if (url.isNotEmpty) {
-      return ExtendedAssetEntity.fromUrl(
-          previewUrl: url, assetType: assetsType);
+      return ExtendedAssetEntity.fromPreviewed(
+          previewed: url, assetType: assetsType);
     }
     return null;
   }
@@ -100,8 +100,10 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
   }
 
   void listener() {
-    widget.onChanged?.call(controller.allAssetEntity.first);
-    if (mounted) setState(() {});
+    if (controller.allAssetEntity.isNotEmpty) {
+      widget.onChanged?.call(controller.allAssetEntity.first);
+      if (mounted) setState(() {});
+    }
   }
 
   @override
@@ -138,9 +140,7 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
   }
 
   Widget entryBuild(ExtendedAssetEntity entity) {
-    if (entity.previewUrl == null &&
-        entity.previewPath == null &&
-        entity.fileAsync == null) {
+    if (entity.previewed == null && entity.fileAsync == null) {
       return widget.config.pickerIcon;
     }
     return AssetsPickerEntryBuild(entity,

@@ -4,8 +4,6 @@ import 'dart:typed_data';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
-typedef FlAssetFileRenovate = Future<File?> Function(AssetEntity entity);
-
 class AssetsPickerController with ChangeNotifier {
   AssetsPickerController(
       {this.assetConfig = const AssetPickerConfig(),
@@ -169,30 +167,17 @@ class AssetsPickerController with ChangeNotifier {
   }
 }
 
-class ExtendedAssetEntity extends AssetEntity {
-  ExtendedAssetEntity.fromUrl({
-    this.previewUrl,
+class ExtendedAssetEntity<T> extends AssetEntity {
+  ExtendedAssetEntity.fromPreviewed({
+    required this.previewed,
     super.width = 0,
     super.height = 0,
     required AssetType assetType,
   })  : thumbnailDataAsync = null,
         fileAsync = null,
-        renovatedFile = null,
-        previewPath = null,
+        renovated = null,
         isLocalData = false,
-        super(typeInt: assetType.index, id: previewUrl.hashCode.toString());
-
-  ExtendedAssetEntity.fromPath({
-    this.previewPath,
-    super.width = 0,
-    super.height = 0,
-    required AssetType assetType,
-  })  : thumbnailDataAsync = null,
-        fileAsync = null,
-        renovatedFile = null,
-        previewUrl = null,
-        isLocalData = false,
-        super(typeInt: assetType.index, id: previewPath.hashCode.toString());
+        super(typeInt: assetType.index, id: previewed.hashCode.toString());
 
   ExtendedAssetEntity.fromFile({
     required File file,
@@ -201,15 +186,14 @@ class ExtendedAssetEntity extends AssetEntity {
     required AssetType assetType,
   })  : thumbnailDataAsync = null,
         fileAsync = file,
-        renovatedFile = null,
-        previewPath = null,
-        previewUrl = null,
+        renovated = null,
+        previewed = null,
         isLocalData = false,
         super(typeInt: assetType.index, id: file.hashCode.toString());
 
   const ExtendedAssetEntity({
     this.thumbnailDataAsync,
-    this.renovatedFile,
+    this.renovated,
     this.fileAsync,
     required super.id,
     required super.typeInt,
@@ -227,16 +211,12 @@ class ExtendedAssetEntity extends AssetEntity {
     super.mimeType,
     super.subtype = 0,
   })  : isLocalData = true,
-        previewUrl = null,
-        previewPath = null;
+        previewed = null;
 
   final bool isLocalData;
 
-  /// [previewUrl] 主要用于网络图片复显
-  final String? previewUrl;
-
-  ///  [previewPath] 主要用于资源文件复显
-  final String? previewPath;
+  /// [previewed] 主要用于复显 可使用url 或者 assetPath
+  final String? previewed;
 
   /// 原始缩略图数据 bytes
   final Uint8List? thumbnailDataAsync;
@@ -245,9 +225,9 @@ class ExtendedAssetEntity extends AssetEntity {
   final File? fileAsync;
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  final File? renovatedFile;
+  final T? renovated;
 
-  String? get realValueStr => previewUrl ?? previewPath ?? fileAsync?.path;
+  String? get realValueStr => previewed ?? fileAsync?.path;
 
-  dynamic get realValue => previewUrl ?? previewPath ?? fileAsync;
+  dynamic get realValue => previewed ?? renovated ?? fileAsync;
 }

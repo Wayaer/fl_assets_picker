@@ -1,3 +1,7 @@
+## 0.5.0
+
+* Simple parameterization
+
 ## 0.3.3
 
 * Add `checkPermission` to `FlAssetsPicker`

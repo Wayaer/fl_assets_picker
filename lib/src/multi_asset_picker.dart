@@ -140,8 +140,8 @@ class MultiAssetPicker extends FlAssetsPicker {
     List<ExtendedAssetEntity> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
-        list.add(ExtendedAssetEntity.fromPath(
-            previewPath: element, assetType: assetsType));
+        list.add(ExtendedAssetEntity.fromPreviewed(
+            previewed: element, assetType: assetsType));
       }
     }
     return list;
@@ -156,13 +156,13 @@ class MultiAssetPicker extends FlAssetsPicker {
       final urls = url.split(splitPattern);
       for (var element in urls) {
         if (element.isNotEmpty) {
-          list.add(ExtendedAssetEntity.fromUrl(
-              previewUrl: element, assetType: assetsType));
+          list.add(ExtendedAssetEntity.fromPreviewed(
+              previewed: element, assetType: assetsType));
         }
       }
     } else {
-      list.add(
-          ExtendedAssetEntity.fromUrl(assetType: assetsType, previewUrl: url));
+      list.add(ExtendedAssetEntity.fromPreviewed(
+          assetType: assetsType, previewed: url));
     }
     return list;
   }

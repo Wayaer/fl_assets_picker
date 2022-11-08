@@ -43,7 +43,8 @@ class FlPreviewAssets extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
               padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).viewPadding.top,
+                  right: 0,
+                  top: MediaQuery.of(context).viewPadding.top + 30,
                   bottom: MediaQuery.of(context).viewPadding.bottom),
               child: ExtendedImageGesturePageView.builder(
                   controller: controller,
@@ -59,7 +60,7 @@ class FlPreviewAssets extends StatelessWidget {
               Container(
                   alignment: Alignment.bottomRight,
                   margin: EdgeInsets.only(
-                      right: 12,
+                      right: 6,
                       top:
                           MediaQueryData.fromWindow(ui.window).viewPadding.top +
                               12),

@@ -13,6 +13,7 @@ dependencies:
   flutter_waya: ^3.3.2+5
   flutter_curiosity: ^4.1.0
   permission_handler: ^10.2.0
+  flutter_image_compress: ^1.1.3
   fl_assets_picker:
     path: ../
 

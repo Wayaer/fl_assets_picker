@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 typedef ExtendedImageLoadStateBuilder = Widget Function(ExtendedImageState);
 
@@ -45,12 +46,24 @@ class PickerExtendedImage extends StatelessWidget {
   static ImageProvider? assetEntityToImageProvider(
       ExtendedAssetEntity assetEntity) {
     ImageProvider? provider;
-    if (assetEntity.fileAsync != null) {
+    if (assetEntity.renovated != null) {
+      final renovated = assetEntity.renovated;
+      if (renovated is File) {
+        provider = ExtendedFileImageProvider(renovated);
+      } else if (renovated is String && renovated.startsWith('http')) {
+        provider = ExtendedNetworkImageProvider(renovated);
+      } else if (renovated is Uint8List) {
+        provider = ExtendedMemoryImageProvider(renovated);
+      }
+    } else if (assetEntity.fileAsync != null) {
       provider = ExtendedFileImageProvider(assetEntity.fileAsync!);
-    } else if (assetEntity.previewUrl != null) {
-      provider = ExtendedNetworkImageProvider(assetEntity.previewUrl!);
-    } else if (assetEntity.previewPath != null) {
-      provider = ExtendedAssetImageProvider(assetEntity.previewPath!);
+    } else if (assetEntity.previewed != null) {
+      final previewed = assetEntity.previewed!;
+      if (previewed.startsWith('http')) {
+        provider = ExtendedNetworkImageProvider(previewed);
+      } else {
+        provider = ExtendedAssetImageProvider(previewed);
+      }
     }
     return provider;
   }

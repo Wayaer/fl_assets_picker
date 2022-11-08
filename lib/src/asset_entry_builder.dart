@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:fl_assets_picker/src/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AssetsPickerEntryBuild extends StatelessWidget {
   const AssetsPickerEntryBuild(this.entry,
@@ -42,19 +45,28 @@ class _AssetEntryVideoBuild extends StatelessWidget {
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
         imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
-      } else if (asset.renovatedFile != null) {
-        imageProvider = ExtendedFileImageProvider(asset.renovatedFile!);
+      } else if (asset.renovated != null) {
+        final renovated = asset.renovated;
+        if (renovated is File) {
+          imageProvider = ExtendedFileImageProvider(renovated);
+        } else if (renovated is String && renovated.startsWith('http')) {
+          imageProvider = ExtendedNetworkImageProvider(renovated);
+        } else if (renovated is Uint8List) {
+          imageProvider = ExtendedMemoryImageProvider(renovated);
+        }
       }
       if (isThumbnail && imageProvider != null) {
         current = PickerExtendedImage(imageProvider, fit: fit);
       } else {
-        current = FlVideoPlayerWithAssetsPicker(
-            file: asset.fileAsync,
-            path: asset.previewPath,
-            url: asset.previewUrl,
-            cover: current);
+        final controller =
+            FlVideoPlayerWithAssetsPicker.toVideoPlayerController(
+                asset.previewed ?? asset.fileAsync);
+        if (controller != null) {
+          current = FlVideoPlayerWithAssetsPicker(
+              controller: controller, cover: current);
+        }
       }
-      return current;
+      if (current != null) return current;
     }
     return const _PreviewSupported();
   }
