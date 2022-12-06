@@ -42,7 +42,7 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
       _FlVideoPlayerWithAssetsPickerState();
 
   /// 根据 [value] 不同的值 转换不同的 [VideoPlayerController]
-  static VideoPlayerController? toVideoPlayerController(dynamic value) {
+  static VideoPlayerController? buildVideoPlayerController(dynamic value) {
     if (value != null) {
       if (value is String && value.startsWith('http')) {
         return VideoPlayerController.network(value);

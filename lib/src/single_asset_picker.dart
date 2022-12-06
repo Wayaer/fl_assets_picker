@@ -15,12 +15,15 @@ class SingleAssetPicker extends FlAssetsPicker {
       PickerFromTypeConfig(
           fromType: PickerFromType.assets,
           text: Text('图库选择'),
-          requestType: RequestType.image),
+          requestType: RequestType.common),
       PickerFromTypeConfig(
           fromType: PickerFromType.camera,
           text: Text('相机拍摄'),
-          requestType: RequestType.image),
-      PickerFromTypeConfig(fromType: PickerFromType.cancel, text: Text('取消')),
+          requestType: RequestType.common),
+      PickerFromTypeConfig(
+          fromType: PickerFromType.cancel,
+          text: Text('取消'),
+          requestType: RequestType.common),
     ],
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
@@ -118,9 +121,10 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
           entity.type == AssetType.video ||
           entity.type == AssetType.audio) {
         current = Stack(children: [
-          current,
+          SizedBox.expand(child: current),
           if (config.overlay != null) config.overlay!,
-          Align(alignment: Alignment.center, child: config.playIcon),
+          if (entity.type == AssetType.video || entity.type == AssetType.audio)
+            Align(alignment: Alignment.center, child: config.playIcon),
         ]);
       }
     } else {

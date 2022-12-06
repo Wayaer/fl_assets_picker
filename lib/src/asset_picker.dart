@@ -45,7 +45,9 @@ enum PickerFromType {
 
 class PickerFromTypeConfig {
   const PickerFromTypeConfig(
-      {required this.fromType, required this.text, this.requestType});
+      {required this.fromType,
+      required this.text,
+      this.requestType = RequestType.common});
 
   /// 来源
   final PickerFromType fromType;
@@ -54,7 +56,7 @@ class PickerFromTypeConfig {
   final Widget text;
 
   /// [PickerFromType.values];
-  final RequestType? requestType;
+  final RequestType requestType;
 }
 
 class PickerAssetEntryBuilderConfig {
@@ -158,9 +160,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
     ],
     PickerFromTypeBuilder? fromTypesBuilder,
 
-    /// 默认选择的类型 [fromTypes] 不会弹出选择框
-    RequestType requestType = RequestType.image,
-
     /// 指定类型时
     PickerFromType? pickerFromType,
 
@@ -187,9 +186,10 @@ abstract class FlAssetsPicker extends StatefulWidget {
     int maxBytes = 167772160,
   }) async {
     if (!_isMobile) return null;
-    pickerFromType ??= (await showPickerFromType(context, fromTypes,
-            fromTypesBuilder: fromTypesBuilder))
-        ?.fromType;
+    PickerFromTypeConfig? pickerFromTypeConfig = await showPickerFromType(
+        context, fromTypes,
+        fromTypesBuilder: fromTypesBuilder);
+    pickerFromType ??= pickerFromTypeConfig?.fromType;
     AssetEntity? entity;
     switch (pickerFromType) {
       case PickerFromType.assets:
@@ -199,7 +199,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
             checkPermission: checkPermission,
             pickerConfig: AssetPickerConfig(
                 maxAssets: 1,
-                requestType: requestType,
+                requestType: pickerFromTypeConfig!.requestType,
                 selectedAssets: []).merge(assetPickerConfig));
         if (assetsEntity == null || assetsEntity.isEmpty) return null;
         entity = assetsEntity.first;
@@ -211,9 +211,20 @@ abstract class FlAssetsPicker extends StatefulWidget {
             pageRouteBuilder: pageRouteBuilderForCameraPicker,
             pickerConfig: const CameraPickerConfig(
                     resolutionPreset: ResolutionPreset.high)
-                .merge(cameraPickerConfig));
+                .merge(cameraPickerConfig)
+                .copyWith(
+                    enableRecording:
+                        pickerFromTypeConfig?.requestType.containsVideo(),
+                    onlyEnableRecording:
+                        pickerFromTypeConfig?.requestType == RequestType.video,
+                    enableAudio: (pickerFromTypeConfig?.requestType
+                                .containsVideo() ??
+                            false) ||
+                        (pickerFromTypeConfig?.requestType.containsAudio() ??
+                            false)));
         break;
       default:
+        return null;
     }
     if (entity == null) return null;
     final file = await entity.file;

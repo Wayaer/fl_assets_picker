@@ -137,10 +137,10 @@ class AssetsPickerController with ChangeNotifier {
         if (!mounted) return;
         final assetsEntry = await pickFromCamera(context,
             pickerConfig: cameraConfig.copyWith(
-                enableRecording: (type?.requestType?.containsVideo() ?? false),
+                enableRecording: type?.requestType.containsVideo(),
                 onlyEnableRecording: type?.requestType == RequestType.video,
-                enableAudio: (type?.requestType?.containsVideo() ?? false) ||
-                    (type?.requestType?.containsAudio() ?? false)),
+                enableAudio: (type?.requestType.containsVideo() ?? false) ||
+                    (type?.requestType.containsAudio() ?? false)),
             useRootNavigator: _assetsPicker.useRootNavigator,
             pageRouteBuilder: _assetsPicker.pageRouteBuilderForCameraPicker);
         if (assetsEntry != null) {

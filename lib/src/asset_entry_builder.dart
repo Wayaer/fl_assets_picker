@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:fl_assets_picker/src/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class AssetsPickerEntryBuild extends StatelessWidget {
   const AssetsPickerEntryBuild(this.entry,
@@ -46,20 +43,14 @@ class _AssetEntryVideoBuild extends StatelessWidget {
       if (asset.thumbnailDataAsync != null) {
         imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
       } else if (asset.renovated != null) {
-        final renovated = asset.renovated;
-        if (renovated is File) {
-          imageProvider = ExtendedFileImageProvider(renovated);
-        } else if (renovated is String && renovated.startsWith('http')) {
-          imageProvider = ExtendedNetworkImageProvider(renovated);
-        } else if (renovated is Uint8List) {
-          imageProvider = ExtendedMemoryImageProvider(renovated);
-        }
+        imageProvider =
+            ExtendedImageWithAssetsPicker.buildImageProvider(asset.renovated);
       }
       if (isThumbnail && imageProvider != null) {
-        current = PickerExtendedImage(imageProvider, fit: fit);
+        current = ExtendedImageWithAssetsPicker(imageProvider, fit: fit);
       } else {
         final controller =
-            FlVideoPlayerWithAssetsPicker.toVideoPlayerController(
+            FlVideoPlayerWithAssetsPicker.buildVideoPlayerController(
                 asset.previewed ?? asset.fileAsync);
         if (controller != null) {
           current = FlVideoPlayerWithAssetsPicker(
@@ -85,13 +76,14 @@ class _AssetEntryImageBuild extends StatelessWidget {
     if (asset.type == AssetType.image) {
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
-        imageProvider = PickerExtendedImage.assetEntityToImageProvider(asset);
+        imageProvider =
+            ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
       }
       imageProvider = isThumbnail && imageProvider != null
           ? imageProvider
-          : PickerExtendedImage.assetEntityToImageProvider(asset);
+          : ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
       if (imageProvider == null) return const SizedBox();
-      return PickerExtendedImage(imageProvider, fit: fit);
+      return ExtendedImageWithAssetsPicker(imageProvider, fit: fit);
     }
     return const _PreviewSupported();
   }
@@ -111,10 +103,10 @@ class _AssetEntryOtherBuild extends StatelessWidget {
       ImageProvider? thumbnailProvider;
       if (asset.thumbnailDataAsync != null) {
         thumbnailProvider =
-            PickerExtendedImage.assetEntityToImageProvider(asset);
+            ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
       }
       if (isThumbnail && thumbnailProvider != null) {
-        return PickerExtendedImage(thumbnailProvider, fit: fit);
+        return ExtendedImageWithAssetsPicker(thumbnailProvider, fit: fit);
       }
     }
     return const _PreviewSupported();

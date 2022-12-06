@@ -75,7 +75,10 @@ class MultiAssetPicker extends FlAssetsPicker {
           fromType: PickerFromType.camera,
           text: Text('相机拍摄'),
           requestType: RequestType.common),
-      PickerFromTypeConfig(fromType: PickerFromType.cancel, text: Text('取消')),
+      PickerFromTypeConfig(
+          fromType: PickerFromType.cancel,
+          text: Text('取消'),
+          requestType: RequestType.common),
     ],
     super.renovate,
     super.pageRouteBuilderForCameraPicker,
@@ -246,9 +249,11 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
         assetEntry.type == AssetType.video ||
         assetEntry.type == AssetType.audio) {
       current = Stack(children: [
-        current,
+        SizedBox.expand(child: current),
         if (config.overlay != null) config.overlay!,
-        Align(alignment: Alignment.center, child: config.playIcon),
+        if (assetEntry.type == AssetType.video ||
+            assetEntry.type == AssetType.audio)
+          Align(alignment: Alignment.center, child: config.playIcon),
       ]);
     }
     if (config.color != null) {
@@ -259,7 +264,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
         child: widget.entryBuilder?.call(entry.value, entry.key) ?? current);
     if (widget.allowDelete) {
       current = Stack(children: [
-        current,
+        SizedBox.expand(child: current),
         Positioned(
             right: 2,
             top: 2,

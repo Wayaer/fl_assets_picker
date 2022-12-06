@@ -1,3 +1,9 @@
+## 0.6.0
+
+* Updating dependent libraries
+* Add multiple examples
+* Fix thumbnail incomplete
+
 ## 0.5.0
 
 * Simple parameterization

@@ -51,57 +51,105 @@ class _HomePage extends StatelessWidget {
     return ExtendedScaffold(
         appBar: AppBar(title: const Text('Assets Picker')),
         padding: const EdgeInsets.all(12),
+        isScroll: true,
         children: [
-          const Text('单资源选择').marginAll(12),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-            SingleAssetPicker(
-                errorCallback: (String value) {
-                  showToast(value);
-                },
-                renovate: (AssetEntity entity) async {
-                  final file = await entity.file;
-                  if (file != null) return await compressImage(file);
-                  return null;
-                },
-                checkPermission: checkPermission,
-                initialData: SingleAssetPicker.convertUrl(url),
-                config: PickerAssetEntryBuilderConfig(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.amberAccent),
-                onChanged: (ExtendedAssetEntity value) {
-                  log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
-                }),
-            SingleAssetPicker(
-                errorCallback: (String value) {
-                  showToast(value);
-                },
-                checkPermission: checkPermission,
-                initialData: SingleAssetPicker.convertUrl(url),
-                config: PickerAssetEntryBuilderConfig(
-                    borderRadius: BorderRadius.circular(40),
-                    color: Colors.amberAccent),
-                onChanged: (ExtendedAssetEntity value) {
-                  log('onChanged ${value.realValueStr}');
-                }),
-          ]),
-          const SizedBox(height: 20),
-          const Text('多资源选择').marginAll(12),
-          MultiAssetPicker(
-              initialData: MultiAssetPicker.convertUrls(url),
-              previewSheetRouteBuilder: (_, Widget previewAssets) =>
-                  showDialogPopup(widget: previewAssets),
-              errorCallback: (String value) {
-                showToast(value);
-              },
-              checkPermission: checkPermission,
-              entryConfig: PickerAssetEntryBuilderConfig(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.amberAccent),
-              onChanged: (List<ExtendedAssetEntity> value) {
-                log('onChanged ${value.builder((item) => item.realValueStr)}');
-              }),
+          const Text('单资源选择 混选').marginAll(12),
+          buildSingleAssetPicker(RequestType.common),
+          const Text('单资源选择 仅图片').marginAll(12),
+          buildSingleAssetPicker(RequestType.image),
+          const Text('单资源选择 仅视频').marginAll(12),
+          buildSingleAssetPicker(RequestType.video),
+          const Text('多资源选择 混选').marginAll(12),
+          buildMultiAssetPicker(RequestType.common),
+          const Text('多资源选择 仅图片').marginAll(12),
+          buildMultiAssetPicker(RequestType.image),
+          const Text('多资源选择 仅视频').marginAll(12),
+          buildMultiAssetPicker(RequestType.video),
         ]);
   }
+
+  Widget buildSingleAssetPicker(RequestType requestType) =>
+      Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+        SingleAssetPicker(
+            fromRequestTypes: [
+              PickerFromTypeConfig(
+                  fromType: PickerFromType.assets,
+                  requestType: requestType,
+                  text: const Text('图库选择')),
+              PickerFromTypeConfig(
+                  fromType: PickerFromType.camera,
+                  requestType: requestType,
+                  text: const Text('相机拍摄')),
+              const PickerFromTypeConfig(
+                  fromType: PickerFromType.cancel, text: Text('取消')),
+            ],
+            errorCallback: (String value) {
+              showToast(value);
+            },
+            renovate: (AssetEntity entity) async {
+              final file = await entity.file;
+              if (file != null) return await compressImage(file);
+              return null;
+            },
+            checkPermission: checkPermission,
+            initialData: SingleAssetPicker.convertUrl(url),
+            config: PickerAssetEntryBuilderConfig(
+                borderRadius: BorderRadius.circular(10),
+                color: Colors.amberAccent),
+            onChanged: (ExtendedAssetEntity value) {
+              log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
+            }),
+        SingleAssetPicker(
+            errorCallback: (String value) {
+              showToast(value);
+            },
+            fromRequestTypes: [
+              PickerFromTypeConfig(
+                  fromType: PickerFromType.assets,
+                  text: const Text('图库选择'),
+                  requestType: requestType),
+              PickerFromTypeConfig(
+                  fromType: PickerFromType.camera,
+                  text: const Text('相机拍摄'),
+                  requestType: requestType),
+              const PickerFromTypeConfig(
+                  fromType: PickerFromType.cancel, text: Text('取消')),
+            ],
+            checkPermission: checkPermission,
+            initialData: SingleAssetPicker.convertUrl(url),
+            config: PickerAssetEntryBuilderConfig(
+                borderRadius: BorderRadius.circular(40),
+                color: Colors.amberAccent),
+            onChanged: (ExtendedAssetEntity value) {
+              log('onChanged ${value.realValueStr}');
+            }),
+      ]);
+
+  Widget buildMultiAssetPicker(RequestType requestType) => MultiAssetPicker(
+      initialData: MultiAssetPicker.convertUrls(url),
+      fromRequestTypes: [
+        PickerFromTypeConfig(
+            fromType: PickerFromType.assets,
+            text: const Text('图库选择'),
+            requestType: requestType),
+        PickerFromTypeConfig(
+            fromType: PickerFromType.camera,
+            text: const Text('相机拍摄'),
+            requestType: requestType),
+        const PickerFromTypeConfig(
+            fromType: PickerFromType.cancel, text: Text('取消')),
+      ],
+      previewSheetRouteBuilder: (_, Widget previewAssets) =>
+          previewAssets.popupDialog(),
+      errorCallback: (String value) {
+        showToast(value);
+      },
+      checkPermission: checkPermission,
+      entryConfig: PickerAssetEntryBuilderConfig(
+          borderRadius: BorderRadius.circular(10), color: Colors.amberAccent),
+      onChanged: (List<ExtendedAssetEntity> value) {
+        log('onChanged ${value.builder((item) => item.realValueStr)}');
+      });
 }
 
 /// 图片压缩
