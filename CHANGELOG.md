@@ -1,3 +1,7 @@
+## 1.0.0
+
+* Compatible with Flutter 3.7.0
+
 ## 0.6.0
 
 * Updating dependent libraries

@@ -1,5 +1,4 @@
 import 'package:fl_assets_picker/fl_assets_picker.dart';
-import 'package:fl_assets_picker/src/extended_image.dart';
 import 'package:flutter/material.dart';
 
 class AssetsPickerEntryBuild extends StatelessWidget {

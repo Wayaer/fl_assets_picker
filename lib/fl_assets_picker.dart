@@ -2,7 +2,6 @@ library assets_picker;
 
 export 'package:extended_image/extended_image.dart';
 export 'package:fl_video/fl_video.dart';
-export 'package:wakelock/wakelock.dart';
 export 'package:wechat_assets_picker/wechat_assets_picker.dart';
 export 'package:wechat_camera_picker/wechat_camera_picker.dart';
 

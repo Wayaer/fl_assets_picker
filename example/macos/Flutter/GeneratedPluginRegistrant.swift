@@ -6,7 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import flutter_curiosity
-import path_provider_macos
+import path_provider_foundation
 import photo_manager
 import wakelock_macos
 
