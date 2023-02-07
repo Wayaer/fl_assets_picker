@@ -1,3 +1,7 @@
+## 0.7.1
+
+* Update `wechat_assets_picker` and `extended_image`
+
 ## 0.7.0+1
 
 * Compatible with Flutter 3.7.0
