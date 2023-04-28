@@ -1,3 +1,7 @@
+## 0.7.1+1
+
+* Update `wechat_assets_picker` and `photo_manager`
+
 ## 0.7.1
 
 * Update `wechat_assets_picker` and `extended_image`
