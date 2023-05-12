@@ -32,6 +32,7 @@ class _HomePage extends StatelessWidget {
   const _HomePage();
 
   Future<bool> checkPermission(PickerFromType fromType) async {
+    if (!isMobile) return true;
     switch (fromType) {
       case PickerFromType.assets:
         final permission = isIOS ? Permission.photos : Permission.storage;

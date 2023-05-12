@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
@@ -60,10 +58,7 @@ class FlPreviewAssets extends StatelessWidget {
               Container(
                   alignment: Alignment.bottomRight,
                   margin: EdgeInsets.only(
-                      right: 6,
-                      top:
-                          MediaQueryData.fromWindow(ui.window).viewPadding.top +
-                              12),
+                      right: 6, top: View.of(context).viewPadding.top + 12),
                   height: 40,
                   child: const CloseButton(color: Colors.white)),
           if (overlay != null) overlay!,
