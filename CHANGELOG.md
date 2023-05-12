@@ -1,3 +1,8 @@
+## 1.0.0
+
+* dart sdk: '>=2.18.0 <4.0.0'
+* Migrate to Flutter 3.10.0
+
 ## 0.7.1+1
 
 * Update `wechat_assets_picker` and `photo_manager`
