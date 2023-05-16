@@ -10,7 +10,7 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
     required this.controller,
     this.autoPlay = true,
     this.looping = true,
-    this.cover,
+    this.cover = const SizedBox(),
     this.loading = const CircularProgressIndicator(),
     this.error = const Icon(Icons.info_outline),
     this.controls,
@@ -26,7 +26,7 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   final bool looping;
 
   /// 封面
-  final Widget? cover;
+  final Widget cover;
 
   /// loading
   final Widget loading;
@@ -98,7 +98,7 @@ class _FlVideoPlayerWithAssetsPickerState
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
     return flController == null
-        ? widget.cover ?? const SizedBox()
+        ? widget.cover
         : Padding(
             padding: EdgeInsets.only(bottom: bottom == 0 ? 10 : bottom),
             child: FlVideoPlayer(controller: flController!));

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_curiosity/flutter_curiosity.dart';
@@ -94,7 +95,7 @@ class _HomePage extends StatelessWidget {
             },
             checkPermission: checkPermission,
             initialData: SingleAssetPicker.convertUrl(url),
-            config: PickerAssetEntryBuilderConfig(
+            config: AssetsPickerEntryConfig(
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
@@ -118,7 +119,7 @@ class _HomePage extends StatelessWidget {
             ],
             checkPermission: checkPermission,
             initialData: SingleAssetPicker.convertUrl(url),
-            config: PickerAssetEntryBuilderConfig(
+            config: AssetsPickerEntryConfig(
                 borderRadius: BorderRadius.circular(40),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
@@ -140,14 +141,42 @@ class _HomePage extends StatelessWidget {
         const PickerFromTypeConfig(
             fromType: PickerFromType.cancel, text: Text('取消')),
       ],
-      previewSheetRouteBuilder: (_, Widget previewAssets) =>
+      previewModalPopup: (_, Widget previewAssets) =>
           previewAssets.popupDialog(),
       errorCallback: (String value) {
         showToast(value);
       },
       checkPermission: checkPermission,
-      entryConfig: PickerAssetEntryBuilderConfig(
-          borderRadius: BorderRadius.circular(10), color: Colors.amberAccent),
+      entryConfig: AssetsPickerEntryConfig(
+          delete: const AssetDeleteIcon(backgroundColor: Colors.blue),
+          deletionConfirmation: (_) async {
+            final value = await CupertinoAlertDialog(
+                content: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    constraints: const BoxConstraints(maxHeight: 100),
+                    child: const Text('确定要删除么')),
+                actions: [
+                  SimpleButton(
+                      text: '取消',
+                      height: 45,
+                      alignment: Alignment.center,
+                      textStyle:
+                          const TextStyle(fontSize: 14, color: Colors.grey),
+                      onTap: () {
+                        pop(false);
+                      }),
+                  SimpleButton(
+                      text: '确定',
+                      height: 45,
+                      alignment: Alignment.center,
+                      textStyle:
+                          const TextStyle(fontSize: 14, color: Colors.black),
+                      onTap: () {
+                        pop(true);
+                      }),
+                ]).popupCupertinoModal<bool?>();
+            return value ?? false;
+          }),
       onChanged: (List<ExtendedAssetEntity> value) {
         log('onChanged ${value.builder((item) => item.realValueStr)}');
       });

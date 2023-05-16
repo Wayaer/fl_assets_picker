@@ -1,8 +1,110 @@
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
-class AssetsPickerEntryBuild extends StatelessWidget {
-  const AssetsPickerEntryBuild(this.entry,
+class FlPreviewAssets extends StatelessWidget {
+  const FlPreviewAssets(
+      {super.key,
+      required this.itemCount,
+      required this.itemBuilder,
+      this.controller,
+      this.close,
+      this.overlay,
+      this.pageSnapping = true,
+      this.reverse = false,
+      this.scrollDirection = Axis.horizontal,
+      this.canScrollPage,
+      this.physics,
+      this.onPageChanged});
+
+  final int? itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+  final ExtendedPageController? controller;
+  final bool pageSnapping;
+  final bool reverse;
+  final Axis scrollDirection;
+  final CanScrollPage? canScrollPage;
+  final ScrollPhysics? physics;
+  final ValueChanged<int>? onPageChanged;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: Colors.black.withOpacity(0.9),
+        child: Stack(children: [
+          SizedBox.expand(
+              child: ExtendedImageGesturePageView.builder(
+                  controller: controller,
+                  itemCount: itemCount,
+                  itemBuilder: itemBuilder,
+                  physics: physics,
+                  scrollDirection: scrollDirection,
+                  reverse: reverse,
+                  pageSnapping: pageSnapping,
+                  onPageChanged: onPageChanged,
+                  canScrollPage: canScrollPage)),
+          close ??
+              Positioned(
+                  right: 6,
+                  top: MediaQuery.of(context).viewPadding.top,
+                  child: const CloseButton(color: Colors.white)),
+          if (overlay != null) overlay!,
+        ]));
+  }
+}
+
+class AssetPickIcon extends StatelessWidget {
+  const AssetPickIcon(
+      {super.key,
+      this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+      this.borderColor = const Color(0x804D4D4D),
+      this.iconColor = const Color(0x804D4D4D),
+      this.backgroundColor,
+      this.icon,
+      this.size = 30});
+
+  final BorderRadiusGeometry? borderRadius;
+  final Color? borderColor;
+  final Color iconColor;
+  final Color? backgroundColor;
+  final double size;
+  final Widget? icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+      decoration: BoxDecoration(
+          border: borderColor == null ? null : Border.all(color: borderColor!),
+          borderRadius: borderRadius),
+      child: icon ?? Icon(Icons.add, size: size, color: iconColor));
+}
+
+class AssetDeleteIcon extends StatelessWidget {
+  const AssetDeleteIcon(
+      {super.key,
+      this.icon,
+      this.iconColor = Colors.white,
+      this.backgroundColor = Colors.redAccent,
+      this.size = 12});
+
+  final Widget? icon;
+  final Color iconColor;
+  final Color backgroundColor;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => Container(
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
+      padding: const EdgeInsets.all(2),
+      child: icon ?? Icon(Icons.clear, size: size, color: iconColor));
+}
+
+class AssetBuilder extends StatelessWidget {
+  const AssetBuilder(this.entry,
       {super.key,
       this.isThumbnail = true,
       required this.fit,
@@ -19,20 +121,20 @@ class AssetsPickerEntryBuild extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (entry.type) {
       case AssetType.other:
-        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail, fit: fit);
+        return _AssetOtherBuilder(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.image:
-        return _AssetEntryImageBuild(entry,
+        return _AssetImageBuilder(entry,
             isThumbnail: isThumbnail, fit: fit, enableGesture: enableGesture);
       case AssetType.video:
-        return _AssetEntryVideoBuild(entry, isThumbnail: isThumbnail, fit: fit);
+        return _AssetVideoBuilder(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.audio:
-        return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail, fit: fit);
+        return _AssetOtherBuilder(entry, isThumbnail: isThumbnail, fit: fit);
     }
   }
 }
 
-class _AssetEntryVideoBuild extends StatelessWidget {
-  const _AssetEntryVideoBuild(this.asset,
+class _AssetVideoBuilder extends StatelessWidget {
+  const _AssetVideoBuilder(this.asset,
       {this.isThumbnail = false, required this.fit});
 
   final ExtendedAssetEntity asset;
@@ -42,7 +144,7 @@ class _AssetEntryVideoBuild extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (asset.type == AssetType.video) {
-      Widget? current;
+      Widget current = const SizedBox();
       ImageProvider? imageProvider;
       if (asset.thumbnailDataAsync != null) {
         imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
@@ -61,14 +163,14 @@ class _AssetEntryVideoBuild extends StatelessWidget {
               controller: controller, cover: current);
         }
       }
-      if (current != null) return current;
+      return current;
     }
     return const _PreviewSupported();
   }
 }
 
-class _AssetEntryImageBuild extends StatelessWidget {
-  const _AssetEntryImageBuild(this.asset,
+class _AssetImageBuilder extends StatelessWidget {
+  const _AssetImageBuilder(this.asset,
       {this.isThumbnail = false,
       required this.fit,
       this.enableGesture = false});
@@ -108,8 +210,8 @@ class _AssetEntryImageBuild extends StatelessWidget {
   }
 }
 
-class _AssetEntryOtherBuild extends StatelessWidget {
-  const _AssetEntryOtherBuild(this.asset,
+class _AssetOtherBuilder extends StatelessWidget {
+  const _AssetOtherBuilder(this.asset,
       {this.isThumbnail = false, required this.fit});
 
   final ExtendedAssetEntity asset;

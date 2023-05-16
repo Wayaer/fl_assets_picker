@@ -59,19 +59,20 @@ class PickerFromTypeConfig {
   final RequestType requestType;
 }
 
-class PickerAssetEntryBuilderConfig {
-  const PickerAssetEntryBuilderConfig(
+typedef DeletionConfirmation = Future<bool> Function(
+    ExtendedAssetEntity entity);
+
+class AssetsPickerEntryConfig {
+  const AssetsPickerEntryConfig(
       {this.color,
       this.fit = BoxFit.cover,
       this.previewFit = BoxFit.contain,
-      this.borderRadius,
+      this.borderRadius = const BorderRadius.all(Radius.circular(8)),
       this.size = const Size(65, 65),
-      this.pickerIcon =
-          const Icon(Icons.add, size: 30, color: Color(0x804D4D4D)),
-      this.pickerBorderColor = const Color(0x804D4D4D),
-      this.deleteColor = Colors.redAccent,
-      this.overlay,
-      this.playIcon = const Icon(Icons.play_circle_outline,
+      this.pick = const AssetPickIcon(),
+      this.delete = const AssetDeleteIcon(),
+      this.deletionConfirmation,
+      this.play = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D))});
 
   final Color? color;
@@ -79,18 +80,22 @@ class PickerAssetEntryBuilderConfig {
   final BorderRadiusGeometry? borderRadius;
 
   /// 视频预览 播放 icon
-  final Widget playIcon;
+  final Widget play;
 
-  /// pick 框的 icon
-  final Widget pickerIcon;
-  final Widget? overlay;
+  /// 添加 框的
+  final Widget pick;
 
+  /// 删除按钮
+  final Widget delete;
+
+  /// 删除确认
+  final DeletionConfirmation? deletionConfirmation;
+
+  /// 缩略图fit
   final BoxFit fit;
-  final BoxFit previewFit;
 
-  /// 添加框 borderColor
-  final Color pickerBorderColor;
-  final Color deleteColor;
+  /// 预览画面fit
+  final BoxFit previewFit;
 }
 
 abstract class FlAssetsPicker extends StatefulWidget {

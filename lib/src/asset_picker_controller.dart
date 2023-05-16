@@ -12,14 +12,14 @@ class AssetsPickerController with ChangeNotifier {
   List<ExtendedAssetEntity> allAssetEntity = [];
 
   /// 资源选择器配置信息
-  AssetPickerConfig assetConfig;
+  late AssetPickerConfig assetConfig;
 
   /// 相机配置信息
-  CameraPickerConfig cameraConfig;
+  late CameraPickerConfig cameraConfig;
 
   late FlAssetsPicker _assetsPicker;
 
-  void setWidget(FlAssetsPicker assetsPicker) {
+  set assetsPicker(FlAssetsPicker assetsPicker) {
     _assetsPicker = assetsPicker;
   }
 

@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
-typedef FlPreviewAssetsSheetRouteBuilder = void Function(
+typedef FlPreviewAssetsModalPopupBuilder = void Function(
     BuildContext context, Widget previewAssets);
 
 typedef FlPreviewAssetsBuilder = Widget Function(
@@ -56,7 +55,7 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.key,
     this.onChanged,
     this.controller,
-    this.entryConfig = const PickerAssetEntryBuilderConfig(),
+    this.entryConfig = const AssetsPickerEntryConfig(),
     this.entryBuilder,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
@@ -87,7 +86,7 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.fromTypesBuilder,
     super.checkPermission,
     this.previewBuilder,
-    this.previewSheetRouteBuilder,
+    this.previewModalPopup,
   });
 
   /// 是否显示删除按钮
@@ -114,10 +113,10 @@ class MultiAssetPicker extends FlAssetsPicker {
   final MultiPickerEntryBuilder? entryBuilder;
 
   /// entry UI 样式配置
-  final PickerAssetEntryBuilderConfig entryConfig;
+  final AssetsPickerEntryConfig entryConfig;
 
   /// 弹出预览框 builder
-  final FlPreviewAssetsSheetRouteBuilder? previewSheetRouteBuilder;
+  final FlPreviewAssetsModalPopupBuilder? previewModalPopup;
 
   /// 预览框 builder
   final FlPreviewAssetsBuilder? previewBuilder;
@@ -205,7 +204,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
 
   void initialize() {
     controller = widget.controller ?? AssetsPickerController();
-    controller.setWidget(widget);
+    controller.assetsPicker = widget;
     controller.allAssetEntity.insertAll(0, widget.initialData);
     controller.addListener(listener);
   }
@@ -245,16 +244,14 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
   Widget buildEntry(MapEntry<int, ExtendedAssetEntity> entry) {
     final assetEntry = entry.value;
     final config = widget.entryConfig;
-    Widget current = AssetsPickerEntryBuild(assetEntry, fit: config.fit);
-    if (config.overlay != null ||
-        assetEntry.type == AssetType.video ||
+    Widget current = AssetBuilder(assetEntry, fit: config.fit);
+    if (assetEntry.type == AssetType.video ||
         assetEntry.type == AssetType.audio) {
       current = Stack(children: [
         SizedBox.expand(child: current),
-        if (config.overlay != null) config.overlay!,
         if (assetEntry.type == AssetType.video ||
             assetEntry.type == AssetType.audio)
-          Align(alignment: Alignment.center, child: config.playIcon),
+          Align(alignment: Alignment.center, child: config.play),
       ]);
     }
     if (config.color != null) {
@@ -270,14 +267,14 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
             right: 2,
             top: 2,
             child: GestureDetector(
-              onTap: () => controller.deleteAsset(assetEntry.id),
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: widget.entryConfig.deleteColor,
-                      shape: BoxShape.circle),
-                  padding: const EdgeInsets.all(2),
-                  child:
-                      const Icon(Icons.clear, size: 12, color: Colors.white)),
+              onTap: () =>
+                  widget.entryConfig.deletionConfirmation
+                      ?.call(assetEntry)
+                      .then((value) {
+                    if (value) controller.deleteAsset(assetEntry.id);
+                  }) ??
+                  controller.deleteAsset(assetEntry.id),
+              child: widget.entryConfig.delete,
             ))
       ]);
     }
@@ -295,19 +292,19 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
         controller: ExtendedPageController(
             initialPage: currentAssetsEntry.indexOf(asset)),
         itemBuilder: (_, int index) => Center(
-            child: AssetsPickerEntryBuild(currentAssetsEntry[index],
+            child: AssetBuilder(currentAssetsEntry[index],
                 enableGesture: true,
                 isThumbnail: false,
                 fit: widget.entryConfig.previewFit)));
 
-    if (widget.previewSheetRouteBuilder == null) {
+    if (widget.previewModalPopup == null) {
       showCupertinoModalPopup(
           context: context,
           builder: (BuildContext context) =>
               widget.previewBuilder?.call(context, currentAssetsEntry) ??
               previewAssets);
     } else {
-      widget.previewSheetRouteBuilder!.call(context, previewAssets);
+      widget.previewModalPopup?.call(context, previewAssets);
     }
   }
 
@@ -327,7 +324,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
     Widget current = SizedBox(
         width: config.size.width,
         height: config.size.height,
-        child: config.pickerIcon);
+        child: config.pick);
     if (config.color != null) {
       current = ColoredBox(color: config.color!, child: current);
     }

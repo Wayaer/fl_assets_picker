@@ -30,7 +30,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     super.fromTypesBuilder,
     super.renovate,
     super.checkPermission,
-    this.config = const PickerAssetEntryBuilderConfig(),
+    this.config = const AssetsPickerEntryConfig(),
     this.builder,
     this.initialData,
     this.allowDelete = true,
@@ -49,7 +49,7 @@ class SingleAssetPicker extends FlAssetsPicker {
   final SinglePickerEntryBuilder? builder;
 
   ///
-  final PickerAssetEntryBuilderConfig config;
+  final AssetsPickerEntryConfig config;
 
   /// [paths] 文件地址转换 [ExtendedAssetModel] 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertFiles(File file,
@@ -95,7 +95,7 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
 
   void initialize() {
     controller = AssetsPickerController();
-    controller.setWidget(widget);
+    controller.assetsPicker = widget;
     if (widget.initialData != null) {
       controller.allAssetEntity = [widget.initialData!];
     }
@@ -111,24 +111,19 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
 
   @override
   Widget build(BuildContext context) {
-    Widget current = const SizedBox();
+    Widget current = widget.config.pick;
     final allAssetEntity = controller.allAssetEntity;
     final config = widget.config;
     if (allAssetEntity.isNotEmpty) {
       final entity = allAssetEntity.first;
       current = widget.builder?.call(entity) ?? entryBuild(entity);
-      if (config.overlay != null ||
-          entity.type == AssetType.video ||
-          entity.type == AssetType.audio) {
+      if (entity.type == AssetType.video || entity.type == AssetType.audio) {
         current = Stack(children: [
           SizedBox.expand(child: current),
-          if (config.overlay != null) config.overlay!,
           if (entity.type == AssetType.video || entity.type == AssetType.audio)
-            Align(alignment: Alignment.center, child: config.playIcon),
+            Align(alignment: Alignment.center, child: config.play),
         ]);
       }
-    } else {
-      current = widget.config.pickerIcon;
     }
     if (config.color != null) {
       current = ColoredBox(color: config.color!, child: current);
@@ -145,10 +140,9 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
 
   Widget entryBuild(ExtendedAssetEntity entity) {
     if (entity.previewed == null && entity.fileAsync == null) {
-      return widget.config.pickerIcon;
+      return widget.config.pick;
     }
-    return AssetsPickerEntryBuild(entity,
-        isThumbnail: true, fit: widget.config.fit);
+    return AssetBuilder(entity, isThumbnail: true, fit: widget.config.fit);
   }
 
   void pickerAsset() async {
