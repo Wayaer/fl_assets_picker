@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 typedef FlPreviewAssetsSheetRouteBuilder = void Function(
@@ -295,13 +296,13 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
             initialPage: currentAssetsEntry.indexOf(asset)),
         itemBuilder: (_, int index) => Center(
             child: AssetsPickerEntryBuild(currentAssetsEntry[index],
-                isThumbnail: false, fit: widget.entryConfig.previewFit)));
+                enableGesture: true,
+                isThumbnail: false,
+                fit: widget.entryConfig.previewFit)));
 
     if (widget.previewSheetRouteBuilder == null) {
-      showModalBottomSheet(
+      showCupertinoModalPopup(
           context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
           builder: (BuildContext context) =>
               widget.previewBuilder?.call(context, currentAssetsEntry) ??
               previewAssets);

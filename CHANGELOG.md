@@ -1,3 +1,8 @@
+## 1.0.1
+
+* Image preview adds zooming gesture
+* `CupertinoControls` preview video remove volume
+
 ## 1.0.0
 
 * dart sdk: '>=2.18.0 <4.0.0'

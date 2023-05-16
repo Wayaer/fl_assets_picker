@@ -79,7 +79,11 @@ class _FlVideoPlayerWithAssetsPickerState
         placeholder: widget.cover,
         deviceOrientationsAfterFullScreen: [DeviceOrientation.portraitUp],
         controls: widget.controls ??
-            CupertinoControls(loading: widget.loading, enableFullscreen: false),
+            CupertinoControls(
+                loading: widget.loading,
+                enableFullscreen: false,
+                enableSubtitle: false,
+                enableVolume: false),
         showControlsOnInitialize: true,
         allowedScreenSleep: false,
         autoInitialize: true,

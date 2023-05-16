@@ -3,13 +3,17 @@ import 'package:flutter/material.dart';
 
 class AssetsPickerEntryBuild extends StatelessWidget {
   const AssetsPickerEntryBuild(this.entry,
-      {super.key, this.isThumbnail = true, required this.fit});
+      {super.key,
+      this.isThumbnail = true,
+      required this.fit,
+      this.enableGesture = false});
 
   final ExtendedAssetEntity entry;
 
   /// 是否优先预览缩略图
   final bool isThumbnail;
   final BoxFit fit;
+  final bool enableGesture;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +21,8 @@ class AssetsPickerEntryBuild extends StatelessWidget {
       case AssetType.other:
         return _AssetEntryOtherBuild(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.image:
-        return _AssetEntryImageBuild(entry, isThumbnail: isThumbnail, fit: fit);
+        return _AssetEntryImageBuild(entry,
+            isThumbnail: isThumbnail, fit: fit, enableGesture: enableGesture);
       case AssetType.video:
         return _AssetEntryVideoBuild(entry, isThumbnail: isThumbnail, fit: fit);
       case AssetType.audio:
@@ -64,11 +69,14 @@ class _AssetEntryVideoBuild extends StatelessWidget {
 
 class _AssetEntryImageBuild extends StatelessWidget {
   const _AssetEntryImageBuild(this.asset,
-      {this.isThumbnail = false, required this.fit});
+      {this.isThumbnail = false,
+      required this.fit,
+      this.enableGesture = false});
 
   final ExtendedAssetEntity asset;
   final bool isThumbnail;
   final BoxFit fit;
+  final bool enableGesture;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +90,19 @@ class _AssetEntryImageBuild extends StatelessWidget {
           ? imageProvider
           : ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
       if (imageProvider == null) return const SizedBox();
-      return ExtendedImageWithAssetsPicker(imageProvider, fit: fit);
+      return ExtendedImageWithAssetsPicker(imageProvider,
+          mode: enableGesture
+              ? ExtendedImageMode.gesture
+              : ExtendedImageMode.none,
+          initGestureConfigHandler: !enableGesture
+              ? null
+              : (ExtendedImageState state) => GestureConfig(
+                  inPageView: true,
+                  initialScale: 1.0,
+                  maxScale: 5.0,
+                  animationMaxScale: 6.0,
+                  initialAlignment: InitialAlignment.center),
+          fit: fit);
     }
     return const _PreviewSupported();
   }

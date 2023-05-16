@@ -1,6 +1,6 @@
 name: fl_assets_picker
 description: fl_assets_picker is used to take photos of the device assets selection and camera and record videos
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/Wayaer/fl_assets_picker.git
 
 environment:
@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
   wechat_assets_picker: ^8.5.0
   wechat_camera_picker: ^3.8.0
-  fl_video: ^1.2.2
+  fl_video: ^1.2.3
   extended_image: ^8.0.1
   photo_manager: ^2.6.0
 

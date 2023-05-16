@@ -13,6 +13,8 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       this.failed,
       super.width,
       super.height,
+      super.mode,
+      super.initGestureConfigHandler,
       super.fit = BoxFit.cover})
       : super(
             image: image,
@@ -26,6 +28,8 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       this.failed,
       super.width,
       super.height,
+      super.mode,
+      super.initGestureConfigHandler,
       super.fit = BoxFit.cover})
       : super.asset(name,
             imageCacheName: name,
@@ -39,6 +43,8 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       this.failed,
       super.width,
       super.height,
+      super.mode,
+      super.initGestureConfigHandler,
       super.fit = BoxFit.cover})
       : super.file(file,
             imageCacheName: file.path,
@@ -52,6 +58,8 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       this.failed,
       super.width,
       super.height,
+      super.mode,
+      super.initGestureConfigHandler,
       super.fit = BoxFit.cover})
       : super.network(url,
             imageCacheName: url,
@@ -65,6 +73,8 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       this.failed,
       super.width,
       super.height,
+      super.mode,
+      super.initGestureConfigHandler,
       super.fit = BoxFit.cover})
       : super.memory(bytes,
             imageCacheName: bytes.hashCode.toString(),

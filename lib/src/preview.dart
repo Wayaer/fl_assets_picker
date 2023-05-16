@@ -36,14 +36,8 @@ class FlPreviewAssets extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
         color: Colors.black.withOpacity(0.9),
-        child: Stack(children: <Widget>[
-          Container(
-              width: double.infinity,
-              height: double.infinity,
-              padding: EdgeInsets.only(
-                  right: 0,
-                  top: MediaQuery.of(context).viewPadding.top + 30,
-                  bottom: MediaQuery.of(context).viewPadding.bottom),
+        child: Stack(children: [
+          SizedBox.expand(
               child: ExtendedImageGesturePageView.builder(
                   controller: controller,
                   itemCount: itemCount,
@@ -55,11 +49,9 @@ class FlPreviewAssets extends StatelessWidget {
                   onPageChanged: onPageChanged,
                   canScrollPage: canScrollPage)),
           close ??
-              Container(
-                  alignment: Alignment.bottomRight,
-                  margin: EdgeInsets.only(
-                      right: 6, top: View.of(context).viewPadding.top + 12),
-                  height: 40,
+              Positioned(
+                  right: 6,
+                  top: MediaQuery.of(context).viewPadding.top,
                   child: const CloseButton(color: Colors.white)),
           if (overlay != null) overlay!,
         ]));

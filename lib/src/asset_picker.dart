@@ -349,7 +349,7 @@ class _PickFromTypeBuilderWidget extends StatelessWidget {
     for (var element in list) {
       final entry = CupertinoActionSheetAction(
           onPressed: () => Navigator.of(context).maybePop(element),
-          isDefaultAction: true,
+          isDefaultAction: false,
           child: element.text);
       if (element.fromType != PickerFromType.cancel) {
         actions.add(entry);
