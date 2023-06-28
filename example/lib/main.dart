@@ -156,24 +156,22 @@ class _HomePage extends StatelessWidget {
                     constraints: const BoxConstraints(maxHeight: 100),
                     child: const Text('确定要删除么')),
                 actions: [
-                  SimpleButton(
-                      text: '取消',
+                  Universal(
                       height: 45,
                       alignment: Alignment.center,
-                      textStyle:
-                          const TextStyle(fontSize: 14, color: Colors.grey),
                       onTap: () {
                         pop(false);
-                      }),
-                  SimpleButton(
-                      text: '确定',
+                      },
+                      child: const Text('取消',
+                          style: TextStyle(fontSize: 14, color: Colors.grey))),
+                  Universal(
                       height: 45,
                       alignment: Alignment.center,
-                      textStyle:
-                          const TextStyle(fontSize: 14, color: Colors.black),
                       onTap: () {
                         pop(true);
-                      }),
+                      },
+                      child: const Text('确定',
+                          style: TextStyle(fontSize: 14, color: Colors.grey))),
                 ]).popupCupertinoModal<bool?>();
             return value ?? false;
           }),

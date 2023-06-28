@@ -13,7 +13,7 @@ dependencies:
   wechat_assets_picker: ^8.5.0
   wechat_camera_picker: ^3.8.0
   fl_video: ^1.2.3
-  extended_image: ^8.0.1
+  extended_image: ^8.0.2
   photo_manager: ^2.6.0
 
 dev_dependencies:
