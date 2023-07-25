@@ -23,7 +23,14 @@ Future<void> main() async {
       currentCacheDir = appPath.temporaryDirectory;
     }
   }
-  runApp(const ExtendedWidgetsApp(home: _HomePage()));
+  runApp(MaterialApp(
+      navigatorKey: GlobalOptions().navigatorKey,
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      home: Scaffold(
+          appBar: AppBar(title: const Text('Assets Picker')),
+          body: const _HomePage())));
 }
 
 const url =
@@ -50,8 +57,7 @@ class _HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExtendedScaffold(
-        appBar: AppBar(title: const Text('Assets Picker')),
+    return Universal(
         padding: const EdgeInsets.all(12),
         isScroll: true,
         children: [

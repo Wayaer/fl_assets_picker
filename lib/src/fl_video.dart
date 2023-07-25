@@ -45,7 +45,7 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   static VideoPlayerController? buildVideoPlayerController(dynamic value) {
     if (value != null) {
       if (value is String && value.startsWith('http')) {
-        return VideoPlayerController.network(value);
+        return VideoPlayerController.networkUrl(Uri.parse(value));
       } else if (value is File) {
         return VideoPlayerController.file(value);
       } else if (value is String) {
