@@ -113,17 +113,9 @@ class _FlVideoPlayerWithAssetsPickerState
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    switch (state) {
-      case AppLifecycleState.inactive:
-        flController?.pause();
-        break;
-      case AppLifecycleState.paused:
-        break;
-      case AppLifecycleState.resumed:
-        flController?.pause();
-        break;
-      case AppLifecycleState.detached:
-        break;
+    if (state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive) {
+      flController?.pause();
     }
   }
 
