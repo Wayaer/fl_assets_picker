@@ -280,7 +280,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
     }
     current = SizedBox.fromSize(size: config.size, child: current);
     if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius, child: current);
+      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
   }
@@ -329,7 +329,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
       current = ColoredBox(color: config.color!, child: current);
     }
     if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius, child: current);
+      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     current = GestureDetector(
         onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? current);
