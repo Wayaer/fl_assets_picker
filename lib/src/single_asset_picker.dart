@@ -133,7 +133,7 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
     }
     current = SizedBox.fromSize(size: config.size, child: current);
     if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius, child: current);
+      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
   }
