@@ -43,9 +43,16 @@ class _HomePage extends StatelessWidget {
     if (!isMobile) return true;
     switch (fromType) {
       case PickerFromType.assets:
-        final permission = isIOS ? Permission.photos : Permission.storage;
-        final permissionState = await permission.request();
-        return permissionState.isGranted;
+        if (isIOS) {
+          return (await Permission.photos.request()).isGranted;
+        } else if (isAndroid) {
+          bool resultStorage = (await Permission.storage.request()).isGranted;
+          bool resultPhotos = (await Permission.photos.request()).isGranted;
+          bool resultAudio = (await Permission.audio.request()).isGranted;
+          bool resultVideos = (await Permission.videos.request()).isGranted;
+          return resultStorage && resultPhotos && resultAudio && resultVideos;
+        }
+        return false;
       case PickerFromType.camera:
         final permissionState = await Permission.camera.request();
         return permissionState.isGranted;
@@ -168,16 +175,16 @@ class _HomePage extends StatelessWidget {
                       onTap: () {
                         pop(false);
                       },
-                      child: const Text('取消',
-                          style: TextStyle(fontSize: 14, color: Colors.grey))),
+                      child:
+                          const BText('取消', fontSize: 14, color: Colors.grey)),
                   Universal(
                       height: 45,
                       alignment: Alignment.center,
                       onTap: () {
                         pop(true);
                       },
-                      child: const Text('确定',
-                          style: TextStyle(fontSize: 14, color: Colors.grey))),
+                      child:
+                          const BText('确定', fontSize: 14, color: Colors.grey)),
                 ]).popupCupertinoModal<bool?>();
             return value ?? false;
           }),

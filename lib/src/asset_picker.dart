@@ -147,8 +147,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
   /// 选择图片或者视频
   static Future<ExtendedAssetEntity?> showPickerWithFormType(
     BuildContext context, {
-    bool mounted = true,
-
     /// 选择框提示item
     List<PickerFromTypeConfig> fromTypes = const [
       PickerFromTypeConfig(
@@ -196,37 +194,44 @@ abstract class FlAssetsPicker extends StatefulWidget {
         fromTypesBuilder: fromTypesBuilder);
     pickerFromType ??= pickerFromTypeConfig?.fromType;
     AssetEntity? entity;
+
     switch (pickerFromType) {
       case PickerFromType.assets:
-        if (!mounted) return null;
-        final assetsEntity = await showPickerAssets(context,
-            pageRouteBuilder: pageRouteBuilderForAssetPicker,
-            checkPermission: checkPermission,
-            pickerConfig: AssetPickerConfig(
-                maxAssets: 1,
-                requestType: pickerFromTypeConfig!.requestType,
-                selectedAssets: []).merge(assetPickerConfig));
-        if (assetsEntity == null || assetsEntity.isEmpty) return null;
-        entity = assetsEntity.first;
+        if (context.mounted) {
+          final assetsEntity = await showPickerAssets(context,
+              pageRouteBuilder: pageRouteBuilderForAssetPicker,
+              checkPermission: checkPermission,
+              pickerConfig: AssetPickerConfig(
+                  maxAssets: 1,
+                  requestType: pickerFromTypeConfig!.requestType,
+                  selectedAssets: []).merge(assetPickerConfig));
+          if (assetsEntity == null || assetsEntity.isEmpty) return null;
+          entity = assetsEntity.first;
+        } else {
+          return null;
+        }
         break;
       case PickerFromType.camera:
-        if (!mounted) return null;
-        entity = await showPickerFromCamera(context,
-            checkPermission: checkPermission,
-            pageRouteBuilder: pageRouteBuilderForCameraPicker,
-            pickerConfig: const CameraPickerConfig(
-                    resolutionPreset: ResolutionPreset.high)
-                .merge(cameraPickerConfig)
-                .copyWith(
-                    enableRecording:
-                        pickerFromTypeConfig?.requestType.containsVideo(),
-                    onlyEnableRecording:
-                        pickerFromTypeConfig?.requestType == RequestType.video,
-                    enableAudio: (pickerFromTypeConfig?.requestType
-                                .containsVideo() ??
-                            false) ||
-                        (pickerFromTypeConfig?.requestType.containsAudio() ??
-                            false)));
+        if (context.mounted) {
+          entity = await showPickerFromCamera(context,
+              checkPermission: checkPermission,
+              pageRouteBuilder: pageRouteBuilderForCameraPicker,
+              pickerConfig: const CameraPickerConfig(
+                      resolutionPreset: ResolutionPreset.high)
+                  .merge(cameraPickerConfig)
+                  .copyWith(
+                      enableRecording:
+                          pickerFromTypeConfig?.requestType.containsVideo(),
+                      onlyEnableRecording: pickerFromTypeConfig?.requestType ==
+                          RequestType.video,
+                      enableAudio: (pickerFromTypeConfig?.requestType
+                                  .containsVideo() ??
+                              false) ||
+                          (pickerFromTypeConfig?.requestType.containsAudio() ??
+                              false)));
+        } else {
+          return null;
+        }
         break;
       default:
         return null;
@@ -256,9 +261,8 @@ abstract class FlAssetsPicker extends StatefulWidget {
         fromTypes.first.fromType != PickerFromType.cancel) {
       type = fromTypes.first;
     } else {
-      type = await showModalBottomSheet<PickerFromTypeConfig?>(
+      type = await showCupertinoModalPopup<PickerFromTypeConfig?>(
           context: context,
-          backgroundColor: Colors.transparent,
           builder: (BuildContext context) =>
               fromTypesBuilder?.call(context, fromTypes) ??
               _PickFromTypeBuilderWidget(fromTypes));
@@ -269,19 +273,20 @@ abstract class FlAssetsPicker extends StatefulWidget {
   /// 选择图片
   static Future<List<AssetEntity>?> showPickerAssets(BuildContext context,
       {bool useRootNavigator = true,
-      bool mounted = true,
       FlAssetsPickerCheckPermission? checkPermission,
       Key? key,
       AssetPickerConfig pickerConfig = const AssetPickerConfig(),
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.assets) ?? true;
-    if (!permissionState || !mounted) return null;
-    return await AssetPicker.pickAssets(context,
-        key: key,
-        pickerConfig: pickerConfig,
-        useRootNavigator: useRootNavigator,
-        pageRouteBuilder: pageRouteBuilder);
+    if (permissionState && context.mounted) {
+      return await AssetPicker.pickAssets(context,
+          key: key,
+          pickerConfig: pickerConfig,
+          useRootNavigator: useRootNavigator,
+          pageRouteBuilder: pageRouteBuilder);
+    }
+    return null;
   }
 
   /// 选择图片
@@ -296,13 +301,15 @@ abstract class FlAssetsPicker extends StatefulWidget {
       AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder}) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.assets) ?? true;
-    if (!permissionState || !mounted) return null;
-    return await AssetPicker.pickAssetsWithDelegate<Asset, Path,
-            PickerProvider>(context,
-        key: key,
-        delegate: delegate,
-        useRootNavigator: useRootNavigator,
-        pageRouteBuilder: pageRouteBuilder);
+    if (context.mounted && permissionState) {
+      return await AssetPicker.pickAssetsWithDelegate<Asset, Path,
+              PickerProvider>(context,
+          key: key,
+          delegate: delegate,
+          useRootNavigator: useRootNavigator,
+          pageRouteBuilder: pageRouteBuilder);
+    }
+    return null;
   }
 
   /// 通过相机拍照
@@ -317,11 +324,13 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.camera) ?? true;
-    if (!permissionState || !mounted) return null;
-    return await CameraPicker.pickFromCamera(context,
-        pickerConfig: pickerConfig,
-        useRootNavigator: useRootNavigator,
-        pageRouteBuilder: pageRouteBuilder);
+    if (context.mounted && permissionState) {
+      return await CameraPicker.pickFromCamera(context,
+          pickerConfig: pickerConfig,
+          useRootNavigator: useRootNavigator,
+          pageRouteBuilder: pageRouteBuilder);
+    }
+    return null;
   }
 
   /// int 字节转 k MB GB
