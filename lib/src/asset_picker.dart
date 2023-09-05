@@ -294,7 +294,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
           PickerProvider extends AssetPickerProvider<Asset, Path>>(
       BuildContext context,
       {Key? key,
-      bool mounted = true,
       FlAssetsPickerCheckPermission? checkPermission,
       required AssetPickerBuilderDelegate<Asset, Path> delegate,
       bool useRootNavigator = true,
@@ -316,7 +315,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
   static Future<AssetEntity?> showPickerFromCamera(
     BuildContext context, {
     bool useRootNavigator = true,
-    bool mounted = true,
     FlAssetsPickerCheckPermission? checkPermission,
     CameraPickerConfig pickerConfig = const CameraPickerConfig(),
     CameraPickerPageRoute<AssetEntity> Function(Widget picker)?

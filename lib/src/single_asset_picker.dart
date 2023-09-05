@@ -147,7 +147,7 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    controller.pickFromType(context, mounted: mounted);
+    controller.pickFromType(context);
   }
 
   @override

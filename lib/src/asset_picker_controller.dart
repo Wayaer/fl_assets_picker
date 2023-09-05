@@ -79,7 +79,7 @@ class AssetsPickerController with ChangeNotifier {
   }
 
   /// 弹窗选择类型
-  Future<void> pickFromType(BuildContext context, {bool mounted = true}) async {
+  Future<void> pickFromType(BuildContext context) async {
     if (_assetsPicker.maxCount > 1 &&
         allAssetEntity.length >= _assetsPicker.maxCount) {
       _assetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
@@ -90,7 +90,7 @@ class AssetsPickerController with ChangeNotifier {
         fromTypesBuilder: _assetsPicker.fromTypesBuilder);
     switch (type?.fromType) {
       case PickerFromType.gallery:
-        if (!mounted) return;
+        if (!context.mounted) return;
         List<AssetEntity> selectedAssets = [];
         int maxAssets = 1;
         if (_assetsPicker.maxCount > 1) {
@@ -134,7 +134,7 @@ class AssetsPickerController with ChangeNotifier {
         notifyListeners();
         break;
       case PickerFromType.camera:
-        if (!mounted) return;
+        if (!context.mounted) return;
         final assetsEntry = await pickFromCamera(context,
             pickerConfig: cameraConfig.copyWith(
                 enableRecording: type?.requestType.containsVideo(),

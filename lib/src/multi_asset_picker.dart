@@ -315,7 +315,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
       widget.errorCallback?.call('最多选择${widget.maxCount}个');
       return;
     }
-    controller.pickFromType(context, mounted: mounted);
+    controller.pickFromType(context);
   }
 
   /// 选择框
