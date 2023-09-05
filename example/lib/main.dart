@@ -42,7 +42,7 @@ class _HomePage extends StatelessWidget {
   Future<bool> checkPermission(PickerFromType fromType) async {
     if (!isMobile) return true;
     switch (fromType) {
-      case PickerFromType.assets:
+      case PickerFromType.gallery:
         if (isIOS) {
           return (await Permission.photos.request()).isGranted;
         } else if (isAndroid) {
@@ -88,7 +88,7 @@ class _HomePage extends StatelessWidget {
         SingleAssetPicker(
             fromRequestTypes: [
               PickerFromTypeConfig(
-                  fromType: PickerFromType.assets,
+                  fromType: PickerFromType.gallery,
                   requestType: requestType,
                   text: const Text('图库选择')),
               PickerFromTypeConfig(
@@ -120,7 +120,7 @@ class _HomePage extends StatelessWidget {
             },
             fromRequestTypes: [
               PickerFromTypeConfig(
-                  fromType: PickerFromType.assets,
+                  fromType: PickerFromType.gallery,
                   text: const Text('图库选择'),
                   requestType: requestType),
               PickerFromTypeConfig(
@@ -144,7 +144,7 @@ class _HomePage extends StatelessWidget {
       initialData: MultiAssetPicker.convertUrls(url),
       fromRequestTypes: [
         PickerFromTypeConfig(
-            fromType: PickerFromType.assets,
+            fromType: PickerFromType.gallery,
             text: const Text('图库选择'),
             requestType: requestType),
         PickerFromTypeConfig(

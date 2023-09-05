@@ -89,7 +89,7 @@ class AssetsPickerController with ChangeNotifier {
         context, _assetsPicker.fromRequestTypes,
         fromTypesBuilder: _assetsPicker.fromTypesBuilder);
     switch (type?.fromType) {
-      case PickerFromType.assets:
+      case PickerFromType.gallery:
         if (!mounted) return;
         List<AssetEntity> selectedAssets = [];
         int maxAssets = 1;

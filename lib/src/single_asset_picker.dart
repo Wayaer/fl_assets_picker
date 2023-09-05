@@ -13,7 +13,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     super.errorCallback,
     super.fromRequestTypes = const [
       PickerFromTypeConfig(
-          fromType: PickerFromType.assets,
+          fromType: PickerFromType.gallery,
           text: Text('图库选择'),
           requestType: RequestType.common),
       PickerFromTypeConfig(

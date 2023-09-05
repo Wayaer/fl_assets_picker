@@ -68,7 +68,7 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.maxCount = 9,
     super.fromRequestTypes = const [
       PickerFromTypeConfig(
-          fromType: PickerFromType.assets,
+          fromType: PickerFromType.gallery,
           text: Text('图库选择'),
           requestType: RequestType.common),
       PickerFromTypeConfig(

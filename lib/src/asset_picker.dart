@@ -34,7 +34,7 @@ enum ImageCroppingQuality {
 
 enum PickerFromType {
   /// 从图库中选择
-  assets,
+  gallery,
 
   /// 从相机拍摄
   camera,
@@ -150,7 +150,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     /// 选择框提示item
     List<PickerFromTypeConfig> fromTypes = const [
       PickerFromTypeConfig(
-          fromType: PickerFromType.assets,
+          fromType: PickerFromType.gallery,
           text: Text('图库选择'),
           requestType: RequestType.image),
       PickerFromTypeConfig(
@@ -196,7 +196,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     AssetEntity? entity;
 
     switch (pickerFromType) {
-      case PickerFromType.assets:
+      case PickerFromType.gallery:
         if (context.mounted) {
           final assetsEntity = await showPickerAssets(context,
               pageRouteBuilder: pageRouteBuilderForAssetPicker,
@@ -278,7 +278,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
       AssetPickerConfig pickerConfig = const AssetPickerConfig(),
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.assets) ?? true;
+        await checkPermission?.call(PickerFromType.gallery) ?? true;
     if (permissionState && context.mounted) {
       return await AssetPicker.pickAssets(context,
           key: key,
@@ -300,7 +300,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
       bool useRootNavigator = true,
       AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder}) async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.assets) ?? true;
+        await checkPermission?.call(PickerFromType.gallery) ?? true;
     if (context.mounted && permissionState) {
       return await AssetPicker.pickAssetsWithDelegate<Asset, Path,
               PickerProvider>(context,
