@@ -242,7 +242,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
       errorCallback?.call('最大选择${_toSize(maxBytes)}');
       return null;
     }
-    return entity.toExtensionAssetEntity(renovate: renovate);
+    return entity.toExtended(renovate: renovate);
   }
 
   /// show 选择弹窗
@@ -266,12 +266,14 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// 选择图片
-  static Future<List<AssetEntity>?> showPickerAssets(BuildContext context,
-      {bool useRootNavigator = true,
-      FlAssetsPickerCheckPermission? checkPermission,
-      Key? key,
-      AssetPickerConfig pickerConfig = const AssetPickerConfig(),
-      AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
+  static Future<List<AssetEntity>?> showPickerAssets(
+    BuildContext context, {
+    bool useRootNavigator = true,
+    FlAssetsPickerCheckPermission? checkPermission,
+    Key? key,
+    AssetPickerConfig pickerConfig = const AssetPickerConfig(),
+    AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder,
+  }) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.gallery) ?? true;
     if (permissionState && context.mounted) {
@@ -286,13 +288,14 @@ abstract class FlAssetsPicker extends StatefulWidget {
 
   /// 选择图片
   static Future<List<Asset>?> showPickerAssetsWithDelegate<Asset, Path,
-          PickerProvider extends AssetPickerProvider<Asset, Path>>(
-      BuildContext context,
-      {Key? key,
-      FlAssetsPickerCheckPermission? checkPermission,
-      required AssetPickerBuilderDelegate<Asset, Path> delegate,
-      bool useRootNavigator = true,
-      AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder}) async {
+      PickerProvider extends AssetPickerProvider<Asset, Path>>(
+    BuildContext context, {
+    Key? key,
+    FlAssetsPickerCheckPermission? checkPermission,
+    required AssetPickerBuilderDelegate<Asset, Path> delegate,
+    bool useRootNavigator = true,
+    AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder,
+  }) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.gallery) ?? true;
     if (context.mounted && permissionState) {

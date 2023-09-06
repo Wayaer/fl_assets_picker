@@ -23,7 +23,7 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
 
 extension ExtensionAssetEntity on AssetEntity {
   ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
-  Future<ExtendedAssetEntity> toExtensionAssetEntity<T>(
+  Future<ExtendedAssetEntity> toExtended<T>(
       {FlAssetFileRenovate<T>? renovate}) async {
     T? renovated;
     if (renovate != null) renovated = await renovate.call(this);

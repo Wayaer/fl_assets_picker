@@ -49,8 +49,7 @@ class AssetsPickerController with ChangeNotifier {
       List<ExtendedAssetEntity> list = [];
       for (var element in assets) {
         if (!allAssetEntity.contains(element)) {
-          list.add(await element.toExtensionAssetEntity(
-              renovate: _assetsPicker.renovate));
+          list.add(await element.toExtended(renovate: _assetsPicker.renovate));
         }
       }
       return list;
@@ -71,8 +70,7 @@ class AssetsPickerController with ChangeNotifier {
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
     if (entity != null) {
-      return await entity.toExtensionAssetEntity(
-          renovate: _assetsPicker.renovate);
+      return await entity.toExtended(renovate: _assetsPicker.renovate);
     }
     return null;
   }
@@ -106,13 +104,6 @@ class AssetsPickerController with ChangeNotifier {
             pageRouteBuilder: _assetsPicker.pageRouteBuilderForAssetPicker);
         if (assetsEntryList == null) return;
         if (_assetsPicker.maxCount > 1) {
-          /// 多资源选择
-          if (assetsEntryList.length + allAssetEntity.length >
-              _assetsPicker.maxCount) {
-            _assetsPicker.errorCallback
-                ?.call('最多添加${_assetsPicker.maxCount}个资源');
-            return;
-          }
           var videos = allAssetEntity
               .where((element) => element.type == AssetType.video)
               .toList();
