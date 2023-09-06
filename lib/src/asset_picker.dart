@@ -17,7 +17,7 @@ typedef FlAssetsPickerCheckPermission = Future<bool> Function(
 typedef FlAssetsPickerErrorCallback = void Function(String erroe);
 
 typedef PickerFromTypeBuilder = Widget Function(
-    BuildContext context, List<PickerFromTypeConfig> fromTypes);
+    BuildContext context, List<PickerFromTypeItem> fromTypes);
 
 typedef FlAssetFileRenovate<T> = Future<T> Function(AssetEntity entity);
 
@@ -43,13 +43,13 @@ enum PickerFromType {
   cancel,
 }
 
-class PickerFromTypeConfig {
-  const PickerFromTypeConfig(
+class PickerFromTypeItem {
+  const PickerFromTypeItem(
       {required this.fromType,
       required this.text,
       this.requestType = RequestType.common});
 
-  /// 来源
+  /// 选择来源
   final PickerFromType fromType;
 
   /// 显示的文字
@@ -98,6 +98,20 @@ class AssetsPickerEntryConfig {
   final BoxFit previewFit;
 }
 
+const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
+  PickerFromTypeItem(
+      fromType: PickerFromType.gallery,
+      text: Text('图库选择'),
+      requestType: RequestType.image),
+  PickerFromTypeItem(
+      fromType: PickerFromType.camera,
+      text: Text('相机拍摄'),
+      requestType: RequestType.image),
+  PickerFromTypeItem(
+      fromType: PickerFromType.cancel,
+      text: Text('取消', style: TextStyle(color: Colors.red))),
+];
+
 abstract class FlAssetsPicker extends StatefulWidget {
   const FlAssetsPicker(
       {super.key,
@@ -119,7 +133,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   final int maxCount;
 
   /// 请求类型
-  final List<PickerFromTypeConfig> fromRequestTypes;
+  final List<PickerFromTypeItem> fromRequestTypes;
 
   /// 是否开启 资源选择
   final bool enablePicker;
@@ -148,28 +162,13 @@ abstract class FlAssetsPicker extends StatefulWidget {
   static Future<ExtendedAssetEntity?> showPickerWithFormType(
     BuildContext context, {
     /// 选择框提示item
-    List<PickerFromTypeConfig> fromTypes = const [
-      PickerFromTypeConfig(
-          fromType: PickerFromType.gallery,
-          text: Text('图库选择'),
-          requestType: RequestType.image),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.camera,
-          text: Text('相机拍摄'),
-          requestType: RequestType.image),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.cancel,
-          text: Text('取消', style: TextStyle(color: Colors.red))),
-    ],
+    List<PickerFromTypeItem> fromTypes = defaultPickerFromTypeItem,
     PickerFromTypeBuilder? fromTypesBuilder,
-
-    /// 指定类型时
-    PickerFromType? pickerFromType,
 
     /// 获取权限
     FlAssetsPickerCheckPermission? checkPermission,
 
-    /// 选择器配置信息
+    /// 资源选择器配置信息
     AssetPickerConfig? assetPickerConfig,
     AssetPickerPageRouteBuilder<List<AssetEntity>>?
         pageRouteBuilderForAssetPicker,
@@ -189,13 +188,11 @@ abstract class FlAssetsPicker extends StatefulWidget {
     int maxBytes = 167772160,
   }) async {
     if (!_isMobile) return null;
-    PickerFromTypeConfig? pickerFromTypeConfig = await showPickerFromType(
-        context, fromTypes,
+    final pickerFromTypeConfig = await showPickerFromType(context, fromTypes,
         fromTypesBuilder: fromTypesBuilder);
-    pickerFromType ??= pickerFromTypeConfig?.fromType;
+    if (pickerFromTypeConfig == null) return null;
     AssetEntity? entity;
-
-    switch (pickerFromType) {
+    switch (pickerFromTypeConfig.fromType) {
       case PickerFromType.gallery:
         if (context.mounted) {
           final assetsEntity = await showPickerAssets(context,
@@ -203,7 +200,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
               checkPermission: checkPermission,
               pickerConfig: AssetPickerConfig(
                   maxAssets: 1,
-                  requestType: pickerFromTypeConfig!.requestType,
+                  requestType: pickerFromTypeConfig.requestType,
                   selectedAssets: []).merge(assetPickerConfig));
           if (assetsEntity == null || assetsEntity.isEmpty) return null;
           entity = assetsEntity.first;
@@ -221,14 +218,12 @@ abstract class FlAssetsPicker extends StatefulWidget {
                   .merge(cameraPickerConfig)
                   .copyWith(
                       enableRecording:
-                          pickerFromTypeConfig?.requestType.containsVideo(),
-                      onlyEnableRecording: pickerFromTypeConfig?.requestType ==
-                          RequestType.video,
-                      enableAudio: (pickerFromTypeConfig?.requestType
-                                  .containsVideo() ??
-                              false) ||
-                          (pickerFromTypeConfig?.requestType.containsAudio() ??
-                              false)));
+                          pickerFromTypeConfig.requestType.containsVideo(),
+                      onlyEnableRecording:
+                          pickerFromTypeConfig.requestType == RequestType.video,
+                      enableAudio: pickerFromTypeConfig.requestType
+                              .containsVideo() ||
+                          pickerFromTypeConfig.requestType.containsAudio()));
         } else {
           return null;
         }
@@ -251,17 +246,17 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// show 选择弹窗
-  static Future<PickerFromTypeConfig?> showPickerFromType(
+  static Future<PickerFromTypeItem?> showPickerFromType(
     BuildContext context,
-    List<PickerFromTypeConfig> fromTypes, {
+    List<PickerFromTypeItem> fromTypes, {
     PickerFromTypeBuilder? fromTypesBuilder,
   }) async {
-    PickerFromTypeConfig? type;
+    PickerFromTypeItem? type;
     if (fromTypes.length == 1 &&
         fromTypes.first.fromType != PickerFromType.cancel) {
       type = fromTypes.first;
     } else {
-      type = await showCupertinoModalPopup<PickerFromTypeConfig?>(
+      type = await showCupertinoModalPopup<PickerFromTypeItem?>(
           context: context,
           builder: (BuildContext context) =>
               fromTypesBuilder?.call(context, fromTypes) ??
@@ -352,7 +347,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
 class _PickFromTypeBuilderWidget extends StatelessWidget {
   const _PickFromTypeBuilderWidget(this.list);
 
-  final List<PickerFromTypeConfig> list;
+  final List<PickerFromTypeItem> list;
 
   @override
   Widget build(BuildContext context) {

@@ -1,3 +1,8 @@
+## 1.2.0
+
+* Remove useless code
+* Change the `PickerFromTypeConfig` to the `PickerFromTypeItem`
+
 ## 1.1.1
 
 * Update dependencies

@@ -66,20 +66,7 @@ class MultiAssetPicker extends FlAssetsPicker {
     super.errorCallback,
     super.maxVideoCount = 1,
     super.maxCount = 9,
-    super.fromRequestTypes = const [
-      PickerFromTypeConfig(
-          fromType: PickerFromType.gallery,
-          text: Text('图库选择'),
-          requestType: RequestType.common),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.camera,
-          text: Text('相机拍摄'),
-          requestType: RequestType.common),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.cancel,
-          text: Text('取消'),
-          requestType: RequestType.common),
-    ],
+    super.fromRequestTypes = defaultPickerFromTypeItem,
     super.renovate,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,

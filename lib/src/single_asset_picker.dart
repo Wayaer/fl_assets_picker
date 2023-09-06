@@ -11,20 +11,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     this.onChanged,
     super.enablePicker = true,
     super.errorCallback,
-    super.fromRequestTypes = const [
-      PickerFromTypeConfig(
-          fromType: PickerFromType.gallery,
-          text: Text('图库选择'),
-          requestType: RequestType.common),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.camera,
-          text: Text('相机拍摄'),
-          requestType: RequestType.common),
-      PickerFromTypeConfig(
-          fromType: PickerFromType.cancel,
-          text: Text('取消'),
-          requestType: RequestType.common),
-    ],
+    super.fromRequestTypes = defaultPickerFromTypeItem,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
     super.fromTypesBuilder,
@@ -52,7 +39,7 @@ class SingleAssetPicker extends FlAssetsPicker {
   final AssetsPickerEntryConfig config;
 
   /// [paths] 文件地址转换 [ExtendedAssetModel] 默认类型为  [AssetType.image]
-  static ExtendedAssetEntity? convertFiles(File file,
+  static ExtendedAssetEntity? convertFile(File file,
       {AssetType assetsType = AssetType.image}) {
     if (file.existsSync()) {
       return ExtendedAssetEntity.fromFile(file: file, assetType: assetsType);
@@ -61,7 +48,7 @@ class SingleAssetPicker extends FlAssetsPicker {
   }
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
-  static ExtendedAssetEntity? convertPaths(String path,
+  static ExtendedAssetEntity? convertPath(String path,
       {AssetType assetsType = AssetType.image}) {
     if (path.isNotEmpty) {
       return ExtendedAssetEntity.fromPreviewed(

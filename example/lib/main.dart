@@ -13,16 +13,6 @@ String? currentCacheDir;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final appPath = await Curiosity().native.appPath;
-  if (appPath != null) {
-    if (isAndroid) {
-      currentCacheDir = '${appPath.externalCacheDir!}/';
-    } else if (isIOS) {
-      currentCacheDir = appPath.temporaryDirectory;
-    } else if (isMacOS) {
-      currentCacheDir = appPath.temporaryDirectory;
-    }
-  }
   runApp(MaterialApp(
       navigatorKey: GlobalOptions().navigatorKey,
       debugShowCheckedModeBanner: false,
@@ -87,15 +77,15 @@ class _HomePage extends StatelessWidget {
       Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
         SingleAssetPicker(
             fromRequestTypes: [
-              PickerFromTypeConfig(
+              PickerFromTypeItem(
                   fromType: PickerFromType.gallery,
                   requestType: requestType,
                   text: const Text('图库选择')),
-              PickerFromTypeConfig(
+              PickerFromTypeItem(
                   fromType: PickerFromType.camera,
                   requestType: requestType,
                   text: const Text('相机拍摄')),
-              const PickerFromTypeConfig(
+              const PickerFromTypeItem(
                   fromType: PickerFromType.cancel, text: Text('取消')),
             ],
             errorCallback: (String value) {
@@ -119,15 +109,15 @@ class _HomePage extends StatelessWidget {
               showToast(value);
             },
             fromRequestTypes: [
-              PickerFromTypeConfig(
+              PickerFromTypeItem(
                   fromType: PickerFromType.gallery,
                   text: const Text('图库选择'),
                   requestType: requestType),
-              PickerFromTypeConfig(
+              PickerFromTypeItem(
                   fromType: PickerFromType.camera,
                   text: const Text('相机拍摄'),
                   requestType: requestType),
-              const PickerFromTypeConfig(
+              const PickerFromTypeItem(
                   fromType: PickerFromType.cancel, text: Text('取消')),
             ],
             checkPermission: checkPermission,
@@ -143,15 +133,15 @@ class _HomePage extends StatelessWidget {
   Widget buildMultiAssetPicker(RequestType requestType) => MultiAssetPicker(
       initialData: MultiAssetPicker.convertUrls(url),
       fromRequestTypes: [
-        PickerFromTypeConfig(
+        PickerFromTypeItem(
             fromType: PickerFromType.gallery,
             text: const Text('图库选择'),
             requestType: requestType),
-        PickerFromTypeConfig(
+        PickerFromTypeItem(
             fromType: PickerFromType.camera,
             text: const Text('相机拍摄'),
             requestType: requestType),
-        const PickerFromTypeConfig(
+        const PickerFromTypeItem(
             fromType: PickerFromType.cancel, text: Text('取消')),
       ],
       previewModalPopup: (_, Widget previewAssets) =>

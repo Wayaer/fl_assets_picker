@@ -5,17 +5,23 @@ import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
 class AssetsPickerController with ChangeNotifier {
-  AssetsPickerController(
-      {this.assetConfig = const AssetPickerConfig(),
-      this.cameraConfig = const CameraPickerConfig()});
+  AssetsPickerController();
 
   List<ExtendedAssetEntity> allAssetEntity = [];
 
   /// 资源选择器配置信息
-  late AssetPickerConfig assetConfig;
+  AssetPickerConfig _assetConfig = const AssetPickerConfig();
+
+  set assetConfig(AssetPickerConfig config) {
+    _assetConfig = config;
+  }
 
   /// 相机配置信息
-  late CameraPickerConfig cameraConfig;
+  CameraPickerConfig _cameraConfig = const CameraPickerConfig();
+
+  set cameraConfig(CameraPickerConfig config) {
+    _cameraConfig = config;
+  }
 
   late FlAssetsPicker _assetsPicker;
 
@@ -28,13 +34,6 @@ class AssetsPickerController with ChangeNotifier {
     notifyListeners();
   }
 
-  /// 更新配置信息
-  void updateConfig(
-      {AssetPickerConfig? assetConfig, CameraPickerConfig? cameraConfig}) {
-    if (assetConfig != null) this.assetConfig = assetConfig;
-    if (cameraConfig != null) this.cameraConfig = cameraConfig;
-  }
-
   /// 选择图片
   Future<List<ExtendedAssetEntity>?> pickAssets(BuildContext context,
       {bool useRootNavigator = true,
@@ -43,7 +42,7 @@ class AssetsPickerController with ChangeNotifier {
     final List<AssetEntity>? assets = await FlAssetsPicker.showPickerAssets(
         context,
         checkPermission: _assetsPicker.checkPermission,
-        pickerConfig: pickerConfig ?? assetConfig,
+        pickerConfig: pickerConfig ?? _assetConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
     if (assets != null && assets.isNotEmpty) {
@@ -68,7 +67,7 @@ class AssetsPickerController with ChangeNotifier {
     final AssetEntity? entity = await FlAssetsPicker.showPickerFromCamera(
         context,
         checkPermission: _assetsPicker.checkPermission,
-        pickerConfig: pickerConfig ?? cameraConfig,
+        pickerConfig: pickerConfig ?? _cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
     if (entity != null) {
@@ -85,7 +84,7 @@ class AssetsPickerController with ChangeNotifier {
       _assetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
       return;
     }
-    PickerFromTypeConfig? type = await FlAssetsPicker.showPickerFromType(
+    final type = await FlAssetsPicker.showPickerFromType(
         context, _assetsPicker.fromRequestTypes,
         fromTypesBuilder: _assetsPicker.fromTypesBuilder);
     switch (type?.fromType) {
@@ -99,7 +98,7 @@ class AssetsPickerController with ChangeNotifier {
           maxAssets = _assetsPicker.maxCount - selectedAssets.length;
         }
         final assetsEntryList = await pickAssets(context,
-            pickerConfig: assetConfig.copyWith(
+            pickerConfig: _assetConfig.copyWith(
                 maxAssets: maxAssets,
                 requestType: type?.requestType,
                 selectedAssets: selectedAssets),
@@ -136,7 +135,7 @@ class AssetsPickerController with ChangeNotifier {
       case PickerFromType.camera:
         if (!context.mounted) return;
         final assetsEntry = await pickFromCamera(context,
-            pickerConfig: cameraConfig.copyWith(
+            pickerConfig: _cameraConfig.copyWith(
                 enableRecording: type?.requestType.containsVideo(),
                 onlyEnableRecording: type?.requestType == RequestType.video,
                 enableAudio: (type?.requestType.containsVideo() ?? false) ||
@@ -162,7 +161,7 @@ class AssetsPickerController with ChangeNotifier {
       case PickerFromType.cancel:
         break;
       default:
-        return;
+        break;
     }
   }
 }
