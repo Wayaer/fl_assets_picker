@@ -104,8 +104,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
       };
 
   /// fileAsync > previewUrl > previewPath
-  static ImageProvider? assetEntityToImageProvider(
-      ExtendedXFile assetEntity) {
+  static ImageProvider? assetEntityToImageProvider(ExtendedXFile assetEntity) {
     ImageProvider? provider;
     if (assetEntity.renovated != null) {
       provider = ExtendedImageWithAssetsPicker.buildImageProvider(
