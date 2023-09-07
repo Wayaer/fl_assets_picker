@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -37,15 +35,6 @@ class SingleAssetPicker extends FlAssetsPicker {
 
   ///
   final AssetsPickerEntryConfig config;
-
-  /// [paths] 文件地址转换 [ExtendedAssetModel] 默认类型为  [AssetType.image]
-  static ExtendedAssetEntity? convertFile(File file,
-      {AssetType assetsType = AssetType.image}) {
-    if (file.existsSync()) {
-      return ExtendedAssetEntity.fromFile(file: file, assetType: assetsType);
-    }
-    return null;
-  }
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertPath(String path,

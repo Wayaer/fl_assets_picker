@@ -106,7 +106,7 @@ class AssetDeleteIcon extends StatelessWidget {
 class AssetBuilder extends StatelessWidget {
   const AssetBuilder(this.entry,
       {super.key,
-      this.isThumbnail = true,
+      this.isThumbnail = false,
       required this.fit,
       this.enableGesture = false});
 
@@ -121,123 +121,75 @@ class AssetBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (entry.type) {
       case AssetType.other:
-        return _AssetOtherBuilder(entry, isThumbnail: isThumbnail, fit: fit);
+        break;
       case AssetType.image:
-        return _AssetImageBuilder(entry,
-            isThumbnail: isThumbnail, fit: fit, enableGesture: enableGesture);
+        return buildImage;
       case AssetType.video:
-        return _AssetVideoBuilder(entry, isThumbnail: isThumbnail, fit: fit);
+        return buildVideo;
       case AssetType.audio:
-        return _AssetOtherBuilder(entry, isThumbnail: isThumbnail, fit: fit);
+        return buildAudio;
     }
+    return buildNotSupported;
   }
-}
 
-class _AssetVideoBuilder extends StatelessWidget {
-  const _AssetVideoBuilder(this.asset,
-      {this.isThumbnail = false, required this.fit});
-
-  final ExtendedAssetEntity asset;
-  final bool isThumbnail;
-  final BoxFit fit;
-
-  @override
-  Widget build(BuildContext context) {
-    if (asset.type == AssetType.video) {
-      Widget current = const SizedBox();
-      ImageProvider? imageProvider;
-      if (asset.thumbnailDataAsync != null) {
-        imageProvider = ExtendedMemoryImageProvider(asset.thumbnailDataAsync!);
-      } else if (asset.renovated != null) {
-        imageProvider =
-            ExtendedImageWithAssetsPicker.buildImageProvider(asset.renovated);
-      }
-      if (isThumbnail && imageProvider != null) {
-        current = ExtendedImageWithAssetsPicker(imageProvider, fit: fit);
-      } else {
-        final controller =
-            FlVideoPlayerWithAssetsPicker.buildVideoPlayerController(
-                asset.previewed ?? asset.fileAsync);
-        if (controller != null) {
-          current = FlVideoPlayerWithAssetsPicker(
-              controller: controller, cover: current);
-        }
-      }
-      return current;
-    }
-    return const _PreviewSupported();
-  }
-}
-
-class _AssetImageBuilder extends StatelessWidget {
-  const _AssetImageBuilder(this.asset,
-      {this.isThumbnail = false,
-      required this.fit,
-      this.enableGesture = false});
-
-  final ExtendedAssetEntity asset;
-  final bool isThumbnail;
-  final BoxFit fit;
-  final bool enableGesture;
-
-  @override
-  Widget build(BuildContext context) {
-    if (asset.type == AssetType.image) {
-      ImageProvider? imageProvider;
-      if (asset.thumbnailDataAsync != null) {
-        imageProvider =
-            ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
-      }
-      imageProvider = isThumbnail && imageProvider != null
-          ? imageProvider
-          : ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
-      if (imageProvider == null) return const SizedBox();
-      return ExtendedImageWithAssetsPicker(imageProvider,
-          mode: enableGesture
-              ? ExtendedImageMode.gesture
-              : ExtendedImageMode.none,
-          initGestureConfigHandler: !enableGesture
-              ? null
-              : (ExtendedImageState state) => GestureConfig(
-                  inPageView: true,
-                  initialScale: 1.0,
-                  maxScale: 5.0,
-                  animationMaxScale: 6.0,
-                  initialAlignment: InitialAlignment.center),
-          fit: fit);
-    }
-    return const _PreviewSupported();
-  }
-}
-
-class _AssetOtherBuilder extends StatelessWidget {
-  const _AssetOtherBuilder(this.asset,
-      {this.isThumbnail = false, required this.fit});
-
-  final ExtendedAssetEntity asset;
-  final bool isThumbnail;
-  final BoxFit fit;
-
-  @override
-  Widget build(BuildContext context) {
-    if (asset.type == AssetType.other || asset.type == AssetType.audio) {
-      ImageProvider? thumbnailProvider;
-      if (asset.thumbnailDataAsync != null) {
-        thumbnailProvider =
-            ExtendedImageWithAssetsPicker.assetEntityToImageProvider(asset);
-      }
-      if (isThumbnail && thumbnailProvider != null) {
-        return ExtendedImageWithAssetsPicker(thumbnailProvider, fit: fit);
-      }
-    }
-    return const _PreviewSupported();
-  }
-}
-
-class _PreviewSupported extends StatelessWidget {
-  const _PreviewSupported();
-
-  @override
-  Widget build(BuildContext context) =>
+  Widget get buildNotSupported =>
       const Center(child: Text('Preview not supported'));
+
+  Widget get buildAudio {
+    ImageProvider? thumbnailProvider;
+    if (entry.thumbnailDataAsync != null) {
+      thumbnailProvider =
+          ExtendedImageWithAssetsPicker.assetEntityToImageProvider(entry);
+    }
+    if (isThumbnail && thumbnailProvider != null) {
+      return ExtendedImageWithAssetsPicker(thumbnailProvider, fit: fit);
+    }
+    return buildNotSupported;
+  }
+
+  Widget get buildVideo {
+    Widget current = const SizedBox();
+    ImageProvider? imageProvider;
+    if (entry.thumbnailDataAsync != null) {
+      imageProvider = ExtendedMemoryImageProvider(entry.thumbnailDataAsync!);
+    } else if (entry.renovated != null) {
+      imageProvider =
+          ExtendedImageWithAssetsPicker.buildImageProvider(entry.renovated);
+    }
+    if (isThumbnail && imageProvider != null) {
+      current = ExtendedImageWithAssetsPicker(imageProvider, fit: fit);
+    } else {
+      final controller =
+          FlVideoPlayerWithAssetsPicker.buildVideoPlayerController(
+              entry.previewed ?? entry.fileAsync);
+      if (controller != null) {
+        current = FlVideoPlayerWithAssetsPicker(
+            controller: controller, cover: current);
+      }
+    }
+    return current;
+  }
+
+  Widget get buildImage {
+    ImageProvider? imageProvider;
+    if (isThumbnail && entry.thumbnailDataAsync != null) {
+      imageProvider = ExtendedMemoryImageProvider(entry.thumbnailDataAsync!);
+    } else {
+      imageProvider =
+          ExtendedImageWithAssetsPicker.assetEntityToImageProvider(entry);
+    }
+    if (imageProvider == null) return const SizedBox();
+    return ExtendedImageWithAssetsPicker(imageProvider,
+        mode:
+            enableGesture ? ExtendedImageMode.gesture : ExtendedImageMode.none,
+        initGestureConfigHandler: !enableGesture
+            ? null
+            : (ExtendedImageState state) => GestureConfig(
+                inPageView: true,
+                initialScale: 1.0,
+                maxScale: 5.0,
+                animationMaxScale: 6.0,
+                initialAlignment: InitialAlignment.center),
+        fit: fit);
+  }
 }

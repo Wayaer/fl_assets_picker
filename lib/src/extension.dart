@@ -1,6 +1,61 @@
+import 'dart:io';
+
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+class ExtendedAssetEntity<T> extends AssetEntity {
+  ExtendedAssetEntity.fromPreviewed({
+    required this.previewed,
+    super.width = 0,
+    super.height = 0,
+    required AssetType assetType,
+  })  : thumbnailDataAsync = null,
+        fileAsync = null,
+        renovated = null,
+        isLocalData = false,
+        super(typeInt: assetType.index, id: previewed.hashCode.toString());
+
+  const ExtendedAssetEntity({
+    this.thumbnailDataAsync,
+    this.renovated,
+    this.fileAsync,
+    required super.id,
+    required super.typeInt,
+    required super.width,
+    required super.height,
+    super.duration = 0,
+    super.orientation = 0,
+    super.isFavorite = false,
+    super.title,
+    super.createDateSecond,
+    super.modifiedDateSecond,
+    super.relativePath,
+    super.latitude,
+    super.longitude,
+    super.mimeType,
+    super.subtype = 0,
+  })  : isLocalData = true,
+        previewed = null;
+
+  final bool isLocalData;
+
+  /// [previewed] 主要用于复显 可使用url 或者 assetPath
+  final String? previewed;
+
+  /// 原始缩略图数据 bytes
+  final Uint8List? thumbnailDataAsync;
+
+  /// file
+  final File? fileAsync;
+
+  /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
+  final T? renovated;
+
+  String? get realValueStr => previewed ?? fileAsync?.path;
+
+  dynamic get realValue => previewed ?? renovated ?? fileAsync;
+}
 
 extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
   AssetEntity toAssetEntity() => AssetEntity(
@@ -25,14 +80,10 @@ extension ExtensionAssetEntity on AssetEntity {
   ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
   Future<ExtendedAssetEntity> toExtended<T>(
       {FlAssetFileRenovate<T>? renovate}) async {
-    T? renovated;
-    if (renovate != null) renovated = await renovate.call(this);
-    final fileAsync = await file;
-    final thumbnailData = await this.thumbnailData;
     return ExtendedAssetEntity<T>(
-        thumbnailDataAsync: thumbnailData,
-        fileAsync: fileAsync,
-        renovated: renovated,
+        thumbnailDataAsync: await thumbnailData,
+        fileAsync: await file,
+        renovated: await renovate?.call(this),
         id: id,
         typeInt: typeInt,
         width: width,

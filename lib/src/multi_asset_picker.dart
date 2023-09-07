@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -111,19 +109,6 @@ class MultiAssetPicker extends FlAssetsPicker {
   @override
   State<MultiAssetPicker> createState() => _MultiAssetPickerState();
 
-  /// [files] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
-  static List<ExtendedAssetEntity> convertFiles(List<File> files,
-      {AssetType assetsType = AssetType.image}) {
-    List<ExtendedAssetEntity> list = [];
-    for (var element in files) {
-      if (element.existsSync()) {
-        list.add(
-            ExtendedAssetEntity.fromFile(file: element, assetType: assetsType));
-      }
-    }
-    return list;
-  }
-
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static List<ExtendedAssetEntity> convertPaths(List<String> paths,
       {AssetType assetsType = AssetType.image}) {
@@ -231,7 +216,8 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
   Widget buildEntry(MapEntry<int, ExtendedAssetEntity> entry) {
     final assetEntry = entry.value;
     final config = widget.entryConfig;
-    Widget current = AssetBuilder(assetEntry, fit: config.fit);
+    Widget current =
+        AssetBuilder(assetEntry, isThumbnail: true, fit: config.fit);
     if (assetEntry.type == AssetType.video ||
         assetEntry.type == AssetType.audio) {
       current = Stack(children: [

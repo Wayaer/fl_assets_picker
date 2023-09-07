@@ -1,6 +1,3 @@
-import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -155,69 +152,4 @@ class AssetsPickerController with ChangeNotifier {
         break;
     }
   }
-}
-
-class ExtendedAssetEntity<T> extends AssetEntity {
-  ExtendedAssetEntity.fromPreviewed({
-    required this.previewed,
-    super.width = 0,
-    super.height = 0,
-    required AssetType assetType,
-  })  : thumbnailDataAsync = null,
-        fileAsync = null,
-        renovated = null,
-        isLocalData = false,
-        super(typeInt: assetType.index, id: previewed.hashCode.toString());
-
-  ExtendedAssetEntity.fromFile({
-    required File file,
-    super.width = 0,
-    super.height = 0,
-    required AssetType assetType,
-  })  : thumbnailDataAsync = null,
-        fileAsync = file,
-        renovated = null,
-        previewed = null,
-        isLocalData = false,
-        super(typeInt: assetType.index, id: file.hashCode.toString());
-
-  const ExtendedAssetEntity({
-    this.thumbnailDataAsync,
-    this.renovated,
-    this.fileAsync,
-    required super.id,
-    required super.typeInt,
-    required super.width,
-    required super.height,
-    super.duration = 0,
-    super.orientation = 0,
-    super.isFavorite = false,
-    super.title,
-    super.createDateSecond,
-    super.modifiedDateSecond,
-    super.relativePath,
-    super.latitude,
-    super.longitude,
-    super.mimeType,
-    super.subtype = 0,
-  })  : isLocalData = true,
-        previewed = null;
-
-  final bool isLocalData;
-
-  /// [previewed] 主要用于复显 可使用url 或者 assetPath
-  final String? previewed;
-
-  /// 原始缩略图数据 bytes
-  final Uint8List? thumbnailDataAsync;
-
-  /// file
-  final File? fileAsync;
-
-  /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  final T? renovated;
-
-  String? get realValueStr => previewed ?? fileAsync?.path;
-
-  dynamic get realValue => previewed ?? renovated ?? fileAsync;
 }

@@ -126,8 +126,12 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
   static ImageProvider? buildImageProvider(dynamic value) {
     if (value is File) {
       return ExtendedFileImageProvider(value);
-    } else if (value is String && value.startsWith('http')) {
-      return ExtendedNetworkImageProvider(value);
+    } else if (value is String) {
+      if (value.startsWith('http')) {
+        return ExtendedNetworkImageProvider(value);
+      } else {
+        return ExtendedAssetImageProvider(value);
+      }
     } else if (value is Uint8List) {
       return ExtendedMemoryImageProvider(value);
     }
