@@ -23,7 +23,7 @@ Future<void> main() async {
       theme: ThemeData.light(useMaterial3: true),
       darkTheme: ThemeData.dark(useMaterial3: true),
       home: Scaffold(
-          appBar: AppBar(title: const Text('Assets Picker')),
+          appBar: AppBar(title: const Text('Fl Image Picker')),
           body: const _HomePage())));
 }
 
