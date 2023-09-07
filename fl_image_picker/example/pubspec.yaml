@@ -1,0 +1,23 @@
+name: example
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.18.0 <4.0.0'
+  flutter: '>=3.13.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_waya: ^8.1.0
+  permission_handler: ^10.4.3
+  flutter_image_compress: ^2.0.4
+  fl_assets_picker:
+    path: ../
+
+dev_dependencies:
+  flutter_lints: ^2.0.3
+
+flutter:
+  uses-material-design: true
