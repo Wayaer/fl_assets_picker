@@ -125,9 +125,9 @@ class AssetBuilder extends StatelessWidget {
         return const Center(child: Text('Preview not supported'));
       case AssetType.image:
         final imageProvider =
-            ExtendedImageWithAssetsPicker.assetEntityToImageProvider(xFile);
+            ExtendedImageWithImagePicker.assetEntityToImageProvider(xFile);
         if (imageProvider == null) return const SizedBox();
-        return ExtendedImageWithAssetsPicker(imageProvider,
+        return ExtendedImageWithImagePicker(imageProvider,
             mode: enableGesture
                 ? ExtendedImageMode.gesture
                 : ExtendedImageMode.none,
@@ -149,10 +149,10 @@ class AssetBuilder extends StatelessWidget {
               height: double.infinity);
         } else if (supportable) {
           final controller =
-              FlVideoPlayerWithAssetsPicker.buildVideoPlayerController(
+              FlVideoPlayerWithImagePicker.buildVideoPlayerController(
                   xFile.previewed ?? xFile.fileAsync);
           if (controller != null) {
-            current = FlVideoPlayerWithAssetsPicker(
+            current = FlVideoPlayerWithImagePicker(
                 controller: controller, cover: current);
           }
         }

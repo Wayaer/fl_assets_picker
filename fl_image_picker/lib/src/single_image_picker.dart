@@ -13,7 +13,7 @@ class SingleImagePicker extends FlImagePicker {
     super.fromTypesBuilder,
     super.renovate,
     super.checkPermission,
-    this.config = const AssetsPickerEntryConfig(),
+    this.config = const ImagePickerEntryConfig(),
     this.builder,
     this.initialData,
     this.allowDelete = true,
@@ -32,7 +32,7 @@ class SingleImagePicker extends FlImagePicker {
   final SinglePickerEntryBuilder? builder;
 
   ///
-  final AssetsPickerEntryConfig config;
+  final ImagePickerEntryConfig config;
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static ExtendedXFile? convertPaths(String path,
@@ -57,7 +57,7 @@ class SingleImagePicker extends FlImagePicker {
 }
 
 class _SingleImagePickerState extends State<SingleImagePicker> {
-  late AssetsPickerController controller;
+  late ImagePickerController controller;
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
   }
 
   void initialize() {
-    controller = AssetsPickerController();
+    controller = ImagePickerController();
     controller.assetsPicker = widget;
     if (widget.initialData != null) {
       controller.allXFile = [widget.initialData!];

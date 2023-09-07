@@ -6,8 +6,8 @@ import 'package:flutter/services.dart';
 
 typedef ExtendedImageLoadStateBuilder = Widget Function(ExtendedImageState);
 
-class ExtendedImageWithAssetsPicker extends ExtendedImage {
-  ExtendedImageWithAssetsPicker(ImageProvider image,
+class ExtendedImageWithImagePicker extends ExtendedImage {
+  ExtendedImageWithImagePicker(ImageProvider image,
       {super.key,
       this.loading,
       this.failed,
@@ -22,7 +22,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
             loadStateChanged:
                 _buildLoadStateChanged(failed: failed, loading: loading));
 
-  ExtendedImageWithAssetsPicker.asset(String name,
+  ExtendedImageWithImagePicker.asset(String name,
       {super.key,
       this.loading,
       this.failed,
@@ -37,7 +37,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
             loadStateChanged:
                 _buildLoadStateChanged(failed: failed, loading: loading));
 
-  ExtendedImageWithAssetsPicker.file(File file,
+  ExtendedImageWithImagePicker.file(File file,
       {super.key,
       this.loading,
       this.failed,
@@ -52,7 +52,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
             loadStateChanged:
                 _buildLoadStateChanged(failed: failed, loading: loading));
 
-  ExtendedImageWithAssetsPicker.network(String url,
+  ExtendedImageWithImagePicker.network(String url,
       {super.key,
       this.loading,
       this.failed,
@@ -67,7 +67,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
             loadStateChanged:
                 _buildLoadStateChanged(failed: failed, loading: loading));
 
-  ExtendedImageWithAssetsPicker.memory(Uint8List bytes,
+  ExtendedImageWithImagePicker.memory(Uint8List bytes,
       {super.key,
       this.loading,
       this.failed,
@@ -107,7 +107,7 @@ class ExtendedImageWithAssetsPicker extends ExtendedImage {
   static ImageProvider? assetEntityToImageProvider(ExtendedXFile assetEntity) {
     ImageProvider? provider;
     if (assetEntity.renovated != null) {
-      provider = ExtendedImageWithAssetsPicker.buildImageProvider(
+      provider = ExtendedImageWithImagePicker.buildImageProvider(
           assetEntity.renovated);
     } else if (assetEntity.fileAsync != null) {
       provider = ExtendedFileImageProvider(assetEntity.fileAsync!);

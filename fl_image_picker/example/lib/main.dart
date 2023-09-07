@@ -109,7 +109,7 @@ class _HomePage extends StatelessWidget {
           },
           checkPermission: checkPermission,
           initialData: SingleImagePicker.convertUrl(url),
-          config: AssetsPickerEntryConfig(
+          config: ImagePickerEntryConfig(
               borderRadius: BorderRadius.circular(10),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
@@ -128,7 +128,7 @@ class _HomePage extends StatelessWidget {
           fromTypes: fromTypes,
           checkPermission: checkPermission,
           initialData: SingleImagePicker.convertUrl(url),
-          config: AssetsPickerEntryConfig(
+          config: ImagePickerEntryConfig(
               borderRadius: BorderRadius.circular(40),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
@@ -178,7 +178,7 @@ class _HomePage extends StatelessWidget {
           return null;
         },
         checkPermission: checkPermission,
-        entryConfig: AssetsPickerEntryConfig(
+        entryConfig: ImagePickerEntryConfig(
             delete: const AssetDeleteIcon(backgroundColor: Colors.blue),
             deletionConfirmation: (_) async {
               final value = await CupertinoAlertDialog(

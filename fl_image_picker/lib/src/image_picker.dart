@@ -68,8 +68,8 @@ class PickerFromTypeItem {
 
 typedef DeletionConfirmation = Future<bool> Function(ExtendedXFile entity);
 
-class AssetsPickerEntryConfig {
-  const AssetsPickerEntryConfig(
+class ImagePickerEntryConfig {
+  const ImagePickerEntryConfig(
       {this.color,
       this.fit = BoxFit.cover,
       this.previewFit = BoxFit.contain,
@@ -307,7 +307,7 @@ class _PickFromTypeBuilderWidget extends StatelessWidget {
   }
 }
 
-class AssetsPickerController with ChangeNotifier {
+class ImagePickerController with ChangeNotifier {
   List<ExtendedXFile> allXFile = [];
 
   late FlImagePicker _assetsPicker;

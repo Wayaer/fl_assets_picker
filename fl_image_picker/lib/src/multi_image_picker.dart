@@ -53,7 +53,7 @@ class MultiImagePicker extends FlImagePicker {
     super.key,
     this.onChanged,
     this.controller,
-    this.entryConfig = const AssetsPickerEntryConfig(),
+    this.entryConfig = const ImagePickerEntryConfig(),
     this.entryBuilder,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
@@ -82,7 +82,7 @@ class MultiImagePicker extends FlImagePicker {
   final ValueChanged<List<ExtendedXFile>>? onChanged;
 
   /// 资源控制器
-  final AssetsPickerController? controller;
+  final ImagePickerController? controller;
 
   /// wrap UI 样式配置
   final PickerWrapBuilderConfig wrapConfig;
@@ -96,7 +96,7 @@ class MultiImagePicker extends FlImagePicker {
   final MultiPickerEntryBuilder? entryBuilder;
 
   /// entry UI 样式配置
-  final AssetsPickerEntryConfig entryConfig;
+  final ImagePickerEntryConfig entryConfig;
 
   /// 弹出预览框 builder
   final FlPreviewAssetsModalPopupBuilder? previewModalPopup;
@@ -161,7 +161,7 @@ class MultiImagePicker extends FlImagePicker {
 }
 
 class _MultiImagePickerState extends State<MultiImagePicker> {
-  late AssetsPickerController controller;
+  late ImagePickerController controller;
 
   @override
   void initState() {
@@ -170,7 +170,7 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
   }
 
   void initialize() {
-    controller = widget.controller ?? AssetsPickerController();
+    controller = widget.controller ?? ImagePickerController();
     controller.assetsPicker = widget;
     controller.allXFile.insertAll(0, widget.initialData);
     controller.addListener(listener);
