@@ -37,11 +37,11 @@
 
 ## 0.3.3
 
-* Add `checkPermission` to `FlAssetsPicker`
+* Add `checkPermission` to `FlImagePicker`
 
 ## 0.3.2
 
-* Add some static methods for `FlAssetsPicker`
+* Add some static methods for `FlImagePicker`
 
 ## 0.3.1
 

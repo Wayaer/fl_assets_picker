@@ -1,10 +1,10 @@
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/material.dart';
 
 typedef SinglePickerEntryBuilder = Widget Function(ExtendedXFile entry);
 
-class SingleAssetPicker extends FlAssetsPicker {
-  const SingleAssetPicker({
+class SingleImagePicker extends FlImagePicker {
+  const SingleImagePicker({
     super.key,
     this.onChanged,
     super.enablePicker = true,
@@ -53,10 +53,10 @@ class SingleAssetPicker extends FlAssetsPicker {
   }
 
   @override
-  State<SingleAssetPicker> createState() => _SingleAssetPickerState();
+  State<SingleImagePicker> createState() => _SingleImagePickerState();
 }
 
-class _SingleAssetPickerState extends State<SingleAssetPicker> {
+class _SingleImagePickerState extends State<SingleImagePicker> {
   late AssetsPickerController controller;
 
   @override

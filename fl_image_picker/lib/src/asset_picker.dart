@@ -1,15 +1,15 @@
 import 'dart:math';
 
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
-typedef FlAssetsPickerCheckPermission = Future<bool> Function(
+typedef FlImagePickerCheckPermission = Future<bool> Function(
     PickerFromType fromType);
 
-typedef FlAssetsPickerErrorCallback = void Function(String erroe);
+typedef FlImagePickerErrorCallback = void Function(String erroe);
 
 typedef PickerFromTypeBuilder = Widget Function(
     BuildContext context, List<PickerFromTypeItem> fromTypes);
@@ -114,10 +114,10 @@ const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
       text: Text('取消', style: TextStyle(color: Colors.red))),
 ];
 
-abstract class FlAssetsPicker extends StatefulWidget {
+abstract class FlImagePicker extends StatefulWidget {
   static ImagePicker imagePicker = ImagePicker();
 
-  const FlAssetsPicker(
+  const FlImagePicker(
       {super.key,
       this.renovate,
       required this.maxVideoCount,
@@ -152,7 +152,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   final FlAssetFileRenovate? renovate;
 
   /// 获取权限
-  final FlAssetsPickerCheckPermission? checkPermission;
+  final FlImagePickerCheckPermission? checkPermission;
 
   /// 选择图片或者视频
   static Future<ExtendedXFile?> showPickerWithFormType(
@@ -162,10 +162,10 @@ abstract class FlAssetsPicker extends StatefulWidget {
     PickerFromTypeBuilder? fromTypesBuilder,
 
     /// 获取权限
-    FlAssetsPickerCheckPermission? checkPermission,
+    FlImagePickerCheckPermission? checkPermission,
 
     /// 错误提示
-    FlAssetsPickerErrorCallback? errorCallback,
+    FlImagePickerErrorCallback? errorCallback,
 
     /// 资源最大占用字节
     int maxBytes = 167772160,
@@ -209,7 +209,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   /// show picker
   static Future<ExtendedXFile?> showPicker(
     PickerFromType fromType, {
-    FlAssetsPickerCheckPermission? checkPermission,
+    FlImagePickerCheckPermission? checkPermission,
   }) async {
     final permissionState = await checkPermission?.call(fromType) ?? true;
     XFile? file;
@@ -257,7 +257,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
 
   /// show picker
   static Future<List<XFile>?> showImagePickerMultiple({
-    FlAssetsPickerCheckPermission? checkPermission,
+    FlImagePickerCheckPermission? checkPermission,
   }) async {
     final permissionState =
         await checkPermission?.call(PickerFromType.image) ?? true;
@@ -310,9 +310,9 @@ class _PickFromTypeBuilderWidget extends StatelessWidget {
 class AssetsPickerController with ChangeNotifier {
   List<ExtendedXFile> allXFile = [];
 
-  late FlAssetsPicker _assetsPicker;
+  late FlImagePicker _assetsPicker;
 
-  set assetsPicker(FlAssetsPicker assetsPicker) {
+  set assetsPicker(FlImagePicker assetsPicker) {
     _assetsPicker = assetsPicker;
   }
 
@@ -323,7 +323,7 @@ class AssetsPickerController with ChangeNotifier {
 
   /// 选择图片
   Future<ExtendedXFile?> pick(PickerFromType fromType) async {
-    final xFile = await FlAssetsPicker.showPicker(fromType,
+    final xFile = await FlImagePicker.showPicker(fromType,
         checkPermission: _assetsPicker.checkPermission);
     if (xFile != null) {
       if (!allXFile.contains(xFile)) {
@@ -340,7 +340,7 @@ class AssetsPickerController with ChangeNotifier {
       _assetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
       return;
     }
-    final fromTypeConfig = await FlAssetsPicker.showPickerFromType(
+    final fromTypeConfig = await FlImagePicker.showPickerFromType(
         context, _assetsPicker.fromTypes,
         fromTypesBuilder: _assetsPicker.fromTypesBuilder);
     if (fromTypeConfig == null) return;

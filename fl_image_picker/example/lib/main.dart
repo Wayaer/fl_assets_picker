@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -58,17 +58,17 @@ class _HomePage extends StatelessWidget {
         isScroll: true,
         children: [
           const Text('单资源选择 仅图片').marginAll(12),
-          buildSingleAssetPicker(AssetType.image),
+          buildSingleImagePicker(AssetType.image),
           const Text('单资源选择 仅视频').marginAll(12),
-          buildSingleAssetPicker(AssetType.video),
+          buildSingleImagePicker(AssetType.video),
           const Text('多资源选择 仅图片').marginAll(12),
-          buildMultiAssetPicker(AssetType.image),
+          buildMultiImagePicker(AssetType.image),
           const Text('多资源选择 仅视频').marginAll(12),
-          buildMultiAssetPicker(AssetType.video),
+          buildMultiImagePicker(AssetType.video),
         ]);
   }
 
-  Widget buildSingleAssetPicker(AssetType assetType) {
+  Widget buildSingleImagePicker(AssetType assetType) {
     List<PickerFromTypeItem> fromTypes = [
       const PickerFromTypeItem(
           fromType: PickerFromType.cancel, text: Text('取消')),
@@ -96,7 +96,7 @@ class _HomePage extends StatelessWidget {
     }
 
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      SingleAssetPicker(
+      SingleImagePicker(
           fromTypes: fromTypes,
           errorCallback: (String value) {
             showToast(value);
@@ -108,14 +108,14 @@ class _HomePage extends StatelessWidget {
             return null;
           },
           checkPermission: checkPermission,
-          initialData: SingleAssetPicker.convertUrl(url),
+          initialData: SingleImagePicker.convertUrl(url),
           config: AssetsPickerEntryConfig(
               borderRadius: BorderRadius.circular(10),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
             log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
           }),
-      SingleAssetPicker(
+      SingleImagePicker(
           errorCallback: (String value) {
             showToast(value);
           },
@@ -127,7 +127,7 @@ class _HomePage extends StatelessWidget {
           },
           fromTypes: fromTypes,
           checkPermission: checkPermission,
-          initialData: SingleAssetPicker.convertUrl(url),
+          initialData: SingleImagePicker.convertUrl(url),
           config: AssetsPickerEntryConfig(
               borderRadius: BorderRadius.circular(40),
               color: Colors.amberAccent),
@@ -137,7 +137,7 @@ class _HomePage extends StatelessWidget {
     ]);
   }
 
-  Widget buildMultiAssetPicker(AssetType assetType) {
+  Widget buildMultiImagePicker(AssetType assetType) {
     List<PickerFromTypeItem> fromTypes = [
       const PickerFromTypeItem(
           fromType: PickerFromType.cancel, text: Text('取消')),
@@ -163,8 +163,8 @@ class _HomePage extends StatelessWidget {
         ]);
         break;
     }
-    return MultiAssetPicker(
-        initialData: MultiAssetPicker.convertUrls(url),
+    return MultiImagePicker(
+        initialData: MultiImagePicker.convertUrls(url),
         fromTypes: fromTypes,
         previewModalPopup: (_, Widget previewAssets) =>
             previewAssets.popupDialog(),

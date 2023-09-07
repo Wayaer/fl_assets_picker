@@ -33,7 +33,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.fl.assets.picker.example"
+        applicationId "com.fl.image.picker.example"
         minSdkVersion 21
         targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
@@ -45,7 +45,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-    namespace 'com.fl.assets.picker.example'
+    namespace 'com.fl.image.picker.example'
 }
 
 flutter {

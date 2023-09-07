@@ -1,4 +1,4 @@
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 
 typedef FlPreviewAssetsModalPopupBuilder = void Function(
@@ -48,8 +48,8 @@ typedef PickerErrorCallback = void Function(String msg);
 typedef MultiPickerEntryBuilder = Widget Function(
     ExtendedXFile entry, int index);
 
-class MultiAssetPicker extends FlAssetsPicker {
-  const MultiAssetPicker({
+class MultiImagePicker extends FlImagePicker {
+  const MultiImagePicker({
     super.key,
     this.onChanged,
     this.controller,
@@ -105,7 +105,7 @@ class MultiAssetPicker extends FlAssetsPicker {
   final FlPreviewAssetsBuilder? previewBuilder;
 
   @override
-  State<MultiAssetPicker> createState() => _MultiAssetPickerState();
+  State<MultiImagePicker> createState() => _MultiImagePickerState();
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static List<ExtendedXFile> convertPaths(List<String> paths,
@@ -160,7 +160,7 @@ class MultiAssetPicker extends FlAssetsPicker {
   }
 }
 
-class _MultiAssetPickerState extends State<MultiAssetPicker> {
+class _MultiImagePickerState extends State<MultiImagePicker> {
   late AssetsPickerController controller;
 
   @override

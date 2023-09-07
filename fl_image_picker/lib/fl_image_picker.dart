@@ -1,4 +1,4 @@
-library fl_assets_picker;
+library fl_image_picker;
 
 export 'package:extended_image/extended_image.dart';
 export 'package:fl_video/fl_video.dart';

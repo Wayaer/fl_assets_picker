@@ -13,7 +13,7 @@ dependencies:
   flutter_waya: ^8.1.0
   permission_handler: ^10.4.3
   flutter_image_compress: ^2.0.4
-  fl_assets_picker:
+  fl_image_picker:
     path: ../
 
 dev_dependencies:

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_image_picker/fl_image_picker.dart';
 
 class ExtendedXFile<T> extends XFile {
   ExtendedXFile.fromPreviewed(this.previewed, this.assetType)
