@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/material.dart';
 
+typedef FlAssetFileRenovate<T> = Future<T> Function(AssetType type, XFile file);
+
 class ExtendedXFile<T> extends XFile {
-  ExtendedXFile.fromPreviewed(this.previewed, this.assetType)
+  ExtendedXFile.fromPreviewed(this.previewed, this.type)
       : fileAsync = null,
         renovated = null,
         isLocalData = false,
@@ -12,7 +14,7 @@ class ExtendedXFile<T> extends XFile {
 
   ExtendedXFile(
     super.path,
-    this.assetType, {
+    this.type, {
     this.renovated,
     this.fileAsync,
     super.bytes,
@@ -26,7 +28,7 @@ class ExtendedXFile<T> extends XFile {
   final bool isLocalData;
 
   /// 资源类型
-  final AssetType assetType;
+  final AssetType type;
 
   /// [previewed] 主要用于复显 可使用url 或者 assetPath
   final String? previewed;
@@ -44,9 +46,8 @@ class ExtendedXFile<T> extends XFile {
 
 extension ExtensionExtendedXFile on ExtendedXFile {
   Future<ExtendedXFile> toRenovated<T>(FlAssetFileRenovate<T>? renovate) async {
-    return ExtendedXFile<T>(path, assetType,
-        fileAsync: File(path),
-        renovated: await renovate?.call(assetType, this));
+    return ExtendedXFile<T>(path, type,
+        fileAsync: File(path), renovated: await renovate?.call(type, this));
   }
 
   ImageProvider? toImageProvider() {
@@ -56,11 +57,7 @@ extension ExtensionExtendedXFile on ExtendedXFile {
     } else if (fileAsync != null) {
       provider = FileImage(fileAsync!);
     } else if (previewed != null) {
-      if (previewed!.startsWith('http')) {
-        provider = NetworkImage(previewed!);
-      } else {
-        provider = AssetImage(previewed!);
-      }
+      provider = FlImagePicker.buildImageProvider(previewed);
     }
     return provider;
   }
@@ -68,8 +65,19 @@ extension ExtensionExtendedXFile on ExtendedXFile {
 
 extension ExtensionXFile on XFile {
   ///  to [ExtendedXFile] and renovate [XFile];
-  ExtendedXFile toExtended<T>(AssetType assetType, {String? mimeType}) {
-    return ExtendedXFile<T>(path, assetType,
+  ExtendedXFile toExtended<T>(AssetType type, {String? mimeType}) {
+    return ExtendedXFile<T>(path, type,
         fileAsync: File(path), mimeType: mimeType);
   }
+}
+
+enum ImageCroppingQuality {
+  /// 最高画质
+  high,
+
+  /// 中等
+  medium,
+
+  ///最低
+  low,
 }

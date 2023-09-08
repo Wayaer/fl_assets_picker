@@ -74,6 +74,18 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
       longitude: longitude,
       mimeType: mimeType,
       subtype: subtype);
+
+  ImageProvider? toImageProvider() {
+    ImageProvider? provider;
+    if (renovated != null) {
+      provider = FlAssetsPicker.buildImageProvider(renovated);
+    } else if (fileAsync != null) {
+      provider = FileImage(fileAsync!);
+    } else if (previewed != null) {
+      provider = FlAssetsPicker.buildImageProvider(previewed);
+    }
+    return provider;
+  }
 }
 
 extension ExtensionAssetEntity on AssetEntity {

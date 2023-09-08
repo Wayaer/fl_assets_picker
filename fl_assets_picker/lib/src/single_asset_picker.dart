@@ -1,5 +1,4 @@
-import 'package:fl_assets_picker/fl_assets_picker.dart';
-import 'package:flutter/material.dart';
+part of 'asset_picker.dart';
 
 typedef SinglePickerEntryBuilder = Widget Function(ExtendedAssetEntity entry);
 
@@ -8,14 +7,11 @@ class SingleAssetPicker extends FlAssetsPicker {
     super.key,
     this.onChanged,
     super.enablePicker = true,
-    super.errorCallback,
     super.fromRequestTypes = defaultPickerFromTypeItem,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
-    super.fromTypesBuilder,
     super.renovate,
-    super.checkPermission,
-    this.config = const AssetsPickerEntryConfig(),
+    super.itemConfig = const AssetsPickerItemConfig(),
     this.builder,
     this.initialData,
     this.allowDelete = true,
@@ -32,9 +28,6 @@ class SingleAssetPicker extends FlAssetsPicker {
 
   /// 资源渲染子元素自定义构造
   final SinglePickerEntryBuilder? builder;
-
-  ///
-  final AssetsPickerEntryConfig config;
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertPath(String path,
@@ -73,25 +66,25 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
     controller = AssetsPickerController();
     controller.assetsPicker = widget;
     if (widget.initialData != null) {
-      controller.allAssetEntity = [widget.initialData!];
+      controller.allEntity = [widget.initialData!];
     }
     controller.addListener(listener);
   }
 
   void listener() {
-    if (controller.allAssetEntity.isNotEmpty) {
-      widget.onChanged?.call(controller.allAssetEntity.first);
+    if (controller.allEntity.isNotEmpty) {
+      widget.onChanged?.call(controller.allEntity.first);
       if (mounted) setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget current = widget.config.pick;
-    final allAssetEntity = controller.allAssetEntity;
-    final config = widget.config;
-    if (allAssetEntity.isNotEmpty) {
-      final entity = allAssetEntity.first;
+    Widget current = widget.itemConfig.pick;
+    final allEntity = controller.allEntity;
+    final config = widget.itemConfig;
+    if (allEntity.isNotEmpty) {
+      final entity = allEntity.first;
       current = widget.builder?.call(entity) ?? entryBuild(entity);
       if (entity.type == AssetType.video || entity.type == AssetType.audio) {
         current = Stack(children: [
@@ -116,9 +109,9 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
 
   Widget entryBuild(ExtendedAssetEntity entity) {
     if (entity.previewed == null && entity.fileAsync == null) {
-      return widget.config.pick;
+      return widget.itemConfig.pick;
     }
-    return AssetBuilder(entity, isThumbnail: true, fit: widget.config.fit);
+    return FlAssetsPicker.assetBuilder(entity, true);
   }
 
   void pickerAsset() async {

@@ -1,7 +1,7 @@
 import 'package:example/extended_image.dart';
 import 'package:example/fl_video.dart';
 import 'package:extended_image/extended_image.dart';
-import 'package:fl_image_picker/fl_image_picker.dart';
+import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -28,9 +28,9 @@ class FlPreviewAssets extends StatelessWidget {
 }
 
 class AssetBuilder extends StatelessWidget {
-  const AssetBuilder(this.xFile, {super.key, this.isThumbnail = true});
+  const AssetBuilder(this.entity, {super.key, this.isThumbnail = true});
 
-  final ExtendedXFile xFile;
+  final ExtendedAssetEntity entity;
 
   /// 是否优先预览缩略图
   final bool isThumbnail;
@@ -38,12 +38,12 @@ class AssetBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const unsupported = Center(child: Text('Preview not supported'));
-    switch (xFile.type) {
+    switch (entity.type) {
       case AssetType.other:
         break;
       case AssetType.image:
         final imageProvider =
-            ExtendedImageWithImagePicker.assetEntityToImageProvider(xFile);
+            ExtendedImageWithImagePicker.assetEntityToImageProvider(entity);
         if (imageProvider != null) {
           return ExtendedImageWithImagePicker(imageProvider,
               mode: isThumbnail
@@ -69,11 +69,13 @@ class AssetBuilder extends StatelessWidget {
         } else if (supportable) {
           final controller =
               FlVideoPlayerWithImagePicker.buildVideoPlayerController(
-                  xFile.previewed ?? xFile.fileAsync);
+                  entity.previewed ?? entity.fileAsync);
           if (controller != null) {
             return FlVideoPlayerWithImagePicker(controller: controller);
           }
         }
+        break;
+      case AssetType.audio:
         break;
     }
     return unsupported;

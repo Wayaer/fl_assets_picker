@@ -1,5 +1,33 @@
 import 'package:fl_image_picker/fl_image_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+class PickerFromTypeItem {
+  const PickerFromTypeItem({required this.fromType, required this.text});
+
+  /// 来源
+  final PickerFromType fromType;
+
+  /// 显示的文字
+  final Widget text;
+}
+
+enum PickerFromType {
+  /// 仅图片
+  image,
+
+  /// 仅视频
+  video,
+
+  /// 拍照
+  takePictures,
+
+  /// 相机录像
+  recording,
+
+  /// 取消
+  cancel,
+}
 
 const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
   PickerFromTypeItem(fromType: PickerFromType.image, text: Text('选择图片')),
@@ -10,6 +38,8 @@ const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
       fromType: PickerFromType.cancel,
       text: Text('取消', style: TextStyle(color: Colors.red))),
 ];
+
+typedef DeletionConfirmation = Future<bool> Function(ExtendedXFile entity);
 
 class ImagePickerItemConfig {
   const ImagePickerItemConfig(
@@ -82,4 +112,28 @@ class DefaultDeleteIcon extends StatelessWidget {
       decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
       padding: const EdgeInsets.all(2),
       child: icon ?? Icon(Icons.clear, size: size, color: iconColor));
+}
+
+class FlPickFromTypeBuilder extends StatelessWidget {
+  const FlPickFromTypeBuilder(this.list, {super.key});
+
+  final List<PickerFromTypeItem> list;
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> actions = [];
+    Widget? cancelButton;
+    for (var element in list) {
+      final entry = CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(context).maybePop(element),
+          isDefaultAction: false,
+          child: element.text);
+      if (element.fromType != PickerFromType.cancel) {
+        actions.add(entry);
+      } else {
+        cancelButton = entry;
+      }
+    }
+    return CupertinoActionSheet(cancelButton: cancelButton, actions: actions);
+  }
 }

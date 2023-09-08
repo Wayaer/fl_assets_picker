@@ -1,11 +1,10 @@
-import 'package:fl_assets_picker/fl_assets_picker.dart';
-import 'package:flutter/cupertino.dart';
+part of 'asset_picker.dart';
 
 typedef FlPreviewAssetsModalPopupBuilder = void Function(
     BuildContext context, Widget previewAssets);
 
-typedef FlPreviewAssetsBuilder = Widget Function(
-    BuildContext context, List<ExtendedAssetEntity> entitys);
+typedef FlPreviewAssetsBuilder = Widget Function(BuildContext context,
+    ExtendedAssetEntity entity, List<ExtendedAssetEntity> entitys);
 
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
@@ -45,33 +44,28 @@ typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
 typedef PickerErrorCallback = void Function(String msg);
 
-typedef MultiPickerEntryBuilder = Widget Function(
-    ExtendedAssetEntity entry, int index);
+typedef MultiplePickerItemBuilder = Widget Function(
+    ExtendedAssetEntity item, int index);
 
-class MultiAssetPicker extends FlAssetsPicker {
-  const MultiAssetPicker({
+class MultipleAssetPicker extends FlAssetsPicker {
+  const MultipleAssetPicker({
     super.key,
     this.onChanged,
     this.controller,
-    this.entryConfig = const AssetsPickerEntryConfig(),
-    this.entryBuilder,
+    this.itemBuilder,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
     this.initialData = const [],
     this.allowDelete = true,
     this.pickerIconBuilder,
+    super.itemConfig = const AssetsPickerItemConfig(),
     super.enablePicker = true,
-    super.errorCallback,
     super.maxVideoCount = 1,
     super.maxCount = 9,
     super.fromRequestTypes = defaultPickerFromTypeItem,
     super.renovate,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
-    super.fromTypesBuilder,
-    super.checkPermission,
-    this.previewBuilder,
-    this.previewModalPopup,
   });
 
   /// 是否显示删除按钮
@@ -95,19 +89,10 @@ class MultiAssetPicker extends FlAssetsPicker {
   final PickerIconBuilder? pickerIconBuilder;
 
   /// 资源渲染子元素自定义构造
-  final MultiPickerEntryBuilder? entryBuilder;
-
-  /// entry UI 样式配置
-  final AssetsPickerEntryConfig entryConfig;
-
-  /// 弹出预览框 builder
-  final FlPreviewAssetsModalPopupBuilder? previewModalPopup;
-
-  /// 预览框 builder
-  final FlPreviewAssetsBuilder? previewBuilder;
+  final MultiplePickerItemBuilder? itemBuilder;
 
   @override
-  State<MultiAssetPicker> createState() => _MultiAssetPickerState();
+  State<MultipleAssetPicker> createState() => _MultipleAssetPickerState();
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static List<ExtendedAssetEntity> convertPaths(List<String> paths,
@@ -165,7 +150,7 @@ class MultiAssetPicker extends FlAssetsPicker {
   }
 }
 
-class _MultiAssetPickerState extends State<MultiAssetPicker> {
+class _MultipleAssetPickerState extends State<MultipleAssetPicker> {
   late AssetsPickerController controller;
 
   @override
@@ -177,21 +162,21 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
   void initialize() {
     controller = widget.controller ?? AssetsPickerController();
     controller.assetsPicker = widget;
-    controller.allAssetEntity.insertAll(0, widget.initialData);
+    controller.allEntity.insertAll(0, widget.initialData);
     controller.addListener(listener);
   }
 
   void listener() {
-    widget.onChanged?.call(controller.allAssetEntity);
+    widget.onChanged?.call(controller.allEntity);
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final children = controller.allAssetEntity
+    final children = controller.allEntity
         .asMap()
         .entries
-        .map((entry) => buildEntry(entry))
+        .map((item) => buildItem(item))
         .toList();
     if (widget.enablePicker) children.add(buildPicker);
     if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
@@ -212,18 +197,15 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
             children: children));
   }
 
-  /// 资源预览 entry
-  Widget buildEntry(MapEntry<int, ExtendedAssetEntity> entry) {
-    final assetEntry = entry.value;
-    final config = widget.entryConfig;
-    Widget current =
-        AssetBuilder(assetEntry, isThumbnail: true, fit: config.fit);
-    if (assetEntry.type == AssetType.video ||
-        assetEntry.type == AssetType.audio) {
+  /// 资源预览 item
+  Widget buildItem(MapEntry<int, ExtendedAssetEntity> entry) {
+    final item = entry.value;
+    final config = widget.itemConfig;
+    Widget current = FlAssetsPicker.assetBuilder(item, true);
+    if (item.type == AssetType.video || item.type == AssetType.audio) {
       current = Stack(children: [
         SizedBox.expand(child: current),
-        if (assetEntry.type == AssetType.video ||
-            assetEntry.type == AssetType.audio)
+        if (item.type == AssetType.video || item.type == AssetType.audio)
           Align(alignment: Alignment.center, child: config.play),
       ]);
     }
@@ -231,8 +213,8 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
       current = ColoredBox(color: config.color!, child: current);
     }
     current = GestureDetector(
-        onTap: () => previewAssets(entry.value),
-        child: widget.entryBuilder?.call(entry.value, entry.key) ?? current);
+        onTap: () => previewAssets(item),
+        child: widget.itemBuilder?.call(item, entry.key) ?? current);
     if (widget.allowDelete) {
       current = Stack(children: [
         SizedBox.expand(child: current),
@@ -241,13 +223,13 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
             top: 2,
             child: GestureDetector(
               onTap: () =>
-                  widget.entryConfig.deletionConfirmation
-                      ?.call(assetEntry)
+                  widget.itemConfig.deletionConfirmation
+                      ?.call(item)
                       .then((value) {
-                    if (value) controller.deleteAsset(assetEntry.id);
+                    if (value) controller.delete(item);
                   }) ??
-                  controller.deleteAsset(assetEntry.id),
-              child: widget.entryConfig.delete,
+                  controller.delete(item),
+              child: widget.itemConfig.delete,
             ))
       ]);
     }
@@ -258,34 +240,17 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
     return current;
   }
 
-  void previewAssets(ExtendedAssetEntity asset) async {
-    final currentAssetsEntry = controller.allAssetEntity;
-    final previewAssets = FlPreviewAssets(
-        itemCount: currentAssetsEntry.length,
-        controller: ExtendedPageController(
-            initialPage: currentAssetsEntry.indexOf(asset)),
-        itemBuilder: (_, int index) => Center(
-            child: AssetBuilder(currentAssetsEntry[index],
-                enableGesture: true,
-                isThumbnail: false,
-                fit: widget.entryConfig.previewFit)));
-
-    if (widget.previewModalPopup == null) {
-      showCupertinoModalPopup(
-          context: context,
-          builder: (BuildContext context) =>
-              widget.previewBuilder?.call(context, currentAssetsEntry) ??
-              previewAssets);
-    } else {
-      widget.previewModalPopup?.call(context, previewAssets);
-    }
+  void previewAssets(ExtendedAssetEntity entity) async {
+    final allEntity = controller.allEntity;
+    FlAssetsPicker.previewModalPopup(
+        context, FlAssetsPicker.previewBuilder(context, entity, allEntity));
   }
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    final assetsEntry = controller.allAssetEntity;
-    if (assetsEntry.length >= widget.maxCount) {
-      widget.errorCallback?.call('最多选择${widget.maxCount}个');
+    final assetsItem = controller.allEntity;
+    if (assetsItem.length >= widget.maxCount) {
+      FlAssetsPicker.errorCallback?.call('最多选择${widget.maxCount}个');
       return;
     }
     controller.pickFromType(context);
@@ -293,7 +258,7 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
 
   /// 选择框
   Widget get buildPicker {
-    final config = widget.entryConfig;
+    final config = widget.itemConfig;
     Widget current = SizedBox(
         width: config.size.width,
         height: config.size.height,
@@ -314,5 +279,40 @@ class _MultiAssetPickerState extends State<MultiAssetPicker> {
     super.dispose();
     controller.removeListener(listener);
     controller.dispose();
+  }
+}
+
+class FlPreviewGesturePageView extends StatelessWidget {
+  const FlPreviewGesturePageView({
+    super.key,
+    required this.pageView,
+    this.close,
+    this.overlay,
+    this.backgroundColor = Colors.black87,
+  });
+
+  final Widget pageView;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
+
+  /// 背景色
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: backgroundColor,
+        child: Stack(children: [
+          SizedBox.expand(child: pageView),
+          if (overlay != null) SizedBox.expand(child: overlay!),
+          Positioned(
+              right: 6,
+              top: MediaQuery.of(context).viewPadding.top,
+              child: close ?? const CloseButton(color: Colors.white)),
+        ]));
   }
 }

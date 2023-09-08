@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:example/previewed.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -21,6 +23,7 @@ bool get isMobile => isAndroid || isIOS;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  flAssetsPickerInit();
   runApp(MaterialApp(
       navigatorKey: GlobalWayUI().navigatorKey,
       debugShowCheckedModeBanner: false,
@@ -31,31 +34,41 @@ Future<void> main() async {
           body: const _HomePage())));
 }
 
-class _HomePage extends StatelessWidget {
-  const _HomePage();
-
-  Future<bool> checkPermission(PickerFromType fromType) async {
+void flAssetsPickerInit() {
+  FlAssetsPicker.assetBuilder = (entity, bool isThumbnail) =>
+      AssetBuilder(entity, isThumbnail: isThumbnail);
+  FlAssetsPicker.checkPermission = (PickerFromType fromType) async {
     if (!isMobile) return true;
-    switch (fromType) {
-      case PickerFromType.gallery:
-        if (isIOS) {
-          return (await Permission.photos.request()).isGranted;
-        } else if (isAndroid) {
-          bool resultStorage = (await Permission.storage.request()).isGranted;
-          bool resultPhotos = (await Permission.photos.request()).isGranted;
-          bool resultAudio = (await Permission.audio.request()).isGranted;
-          bool resultVideos = (await Permission.videos.request()).isGranted;
-          return resultStorage && resultPhotos && resultAudio && resultVideos;
-        }
-        return false;
-      case PickerFromType.camera:
-        final permissionState = await Permission.camera.request();
-        return permissionState.isGranted;
-      case PickerFromType.cancel:
-        break;
+    if (fromType == PickerFromType.gallery) {
+      if (isIOS) {
+        return (await Permission.photos.request()).isGranted;
+      } else if (isAndroid) {
+        bool resultStorage = (await Permission.storage.request()).isGranted;
+        return resultStorage;
+      }
+      return false;
+    } else if (fromType == PickerFromType.camera) {
+      final permissionState = await Permission.camera.request();
+      return permissionState.isGranted;
     }
     return false;
-  }
+  };
+  FlAssetsPicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
+  FlAssetsPicker.previewBuilder = (context, entity, allEntity) {
+    return FlPreviewAssets(
+        itemCount: allEntity.length,
+        controller:
+            ExtendedPageController(initialPage: allEntity.indexOf(entity)),
+        itemBuilder: (_, int index) =>
+            FlAssetsPicker.assetBuilder(allEntity[index], false));
+  };
+  FlAssetsPicker.errorCallback = (String value) {
+    showToast(value);
+  };
+}
+
+class _HomePage extends StatelessWidget {
+  const _HomePage();
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +83,11 @@ class _HomePage extends StatelessWidget {
           const Text('单资源选择 仅视频').marginAll(12),
           buildSingleAssetPicker(RequestType.video),
           const Text('多资源选择 混选').marginAll(12),
-          buildMultiAssetPicker(RequestType.common),
+          buildMultipleAssetPicker(RequestType.common),
           const Text('多资源选择 仅图片').marginAll(12),
-          buildMultiAssetPicker(RequestType.image),
+          buildMultipleAssetPicker(RequestType.image),
           const Text('多资源选择 仅视频').marginAll(12),
-          buildMultiAssetPicker(RequestType.video),
+          buildMultipleAssetPicker(RequestType.video),
         ]);
   }
 
@@ -93,26 +106,19 @@ class _HomePage extends StatelessWidget {
               const PickerFromTypeItem(
                   fromType: PickerFromType.cancel, text: Text('取消')),
             ],
-            errorCallback: (String value) {
-              showToast(value);
-            },
             renovate: (AssetEntity entity) async {
               final file = await entity.file;
               if (file != null) return await compressImage(file);
               return null;
             },
-            checkPermission: checkPermission,
             initialData: SingleAssetPicker.convertUrl(url),
-            config: AssetsPickerEntryConfig(
+            itemConfig: AssetsPickerItemConfig(
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
               log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
             }),
         SingleAssetPicker(
-            errorCallback: (String value) {
-              showToast(value);
-            },
             fromRequestTypes: [
               PickerFromTypeItem(
                   fromType: PickerFromType.gallery,
@@ -125,9 +131,8 @@ class _HomePage extends StatelessWidget {
               const PickerFromTypeItem(
                   fromType: PickerFromType.cancel, text: Text('取消')),
             ],
-            checkPermission: checkPermission,
             initialData: SingleAssetPicker.convertUrl(url),
-            config: AssetsPickerEntryConfig(
+            itemConfig: AssetsPickerItemConfig(
                 borderRadius: BorderRadius.circular(40),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
@@ -135,57 +140,52 @@ class _HomePage extends StatelessWidget {
             }),
       ]);
 
-  Widget buildMultiAssetPicker(RequestType requestType) => MultiAssetPicker(
-      initialData: MultiAssetPicker.convertUrls(url),
-      fromRequestTypes: [
-        PickerFromTypeItem(
-            fromType: PickerFromType.gallery,
-            text: const Text('图库选择'),
-            requestType: requestType),
-        PickerFromTypeItem(
-            fromType: PickerFromType.camera,
-            text: const Text('相机拍摄'),
-            requestType: requestType),
-        const PickerFromTypeItem(
-            fromType: PickerFromType.cancel, text: Text('取消')),
-      ],
-      previewModalPopup: (_, Widget previewAssets) =>
-          previewAssets.popupDialog(),
-      errorCallback: (String value) {
-        showToast(value);
-      },
-      checkPermission: checkPermission,
-      entryConfig: AssetsPickerEntryConfig(
-          delete: const AssetDeleteIcon(backgroundColor: Colors.blue),
-          deletionConfirmation: (_) async {
-            final value = await CupertinoAlertDialog(
-                content: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    constraints: const BoxConstraints(maxHeight: 100),
-                    child: const Text('确定要删除么')),
-                actions: [
-                  Universal(
-                      height: 45,
-                      alignment: Alignment.center,
-                      onTap: () {
-                        pop(false);
-                      },
-                      child:
-                          const BText('取消', fontSize: 14, color: Colors.grey)),
-                  Universal(
-                      height: 45,
-                      alignment: Alignment.center,
-                      onTap: () {
-                        pop(true);
-                      },
-                      child:
-                          const BText('确定', fontSize: 14, color: Colors.grey)),
-                ]).popupCupertinoModal<bool?>();
-            return value ?? false;
-          }),
-      onChanged: (List<ExtendedAssetEntity> value) {
-        log('onChanged ${value.builder((item) => item.realValueStr)}');
-      });
+  Widget buildMultipleAssetPicker(RequestType requestType) =>
+      MultipleAssetPicker(
+          initialData: MultipleAssetPicker.convertUrls(url),
+          fromRequestTypes: [
+            PickerFromTypeItem(
+                fromType: PickerFromType.gallery,
+                text: const Text('图库选择'),
+                requestType: requestType),
+            PickerFromTypeItem(
+                fromType: PickerFromType.camera,
+                text: const Text('相机拍摄'),
+                requestType: requestType),
+            const PickerFromTypeItem(
+                fromType: PickerFromType.cancel, text: Text('取消')),
+          ],
+          itemConfig: AssetsPickerItemConfig(
+              delete: const DefaultDeleteIcon(backgroundColor: Colors.blue),
+              deletionConfirmation: (_) async {
+                final value = await CupertinoAlertDialog(
+                    content: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        constraints: const BoxConstraints(maxHeight: 100),
+                        child: const Text('确定要删除么')),
+                    actions: [
+                      Universal(
+                          height: 45,
+                          alignment: Alignment.center,
+                          onTap: () {
+                            pop(false);
+                          },
+                          child: const BText('取消',
+                              fontSize: 14, color: Colors.grey)),
+                      Universal(
+                          height: 45,
+                          alignment: Alignment.center,
+                          onTap: () {
+                            pop(true);
+                          },
+                          child: const BText('确定',
+                              fontSize: 14, color: Colors.grey)),
+                    ]).popupCupertinoModal<bool?>();
+                return value ?? false;
+              }),
+          onChanged: (List<ExtendedAssetEntity> value) {
+            log('onChanged ${value.builder((item) => item.realValueStr)}');
+          });
 }
 
 /// 图片压缩

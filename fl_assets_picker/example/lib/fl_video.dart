@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:fl_assets_picker/fl_assets_picker.dart';
+import 'package:fl_video/fl_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
-  const FlVideoPlayerWithAssetsPicker({
+class FlVideoPlayerWithImagePicker extends StatefulWidget {
+  const FlVideoPlayerWithImagePicker({
     super.key,
     required this.controller,
     this.autoPlay = true,
@@ -38,8 +38,8 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   final Widget? controls;
 
   @override
-  State<FlVideoPlayerWithAssetsPicker> createState() =>
-      _FlVideoPlayerWithAssetsPickerState();
+  State<FlVideoPlayerWithImagePicker> createState() =>
+      _FlVideoPlayerWithImagePickerState();
 
   /// 根据 [value] 不同的值 转换不同的 [VideoPlayerController]
   static VideoPlayerController? buildVideoPlayerController(dynamic value) {
@@ -56,8 +56,8 @@ class FlVideoPlayerWithAssetsPicker extends StatefulWidget {
   }
 }
 
-class _FlVideoPlayerWithAssetsPickerState
-    extends State<FlVideoPlayerWithAssetsPicker> with WidgetsBindingObserver {
+class _FlVideoPlayerWithImagePickerState
+    extends State<FlVideoPlayerWithImagePicker> with WidgetsBindingObserver {
   FlVideoPlayerController? flController;
 
   late VideoPlayerController controller;
@@ -105,7 +105,7 @@ class _FlVideoPlayerWithAssetsPickerState
   }
 
   @override
-  void didUpdateWidget(covariant FlVideoPlayerWithAssetsPicker oldWidget) {
+  void didUpdateWidget(covariant FlVideoPlayerWithImagePicker oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != controller) initController();
   }

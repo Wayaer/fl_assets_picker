@@ -15,27 +15,11 @@ part 'multiple_image_picker.dart';
 typedef FlImagePickerCheckPermission = Future<bool> Function(
     PickerFromType fromType);
 
-typedef FlImagePickerErrorCallback = void Function(String erroe);
-
 typedef PickerFromTypeBuilder = Widget Function(
     BuildContext context, List<PickerFromTypeItem> fromTypes);
 
-typedef FlAssetFileRenovate<T> = Future<T> Function(
-    AssetType assetType, XFile file);
-
-enum ImageCroppingQuality {
-  /// 最高画质
-  high,
-
-  /// 中等
-  medium,
-
-  ///最低
-  low,
-}
-
 enum AssetType {
-  /// The asset is not an image, video, or audio file.
+  /// The asset is not an image, video
   other,
 
   /// The asset is an image file.
@@ -45,42 +29,14 @@ enum AssetType {
   video,
 }
 
-enum PickerFromType {
-  /// 仅图片
-  image,
-
-  /// 仅视频
-  video,
-
-  /// 拍照
-  takePictures,
-
-  /// 相机录像
-  recording,
-
-  /// 取消
-  cancel,
-}
-
-class PickerFromTypeItem {
-  const PickerFromTypeItem({required this.fromType, required this.text});
-
-  /// 来源
-  final PickerFromType fromType;
-
-  /// 显示的文字
-  final Widget text;
-}
-
-typedef DeletionConfirmation = Future<bool> Function(ExtendedXFile entity);
-
-typedef FlAssetBuilder = Widget Function(ExtendedXFile xFile, bool isThumbnail);
+typedef FlAssetBuilder = Widget Function(
+    ExtendedXFile entity, bool isThumbnail);
 
 FlAssetBuilder _defaultFlAssetBuilder =
-    (ExtendedXFile xFile, bool isThumbnail) {
+    (ExtendedXFile entity, bool isThumbnail) {
   Widget unsupported() => const Center(child: Text('No preview'));
-  if (xFile.assetType == AssetType.image) {
-    final imageProvider = xFile.toImageProvider();
+  if (entity.type == AssetType.image) {
+    final imageProvider = entity.toImageProvider();
     if (imageProvider != null) {
       return Image(
           image: imageProvider,
@@ -89,6 +45,17 @@ FlAssetBuilder _defaultFlAssetBuilder =
   }
   return unsupported();
 };
+
+PickerFromTypeBuilder _defaultFromTypesBuilder =
+    (_, List<PickerFromTypeItem> fromTypes) => FlPickFromTypeBuilder(fromTypes);
+
+FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
+    FlPreviewGesturePageView(
+        pageView: PageView.builder(
+            controller: PageController(initialPage: allEntity.indexOf(entity)),
+            itemCount: allEntity.length,
+            itemBuilder: (_, int index) => Center(
+                child: FlImagePicker.assetBuilder(allEntity[index], false))));
 
 abstract class FlImagePicker extends StatefulWidget {
   /// image picker
@@ -100,14 +67,11 @@ abstract class FlImagePicker extends StatefulWidget {
   /// 权限申请
   static FlImagePickerCheckPermission? checkPermission;
 
+  /// 类型来源选择器
+  static PickerFromTypeBuilder fromTypesBuilder = _defaultFromTypesBuilder;
+
   /// 资源预览UI [MultipleImagePicker] 使用
-  static FlPreviewAssetsBuilder previewBuilder = (context, xFile, allXFile) =>
-      FlPreviewGesturePageView(
-          pageView: PageView.builder(
-              controller: PageController(initialPage: allXFile.indexOf(xFile)),
-              itemCount: allXFile.length,
-              itemBuilder: (_, int index) => Center(
-                  child: FlImagePicker.assetBuilder(allXFile[index], false))));
+  static FlPreviewAssetsBuilder previewBuilder = _defaultPreviewBuilder;
 
   /// 资源预览UI全屏弹出渲染 [MultipleImagePicker] 使用
   static FlPreviewAssetsModalPopupBuilder previewModalPopup =
@@ -123,8 +87,8 @@ abstract class FlImagePicker extends StatefulWidget {
     required this.maxVideoCount,
     required this.maxCount,
     required this.fromTypes,
+    this.itemConfig = const ImagePickerItemConfig(),
     this.enablePicker = true,
-    this.fromTypesBuilder,
   });
 
   /// 最大选择视频数量
@@ -139,13 +103,13 @@ abstract class FlImagePicker extends StatefulWidget {
   /// 是否开启 资源选择
   final bool enablePicker;
 
-  /// 选择框 自定义
-  final PickerFromTypeBuilder? fromTypesBuilder;
-
   final bool useRootNavigator = true;
 
   /// 资源重新编辑
   final FlAssetFileRenovate? renovate;
+
+  ///
+  final ImagePickerItemConfig itemConfig;
 
   static ImageProvider? buildImageProvider(dynamic value) {
     if (value is File) {
@@ -167,46 +131,35 @@ abstract class FlImagePicker extends StatefulWidget {
     BuildContext context, {
     /// 选择框提示item
     List<PickerFromTypeItem> fromTypes = defaultPickerFromTypeItem,
-    PickerFromTypeBuilder? fromTypesBuilder,
-
-    /// 错误提示
-    FlImagePickerErrorCallback? errorCallback,
 
     /// 资源最大占用字节
     int maxBytes = 167772160,
   }) async {
-    final config = await showPickerFromType(context, fromTypes,
-        fromTypesBuilder: fromTypesBuilder);
+    final config = await showPickerFromType(context, fromTypes);
     if (config == null) return null;
-    final xFile = await showPicker(config.fromType);
-    if (xFile == null) {
+    final entity = await showPicker(config.fromType);
+    if (entity == null) {
       errorCallback?.call('无法获取该资源');
       return null;
     }
-    final fileBytes = await xFile.readAsBytes();
+    final fileBytes = await entity.readAsBytes();
     if (fileBytes.length > maxBytes) {
       errorCallback?.call('最大选择${_toSize(maxBytes)}');
       return null;
     }
-    return xFile;
+    return entity;
   }
 
   /// 不同picker类型选择
   static Future<PickerFromTypeItem?> showPickerFromType(
-    BuildContext context,
-    List<PickerFromTypeItem> fromTypes, {
-    PickerFromTypeBuilder? fromTypesBuilder,
-  }) async {
+      BuildContext context, List<PickerFromTypeItem> fromTypes) async {
     PickerFromTypeItem? type;
     if (fromTypes.length == 1 &&
         fromTypes.first.fromType != PickerFromType.cancel) {
       type = fromTypes.first;
     } else {
       type = await showCupertinoModalPopup<PickerFromTypeItem?>(
-          context: context,
-          builder: (_) =>
-              fromTypesBuilder?.call(_, fromTypes) ??
-              _PickFromTypeBuilderWidget(fromTypes));
+          context: context, builder: (_) => fromTypesBuilder(_, fromTypes));
     }
     return type;
   }
@@ -283,32 +236,8 @@ abstract class FlImagePicker extends StatefulWidget {
   }
 }
 
-class _PickFromTypeBuilderWidget extends StatelessWidget {
-  const _PickFromTypeBuilderWidget(this.list);
-
-  final List<PickerFromTypeItem> list;
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> actions = [];
-    Widget? cancelButton;
-    for (var element in list) {
-      final entry = CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(context).maybePop(element),
-          isDefaultAction: false,
-          child: element.text);
-      if (element.fromType != PickerFromType.cancel) {
-        actions.add(entry);
-      } else {
-        cancelButton = entry;
-      }
-    }
-    return CupertinoActionSheet(cancelButton: cancelButton, actions: actions);
-  }
-}
-
 class ImagePickerController with ChangeNotifier {
-  List<ExtendedXFile> allXFile = [];
+  List<ExtendedXFile> allEntity = [];
 
   late FlImagePicker _assetsPicker;
 
@@ -316,17 +245,17 @@ class ImagePickerController with ChangeNotifier {
     _assetsPicker = assetsPicker;
   }
 
-  void delete(ExtendedXFile file) {
-    allXFile.remove(file);
+  void delete(ExtendedXFile entity) {
+    allEntity.remove(entity);
     notifyListeners();
   }
 
   /// 选择图片
   Future<ExtendedXFile?> pick(PickerFromType fromType) async {
-    final xFile = await FlImagePicker.showPicker(fromType);
-    if (xFile != null) {
-      if (!allXFile.contains(xFile)) {
-        return xFile.toRenovated(_assetsPicker.renovate);
+    final entity = await FlImagePicker.showPicker(fromType);
+    if (entity != null) {
+      if (!allEntity.contains(entity)) {
+        return entity.toRenovated(_assetsPicker.renovate);
       }
     }
     return null;
@@ -335,30 +264,29 @@ class ImagePickerController with ChangeNotifier {
   /// 弹窗选择类型
   Future<void> pickFromType(BuildContext context, {bool mounted = true}) async {
     if (_assetsPicker.maxCount > 1 &&
-        allXFile.length >= _assetsPicker.maxCount) {
+        allEntity.length >= _assetsPicker.maxCount) {
       FlImagePicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
       return;
     }
     final fromTypeConfig = await FlImagePicker.showPickerFromType(
-        context, _assetsPicker.fromTypes,
-        fromTypesBuilder: _assetsPicker.fromTypesBuilder);
+        context, _assetsPicker.fromTypes);
     if (fromTypeConfig == null) return;
     final entity = await pick(fromTypeConfig.fromType);
     if (entity == null) return;
     if (_assetsPicker.maxCount > 1) {
-      var videos = allXFile
-          .where((element) => element.assetType == AssetType.video)
+      var videos = allEntity
+          .where((element) => element.type == AssetType.video)
           .toList();
       if (videos.length >= _assetsPicker.maxVideoCount) {
         FlImagePicker.errorCallback
             ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
         return;
       } else {
-        allXFile.add(entity);
+        allEntity.add(entity);
       }
     } else {
       /// 单资源
-      allXFile = [entity];
+      allEntity = [entity];
     }
     notifyListeners();
   }

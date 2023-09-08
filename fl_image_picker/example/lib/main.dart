@@ -31,8 +31,8 @@ Future<void> main() async {
 }
 
 void flImagePickerInit() {
-  FlImagePicker.assetBuilder = (ExtendedXFile xFile, bool isThumbnail) =>
-      AssetBuilder(xFile, isThumbnail: isThumbnail);
+  FlImagePicker.assetBuilder = (ExtendedXFile entity, bool isThumbnail) =>
+      AssetBuilder(entity, isThumbnail: isThumbnail);
   FlImagePicker.checkPermission = (PickerFromType fromType) async {
     if (!isMobile) return true;
     if (fromType == PickerFromType.image || fromType == PickerFromType.video) {
@@ -51,12 +51,13 @@ void flImagePickerInit() {
     return false;
   };
   FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
-  FlImagePicker.previewBuilder = (context, xFile, xFiles) {
+  FlImagePicker.previewBuilder = (context, entity, allEntity) {
     return FlPreviewAssets(
-        itemCount: xFiles.length,
-        controller: ExtendedPageController(initialPage: xFiles.indexOf(xFile)),
+        itemCount: allEntity.length,
+        controller:
+            ExtendedPageController(initialPage: allEntity.indexOf(entity)),
         itemBuilder: (_, int index) =>
-            FlImagePicker.assetBuilder(xFiles[index], false));
+            FlImagePicker.assetBuilder(allEntity[index], false));
   };
   FlImagePicker.errorCallback = (String value) {
     showToast(value);
@@ -116,29 +117,29 @@ class _HomePage extends StatelessWidget {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
       SingleImagePicker(
           fromTypes: fromTypes,
-          renovate: (AssetType assetType, XFile xFile) async {
+          renovate: (AssetType assetType, XFile entity) async {
             if (assetType == AssetType.image) {
-              return await compressImage(File(xFile.path));
+              return await compressImage(File(entity.path));
             }
             return null;
           },
           initialData: SingleImagePicker.convertUrl(url),
-          config: ImagePickerItemConfig(
+          itemConfig: ImagePickerItemConfig(
               borderRadius: BorderRadius.circular(10),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
             log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
           }),
       SingleImagePicker(
-          renovate: (AssetType assetType, XFile xFile) async {
+          renovate: (AssetType assetType, XFile entity) async {
             if (assetType == AssetType.image) {
-              return await compressImage(File(xFile.path));
+              return await compressImage(File(entity.path));
             }
             return null;
           },
           fromTypes: fromTypes,
           initialData: SingleImagePicker.convertUrl(url),
-          config: ImagePickerItemConfig(
+          itemConfig: ImagePickerItemConfig(
               borderRadius: BorderRadius.circular(40),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
@@ -176,9 +177,9 @@ class _HomePage extends StatelessWidget {
     return MultipleImagePicker(
         initialData: MultipleImagePicker.convertUrls(url),
         fromTypes: fromTypes,
-        renovate: (AssetType assetType, XFile xFile) async {
+        renovate: (AssetType assetType, XFile entity) async {
           if (assetType == AssetType.image) {
-            return await compressImage(File(xFile.path));
+            return await compressImage(File(entity.path));
           }
           return null;
         },

@@ -4,7 +4,7 @@ typedef FlPreviewAssetsModalPopupBuilder = void Function(
     BuildContext context, Widget previewAssets);
 
 typedef FlPreviewAssetsBuilder = Widget Function(
-    BuildContext context, ExtendedXFile current, List<ExtendedXFile> xFiles);
+    BuildContext context, ExtendedXFile current, List<ExtendedXFile> entitys);
 
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
@@ -52,7 +52,7 @@ class MultipleImagePicker extends FlImagePicker {
     super.key,
     this.onChanged,
     this.controller,
-    this.itemConfig = const ImagePickerItemConfig(),
+    super.itemConfig = const ImagePickerItemConfig(),
     this.itemBuilder,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
@@ -64,7 +64,6 @@ class MultipleImagePicker extends FlImagePicker {
     super.maxCount = 9,
     super.fromTypes = defaultPickerFromTypeItem,
     super.renovate,
-    super.fromTypesBuilder,
   });
 
   /// 是否显示删除按钮
@@ -89,9 +88,6 @@ class MultipleImagePicker extends FlImagePicker {
 
   /// 资源渲染子元素自定义构造
   final MultiplePickerItemBuilder? itemBuilder;
-
-  /// item UI 样式配置
-  final ImagePickerItemConfig itemConfig;
 
   @override
   State<MultipleImagePicker> createState() => _MultipleImagePickerState();
@@ -161,18 +157,18 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
   void initialize() {
     controller = widget.controller ?? ImagePickerController();
     controller.assetsPicker = widget;
-    controller.allXFile.insertAll(0, widget.initialData);
+    controller.allEntity.insertAll(0, widget.initialData);
     controller.addListener(listener);
   }
 
   void listener() {
-    widget.onChanged?.call(controller.allXFile);
+    widget.onChanged?.call(controller.allEntity);
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final children = controller.allXFile
+    final children = controller.allEntity
         .asMap()
         .entries
         .map((item) => buildEntry(item))
@@ -198,10 +194,10 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
 
   /// 资源预览 item
   Widget buildEntry(MapEntry<int, ExtendedXFile> item) {
-    final xFile = item.value;
+    final entity = item.value;
     final config = widget.itemConfig;
-    Widget current = FlImagePicker.assetBuilder(xFile, true);
-    if (xFile.assetType == AssetType.video) {
+    Widget current = FlImagePicker.assetBuilder(entity, true);
+    if (entity.type == AssetType.video) {
       current = Stack(children: [
         SizedBox.expand(child: current),
         Align(alignment: Alignment.center, child: config.play),
@@ -222,11 +218,11 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
             child: GestureDetector(
               onTap: () =>
                   widget.itemConfig.deletionConfirmation
-                      ?.call(xFile)
+                      ?.call(entity)
                       .then((value) {
-                    if (value) controller.delete(xFile);
+                    if (value) controller.delete(entity);
                   }) ??
-                  controller.delete(xFile),
+                  controller.delete(entity),
               child: widget.itemConfig.delete,
             ))
       ]);
@@ -239,15 +235,15 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
   }
 
   /// 全屏预览
-  void previewAssets(ExtendedXFile xFile) {
-    final allXFile = controller.allXFile;
+  void previewAssets(ExtendedXFile entity) {
+    final allEntity = controller.allEntity;
     FlImagePicker.previewModalPopup(
-        context, FlImagePicker.previewBuilder(context, xFile, allXFile));
+        context, FlImagePicker.previewBuilder(context, entity, allEntity));
   }
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    final assetsEntry = controller.allXFile;
+    final assetsEntry = controller.allEntity;
     if (assetsEntry.length >= widget.maxCount) {
       FlImagePicker.errorCallback?.call('最多选择${widget.maxCount}个');
       return;

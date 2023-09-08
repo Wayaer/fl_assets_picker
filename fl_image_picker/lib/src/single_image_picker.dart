@@ -6,24 +6,16 @@ class SingleImagePicker extends FlImagePicker {
     this.onChanged,
     super.enablePicker = true,
     super.fromTypes = defaultPickerFromTypeItem,
-    super.fromTypesBuilder,
     super.renovate,
-    this.config = const ImagePickerItemConfig(),
+    super.itemConfig = const ImagePickerItemConfig(),
     this.initialData,
-    this.allowDelete = true,
   }) : super(maxCount: 1, maxVideoCount: 0);
-
-  /// 是否显示删除按钮
-  final bool allowDelete;
 
   /// 默认初始资源
   final ExtendedXFile? initialData;
 
   /// 资源选择变化
   final ValueChanged<ExtendedXFile>? onChanged;
-
-  ///
-  final ImagePickerItemConfig config;
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static ExtendedXFile? convertPaths(String path,
@@ -60,27 +52,27 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     controller = ImagePickerController();
     controller.assetsPicker = widget;
     if (widget.initialData != null) {
-      controller.allXFile = [widget.initialData!];
+      controller.allEntity = [widget.initialData!];
     }
     controller.addListener(listener);
   }
 
   void listener() {
-    if (controller.allXFile.isNotEmpty) {
-      widget.onChanged?.call(controller.allXFile.first);
+    if (controller.allEntity.isNotEmpty) {
+      widget.onChanged?.call(controller.allEntity.first);
       if (mounted) setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget current = widget.config.pick;
-    final allXFile = controller.allXFile;
-    final config = widget.config;
-    if (allXFile.isNotEmpty) {
-      final entity = allXFile.first;
+    Widget current = widget.itemConfig.pick;
+    final allEntity = controller.allEntity;
+    final config = widget.itemConfig;
+    if (allEntity.isNotEmpty) {
+      final entity = allEntity.first;
       current = buildEntity(entity);
-      if (entity.assetType == AssetType.video) {
+      if (entity.type == AssetType.video) {
         current = Stack(children: [
           SizedBox.expand(child: current),
           Align(alignment: Alignment.center, child: config.play),
@@ -102,7 +94,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
 
   Widget buildEntity(ExtendedXFile entity) {
     if (entity.previewed == null && entity.fileAsync == null) {
-      return widget.config.pick;
+      return widget.itemConfig.pick;
     }
     return FlImagePicker.assetBuilder(entity, true);
   }
