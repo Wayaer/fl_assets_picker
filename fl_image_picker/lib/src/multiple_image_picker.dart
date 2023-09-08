@@ -1,11 +1,10 @@
-import 'package:fl_image_picker/fl_image_picker.dart';
-import 'package:flutter/cupertino.dart';
+part of 'image_picker.dart';
 
 typedef FlPreviewAssetsModalPopupBuilder = void Function(
     BuildContext context, Widget previewAssets);
 
 typedef FlPreviewAssetsBuilder = Widget Function(
-    BuildContext context, List<ExtendedXFile> entitys);
+    BuildContext context, ExtendedXFile current, List<ExtendedXFile> xFiles);
 
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
@@ -45,31 +44,27 @@ typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
 typedef PickerErrorCallback = void Function(String msg);
 
-typedef MultiPickerEntryBuilder = Widget Function(
-    ExtendedXFile entry, int index);
+typedef MultiplePickerItemBuilder = Widget Function(
+    ExtendedXFile item, int index);
 
-class MultiImagePicker extends FlImagePicker {
-  const MultiImagePicker({
+class MultipleImagePicker extends FlImagePicker {
+  const MultipleImagePicker({
     super.key,
     this.onChanged,
     this.controller,
-    this.entryConfig = const ImagePickerEntryConfig(),
-    this.entryBuilder,
+    this.itemConfig = const ImagePickerItemConfig(),
+    this.itemBuilder,
     this.wrapConfig = const PickerWrapBuilderConfig(),
     this.wrapBuilder,
     this.initialData = const [],
     this.allowDelete = true,
     this.pickerIconBuilder,
     super.enablePicker = true,
-    super.errorCallback,
     super.maxVideoCount = 1,
     super.maxCount = 9,
     super.fromTypes = defaultPickerFromTypeItem,
     super.renovate,
     super.fromTypesBuilder,
-    super.checkPermission,
-    this.previewBuilder,
-    this.previewModalPopup,
   });
 
   /// 是否显示删除按钮
@@ -93,19 +88,13 @@ class MultiImagePicker extends FlImagePicker {
   final PickerIconBuilder? pickerIconBuilder;
 
   /// 资源渲染子元素自定义构造
-  final MultiPickerEntryBuilder? entryBuilder;
+  final MultiplePickerItemBuilder? itemBuilder;
 
-  /// entry UI 样式配置
-  final ImagePickerEntryConfig entryConfig;
-
-  /// 弹出预览框 builder
-  final FlPreviewAssetsModalPopupBuilder? previewModalPopup;
-
-  /// 预览框 builder
-  final FlPreviewAssetsBuilder? previewBuilder;
+  /// item UI 样式配置
+  final ImagePickerItemConfig itemConfig;
 
   @override
-  State<MultiImagePicker> createState() => _MultiImagePickerState();
+  State<MultipleImagePicker> createState() => _MultipleImagePickerState();
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static List<ExtendedXFile> convertPaths(List<String> paths,
@@ -160,7 +149,7 @@ class MultiImagePicker extends FlImagePicker {
   }
 }
 
-class _MultiImagePickerState extends State<MultiImagePicker> {
+class _MultipleImagePickerState extends State<MultipleImagePicker> {
   late ImagePickerController controller;
 
   @override
@@ -186,7 +175,7 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
     final children = controller.allXFile
         .asMap()
         .entries
-        .map((entry) => buildEntry(entry))
+        .map((item) => buildEntry(item))
         .toList();
     if (widget.enablePicker) children.add(buildPicker);
     if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
@@ -207,12 +196,12 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
             children: children));
   }
 
-  /// 资源预览 entry
-  Widget buildEntry(MapEntry<int, ExtendedXFile> entry) {
-    final assetEntry = entry.value;
-    final config = widget.entryConfig;
-    Widget current = AssetBuilder(assetEntry, fit: config.fit);
-    if (assetEntry.assetType == AssetType.video) {
+  /// 资源预览 item
+  Widget buildEntry(MapEntry<int, ExtendedXFile> item) {
+    final xFile = item.value;
+    final config = widget.itemConfig;
+    Widget current = FlImagePicker.assetBuilder(xFile, true);
+    if (xFile.assetType == AssetType.video) {
       current = Stack(children: [
         SizedBox.expand(child: current),
         Align(alignment: Alignment.center, child: config.play),
@@ -222,23 +211,23 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
       current = ColoredBox(color: config.color!, child: current);
     }
     current = GestureDetector(
-        onTap: () => previewAssets(entry.value),
-        child: widget.entryBuilder?.call(entry.value, entry.key) ?? current);
+        onTap: () => previewAssets(item.value),
+        child: widget.itemBuilder?.call(item.value, item.key) ?? current);
     if (widget.allowDelete) {
       current = Stack(children: [
         SizedBox.expand(child: current),
         Positioned(
-            right: 2,
-            top: 2,
+            right: 4,
+            top: 4,
             child: GestureDetector(
               onTap: () =>
-                  widget.entryConfig.deletionConfirmation
-                      ?.call(assetEntry)
+                  widget.itemConfig.deletionConfirmation
+                      ?.call(xFile)
                       .then((value) {
-                    if (value) controller.deleteAsset(assetEntry.path);
+                    if (value) controller.delete(xFile);
                   }) ??
-                  controller.deleteAsset(assetEntry.path),
-              child: widget.entryConfig.delete,
+                  controller.delete(xFile),
+              child: widget.itemConfig.delete,
             ))
       ]);
     }
@@ -249,34 +238,18 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
     return current;
   }
 
-  void previewAssets(ExtendedXFile asset) async {
-    final currentAssetsEntry = controller.allXFile;
-    final previewAssets = FlPreviewAssets(
-        itemCount: currentAssetsEntry.length,
-        controller: ExtendedPageController(
-            initialPage: currentAssetsEntry.indexOf(asset)),
-        itemBuilder: (_, int index) => Center(
-            child: AssetBuilder(currentAssetsEntry[index],
-                isPreview: false,
-                enableGesture: true,
-                fit: widget.entryConfig.previewFit)));
-
-    if (widget.previewModalPopup == null) {
-      showCupertinoModalPopup(
-          context: context,
-          builder: (BuildContext context) =>
-              widget.previewBuilder?.call(context, currentAssetsEntry) ??
-              previewAssets);
-    } else {
-      widget.previewModalPopup?.call(context, previewAssets);
-    }
+  /// 全屏预览
+  void previewAssets(ExtendedXFile xFile) {
+    final allXFile = controller.allXFile;
+    FlImagePicker.previewModalPopup(
+        context, FlImagePicker.previewBuilder(context, xFile, allXFile));
   }
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsEntry = controller.allXFile;
     if (assetsEntry.length >= widget.maxCount) {
-      widget.errorCallback?.call('最多选择${widget.maxCount}个');
+      FlImagePicker.errorCallback?.call('最多选择${widget.maxCount}个');
       return;
     }
     controller.pickFromType(context, mounted: mounted);
@@ -284,7 +257,7 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
 
   /// 选择框
   Widget get buildPicker {
-    final config = widget.entryConfig;
+    final config = widget.itemConfig;
     Widget current = SizedBox(
         width: config.size.width,
         height: config.size.height,
@@ -305,5 +278,40 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
     super.dispose();
     controller.removeListener(listener);
     controller.dispose();
+  }
+}
+
+class FlPreviewGesturePageView extends StatelessWidget {
+  const FlPreviewGesturePageView({
+    super.key,
+    required this.pageView,
+    this.close,
+    this.overlay,
+    this.backgroundColor = Colors.black38,
+  });
+
+  final Widget pageView;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
+
+  /// 背景色
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: backgroundColor,
+        child: Stack(children: [
+          SizedBox.expand(child: pageView),
+          if (overlay != null) SizedBox.expand(child: overlay!),
+          Positioned(
+              right: 6,
+              top: MediaQuery.of(context).viewPadding.top,
+              child: close ?? const CloseButton(color: Colors.white)),
+        ]));
   }
 }

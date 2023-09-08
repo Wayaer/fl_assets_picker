@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:example/previewed.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -16,6 +18,7 @@ bool get isMobile => isAndroid || isIOS;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  flImagePickerInit();
   runApp(MaterialApp(
       navigatorKey: GlobalWayUI().navigatorKey,
       scaffoldMessengerKey: GlobalWayUI().scaffoldMessengerKey,
@@ -27,13 +30,10 @@ Future<void> main() async {
           body: const _HomePage())));
 }
 
-const url =
-    'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201612%2F31%2F20161231205134_uVTex.thumb.400_0.jpeg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1666931842&t=44493a6c92d1ddda89367519c6206491';
-
-class _HomePage extends StatelessWidget {
-  const _HomePage();
-
-  Future<bool> checkPermission(PickerFromType fromType) async {
+void flImagePickerInit() {
+  FlImagePicker.assetBuilder = (ExtendedXFile xFile, bool isThumbnail) =>
+      AssetBuilder(xFile, isThumbnail: isThumbnail);
+  FlImagePicker.checkPermission = (PickerFromType fromType) async {
     if (!isMobile) return true;
     if (fromType == PickerFromType.image || fromType == PickerFromType.video) {
       if (isIOS) {
@@ -49,7 +49,25 @@ class _HomePage extends StatelessWidget {
       return permissionState.isGranted;
     }
     return false;
-  }
+  };
+  FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
+  FlImagePicker.previewBuilder = (context, xFile, xFiles) {
+    return FlPreviewAssets(
+        itemCount: xFiles.length,
+        controller: ExtendedPageController(initialPage: xFiles.indexOf(xFile)),
+        itemBuilder: (_, int index) =>
+            FlImagePicker.assetBuilder(xFiles[index], false));
+  };
+  FlImagePicker.errorCallback = (String value) {
+    showToast(value);
+  };
+}
+
+const url =
+    'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201612%2F31%2F20161231205134_uVTex.thumb.400_0.jpeg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1666931842&t=44493a6c92d1ddda89367519c6206491';
+
+class _HomePage extends StatelessWidget {
+  const _HomePage();
 
   @override
   Widget build(BuildContext context) {
@@ -98,27 +116,20 @@ class _HomePage extends StatelessWidget {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
       SingleImagePicker(
           fromTypes: fromTypes,
-          errorCallback: (String value) {
-            showToast(value);
-          },
           renovate: (AssetType assetType, XFile xFile) async {
             if (assetType == AssetType.image) {
               return await compressImage(File(xFile.path));
             }
             return null;
           },
-          checkPermission: checkPermission,
           initialData: SingleImagePicker.convertUrl(url),
-          config: ImagePickerEntryConfig(
+          config: ImagePickerItemConfig(
               borderRadius: BorderRadius.circular(10),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
             log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
           }),
       SingleImagePicker(
-          errorCallback: (String value) {
-            showToast(value);
-          },
           renovate: (AssetType assetType, XFile xFile) async {
             if (assetType == AssetType.image) {
               return await compressImage(File(xFile.path));
@@ -126,9 +137,8 @@ class _HomePage extends StatelessWidget {
             return null;
           },
           fromTypes: fromTypes,
-          checkPermission: checkPermission,
           initialData: SingleImagePicker.convertUrl(url),
-          config: ImagePickerEntryConfig(
+          config: ImagePickerItemConfig(
               borderRadius: BorderRadius.circular(40),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
@@ -163,23 +173,17 @@ class _HomePage extends StatelessWidget {
         ]);
         break;
     }
-    return MultiImagePicker(
-        initialData: MultiImagePicker.convertUrls(url),
+    return MultipleImagePicker(
+        initialData: MultipleImagePicker.convertUrls(url),
         fromTypes: fromTypes,
-        previewModalPopup: (_, Widget previewAssets) =>
-            previewAssets.popupDialog(),
-        errorCallback: (String value) {
-          showToast(value);
-        },
         renovate: (AssetType assetType, XFile xFile) async {
           if (assetType == AssetType.image) {
             return await compressImage(File(xFile.path));
           }
           return null;
         },
-        checkPermission: checkPermission,
-        entryConfig: ImagePickerEntryConfig(
-            delete: const AssetDeleteIcon(backgroundColor: Colors.blue),
+        itemConfig: ImagePickerItemConfig(
+            delete: const DefaultDeleteIcon(backgroundColor: Colors.blue),
             deletionConfirmation: (_) async {
               final value = await CupertinoAlertDialog(
                   content: Container(

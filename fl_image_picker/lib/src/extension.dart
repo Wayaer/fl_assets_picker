@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fl_image_picker/fl_image_picker.dart';
+import 'package:flutter/material.dart';
 
 class ExtendedXFile<T> extends XFile {
   ExtendedXFile.fromPreviewed(this.previewed, this.assetType)
@@ -46,6 +47,22 @@ extension ExtensionExtendedXFile on ExtendedXFile {
     return ExtendedXFile<T>(path, assetType,
         fileAsync: File(path),
         renovated: await renovate?.call(assetType, this));
+  }
+
+  ImageProvider? toImageProvider() {
+    ImageProvider? provider;
+    if (renovated != null) {
+      provider = FlImagePicker.buildImageProvider(renovated);
+    } else if (fileAsync != null) {
+      provider = FileImage(fileAsync!);
+    } else if (previewed != null) {
+      if (previewed!.startsWith('http')) {
+        provider = NetworkImage(previewed!);
+      } else {
+        provider = AssetImage(previewed!);
+      }
+    }
+    return provider;
   }
 }
 

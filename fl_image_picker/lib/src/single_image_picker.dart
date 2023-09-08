@@ -1,20 +1,14 @@
-import 'package:fl_image_picker/fl_image_picker.dart';
-import 'package:flutter/material.dart';
-
-typedef SinglePickerEntryBuilder = Widget Function(ExtendedXFile entry);
+part of 'image_picker.dart';
 
 class SingleImagePicker extends FlImagePicker {
   const SingleImagePicker({
     super.key,
     this.onChanged,
     super.enablePicker = true,
-    super.errorCallback,
     super.fromTypes = defaultPickerFromTypeItem,
     super.fromTypesBuilder,
     super.renovate,
-    super.checkPermission,
-    this.config = const ImagePickerEntryConfig(),
-    this.builder,
+    this.config = const ImagePickerItemConfig(),
     this.initialData,
     this.allowDelete = true,
   }) : super(maxCount: 1, maxVideoCount: 0);
@@ -28,11 +22,8 @@ class SingleImagePicker extends FlImagePicker {
   /// 资源选择变化
   final ValueChanged<ExtendedXFile>? onChanged;
 
-  /// 资源渲染子元素自定义构造
-  final SinglePickerEntryBuilder? builder;
-
   ///
-  final ImagePickerEntryConfig config;
+  final ImagePickerItemConfig config;
 
   /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
   static ExtendedXFile? convertPaths(String path,
@@ -88,7 +79,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     final config = widget.config;
     if (allXFile.isNotEmpty) {
       final entity = allXFile.first;
-      current = widget.builder?.call(entity) ?? entryBuild(entity);
+      current = buildEntity(entity);
       if (entity.assetType == AssetType.video) {
         current = Stack(children: [
           SizedBox.expand(child: current),
@@ -109,11 +100,11 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     return current;
   }
 
-  Widget entryBuild(ExtendedXFile entity) {
+  Widget buildEntity(ExtendedXFile entity) {
     if (entity.previewed == null && entity.fileAsync == null) {
       return widget.config.pick;
     }
-    return AssetBuilder(entity, fit: widget.config.fit);
+    return FlImagePicker.assetBuilder(entity, true);
   }
 
   void pickerAsset() async {
