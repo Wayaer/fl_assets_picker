@@ -283,7 +283,7 @@ class FlPreviewGesturePageView extends StatelessWidget {
     required this.pageView,
     this.close,
     this.overlay,
-    this.backgroundColor = Colors.black38,
+    this.backgroundColor = Colors.black87,
   });
 
   final Widget pageView;

@@ -52,12 +52,13 @@ void flImagePickerInit() {
   };
   FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
   FlImagePicker.previewBuilder = (context, entity, allEntity) {
-    return FlPreviewAssets(
-        itemCount: allEntity.length,
-        controller:
-            ExtendedPageController(initialPage: allEntity.indexOf(entity)),
-        itemBuilder: (_, int index) =>
-            FlImagePicker.assetBuilder(allEntity[index], false));
+    return FlPreviewGesturePageView(
+        pageView: ExtendedImageGesturePageView.builder(
+            itemCount: allEntity.length,
+            controller:
+                ExtendedPageController(initialPage: allEntity.indexOf(entity)),
+            itemBuilder: (_, int index) =>
+                FlImagePicker.assetBuilder(allEntity[index], false)));
   };
   FlImagePicker.errorCallback = (String value) {
     showToast(value);

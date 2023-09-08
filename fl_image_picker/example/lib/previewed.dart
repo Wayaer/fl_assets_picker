@@ -5,28 +5,6 @@ import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class FlPreviewAssets extends StatelessWidget {
-  const FlPreviewAssets({
-    super.key,
-    required this.itemCount,
-    required this.itemBuilder,
-    this.controller,
-  });
-
-  final int? itemCount;
-  final IndexedWidgetBuilder itemBuilder;
-  final ExtendedPageController? controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return FlPreviewGesturePageView(
-        pageView: ExtendedImageGesturePageView.builder(
-            controller: controller,
-            itemCount: itemCount,
-            itemBuilder: itemBuilder));
-  }
-}
-
 class AssetBuilder extends StatelessWidget {
   const AssetBuilder(this.xFile, {super.key, this.isThumbnail = true});
 
@@ -47,8 +25,8 @@ class AssetBuilder extends StatelessWidget {
         if (imageProvider != null) {
           return ExtendedImageWithImagePicker(imageProvider,
               mode: isThumbnail
-                  ? ExtendedImageMode.gesture
-                  : ExtendedImageMode.none,
+                  ? ExtendedImageMode.none
+                  : ExtendedImageMode.gesture,
               initGestureConfigHandler: !isThumbnail
                   ? null
                   : (ExtendedImageState state) => GestureConfig(
