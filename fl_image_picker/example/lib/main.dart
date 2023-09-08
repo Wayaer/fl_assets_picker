@@ -31,7 +31,7 @@ Future<void> main() async {
 }
 
 void flImagePickerInit() {
-  FlImagePicker.assetBuilder = (ExtendedXFile entity, bool isThumbnail) =>
+  FlImagePicker.assetBuilder = (entity, bool isThumbnail) =>
       AssetBuilder(entity, isThumbnail: isThumbnail);
   FlImagePicker.checkPermission = (PickerFromType fromType) async {
     if (!isMobile) return true;

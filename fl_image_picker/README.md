@@ -8,8 +8,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// 先设置 资源渲染组件（默认仅支持图片预览）
-  FlImagePicker.assetBuilder = (ExtendedXFile xFile, bool isThumbnail) =>
-      AssetBuilder(xFile, isThumbnail: isThumbnail);
+  FlImagePicker.assetBuilder = (entity, bool isThumbnail) =>
+      AssetBuilder(entity, isThumbnail: isThumbnail);
 
   /// 设置权限申请回调
   FlImagePicker.checkPermission = (PickerFromType fromType) async {
@@ -28,6 +28,25 @@ void main() {
       return permissionState.isGranted;
     }
     return false;
+  };
+
+  /// 设置多选框 点击方法预览的弹出方式
+  FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
+
+  /// 设置多选框 点击预览的UI组件
+  FlImagePicker.previewBuilder = (context, entity, allEntity) {
+    return FlPreviewGesturePageView(
+        pageView: ExtendedImageGesturePageView.builder(
+            itemCount: allEntity.length,
+            controller:
+            ExtendedPageController(initialPage: allEntity.indexOf(entity)),
+            itemBuilder: (_, int index) =>
+                FlImagePicker.assetBuilder(allEntity[index], false)));
+  };
+
+  /// 设置错误回调的提示
+  FlImagePicker.errorCallback = (String value) {
+    showToast(value);
   };
   runApp();
 }
@@ -48,10 +67,13 @@ MultipleImagePicker();
 
 void fun() {
   /// 不同picker类型选择
-  FlImagePicker.showPickerWithFormType();
+  FlImagePicker.showPickerFromType();
 
   /// 最原始的选择器
   FlImagePicker.showPicker();
+
+  /// 以上两个方法调用
+  FlImagePicker.showPickerWithFormType();
 
   /// 最原始的多选择器 只能图片多选
   FlImagePicker.showImagePickerMultiple();
