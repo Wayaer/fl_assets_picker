@@ -1,7 +1,7 @@
 name: fl_assets_picker
 description: fl_assets_picker is used to take photos of the device assets selection and camera and record videos
 version: 2.0.0
-repository: https://github.com/Wayaer/fl_assets_picker.git
+repository: https://github.com/Wayaer/fl_assets_picker/tree/main/fl_assets_picker
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
