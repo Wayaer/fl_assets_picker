@@ -1,6 +1,7 @@
-## 1.2.0
+## 2.0.0
 
-* Remove useless code
+* Breaking changes
+* Please check the redme file
 * Change the `PickerFromTypeConfig` to the `PickerFromTypeItem`
 
 ## 1.1.1
