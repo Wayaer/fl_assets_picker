@@ -5,8 +5,6 @@ import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker_android/image_picker_android.dart';
-import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 
 part 'single_image_picker.dart';
 
@@ -172,11 +170,6 @@ abstract class FlImagePicker extends StatefulWidget {
     if (permissionState) {
       switch (fromType) {
         case PickerFromType.image:
-          final ImagePickerPlatform imagePickerImplementation =
-              ImagePickerPlatform.instance;
-          if (imagePickerImplementation is ImagePickerAndroid) {
-            imagePickerImplementation.useAndroidPhotoPicker = true;
-          }
           file = await imagePicker.pickImage(source: ImageSource.gallery);
           assetType = AssetType.image;
           break;

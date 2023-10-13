@@ -129,7 +129,8 @@ class _HomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
-            log('onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}');
+            'onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}'
+                .log();
           }),
       SingleImagePicker(
           renovate: (AssetType assetType, XFile entity) async {
@@ -144,7 +145,7 @@ class _HomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(40),
               color: Colors.amberAccent),
           onChanged: (ExtendedXFile value) {
-            log('onChanged ${value.realValueStr}');
+            'onChanged ${value.realValueStr}'.log();
           }),
     ]);
   }
@@ -213,7 +214,7 @@ class _HomePage extends StatelessWidget {
               return value ?? false;
             }),
         onChanged: (List<ExtendedXFile> value) {
-          log('onChanged ${value.builder((item) => item.realValueStr)}');
+          'onChanged ${value.builder((item) => item.realValueStr)}'.log();
         });
   }
 }

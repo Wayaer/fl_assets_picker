@@ -14,7 +14,7 @@ bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
 bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
-bool get _isMobile => _isAndroid || _isIOS;
+bool get _supportable => _isAndroid || _isIOS;
 
 typedef FlAssetsPickerCheckPermission = Future<bool> Function(
     PickerFromType fromType);
@@ -189,7 +189,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     /// 资源最大占用字节
     int maxBytes = 167772160,
   }) async {
-    if (!_isMobile) return null;
+    if (!_supportable) return null;
     final pickerFromTypeConfig = await showPickerFromType(context, fromTypes);
     if (pickerFromTypeConfig == null) return null;
     AssetEntity? entity;

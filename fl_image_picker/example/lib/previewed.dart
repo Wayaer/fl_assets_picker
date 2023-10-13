@@ -61,5 +61,6 @@ class AssetBuilder extends StatelessWidget {
       kIsWeb ||
       (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.android ||
-              defaultTargetPlatform == TargetPlatform.iOS));
+              defaultTargetPlatform == TargetPlatform.iOS ||
+              defaultTargetPlatform == TargetPlatform.macOS));
 }
