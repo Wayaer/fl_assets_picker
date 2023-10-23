@@ -4,22 +4,22 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.18.0 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
   flutter: '>=3.13.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_waya: ^8.3.0
+  flutter_waya: ^8.4.0
   permission_handler: ^11.0.1
-  flutter_image_compress: ^2.0.4
+  flutter_image_compress: ^2.1.0
   fl_video: ^1.3.2
   extended_image: ^8.1.1
   fl_image_picker:
     path: ../
 
 dev_dependencies:
-  flutter_lints: ^2.0.3
+  flutter_lints: ^3.0.0
 
 flutter:
   uses-material-design: true
