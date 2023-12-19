@@ -1,7 +1,12 @@
+## 3.0.0-dev.0
+
+* Update dependencies
+* Migrate 3.16.0
+
 ## 2.0.0
 
 * Breaking changes
-* Please check the redme file
+* Please check the readme file
 * Change the `PickerFromTypeConfig` to the `PickerFromTypeItem`
 
 ## 1.1.1

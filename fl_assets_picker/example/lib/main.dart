@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:example/previewed.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
@@ -43,8 +44,12 @@ void flAssetsPickerInit() {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
-        bool resultStorage = (await Permission.storage.request()).isGranted;
-        return resultStorage;
+        final androidInfo = await DeviceInfoPlugin().androidInfo;
+        if (androidInfo.version.sdkInt < 33) {
+          return (await Permission.storage.request()).isGranted;
+        }
+        return (await Permission.photos.request()).isGranted &&
+            (await Permission.videos.request()).isGranted;
       }
       return false;
     } else if (fromType == PickerFromType.camera) {

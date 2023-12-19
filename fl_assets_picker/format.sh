@@ -1,2 +1,2 @@
-dart format lib
+flpdart format lib
 dart format example/lib
