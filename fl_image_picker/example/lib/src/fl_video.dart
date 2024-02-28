@@ -44,11 +44,13 @@ class FlVideoPlayerWithImagePicker extends StatefulWidget {
   /// 根据 [value] 不同的值 转换不同的 [VideoPlayerController]
   static VideoPlayerController? buildVideoPlayerController(dynamic value) {
     if (value != null) {
-      if (value is String && value.startsWith('http')) {
-        return VideoPlayerController.networkUrl(Uri.parse(value));
-      } else if (value is File) {
+      if (value is File) {
         return VideoPlayerController.file(value);
       } else if (value is String) {
+        if (value.startsWith('http') || value.startsWith('blob:http')) {
+          return VideoPlayerController.networkUrl(Uri.parse(value));
+        }
+      } else {
         return VideoPlayerController.asset(value);
       }
     }

@@ -6,4 +6,4 @@
 
 ## [fl_image_picker](https://github.com/Wayaer/fl_assets_picker/tree/main/fl_image_picker)
 
-- 简单封装 `image_picker`,`video_player`,支持 android、ios、macos、windows、linux,（视频预览仅支持android和ios）
+- 简单封装 `image_picker`,`video_player`,支持 android、ios、macos、windows、linux、web,（视频预览仅支持android、ios、web）

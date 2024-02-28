@@ -6,6 +6,6 @@ flutter packages get
 
 echo "开始构建 web"
 
-flutter build web --base-href '/fl_image_picker/example/app/web/'
+flutter build web --base-href '/fl_assets_picker/fl_image_picker/example/app/web/'
 
 mv 'build/web' 'app/web'

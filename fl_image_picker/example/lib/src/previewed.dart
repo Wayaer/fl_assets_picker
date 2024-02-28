@@ -47,7 +47,7 @@ class AssetBuilder extends StatelessWidget {
         } else if (supportable) {
           final controller =
               FlVideoPlayerWithImagePicker.buildVideoPlayerController(
-                  xFile.previewed);
+                  xFile.realValue);
           if (controller != null) {
             return FlVideoPlayerWithImagePicker(controller: controller);
           }
