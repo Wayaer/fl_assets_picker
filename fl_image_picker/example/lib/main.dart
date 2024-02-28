@@ -1,7 +1,5 @@
-import 'dart:io';
-
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:example/previewed.dart';
+import 'package:example/src/previewed.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,6 +14,8 @@ bool get isAndroid => defaultTargetPlatform == TargetPlatform.android;
 bool get isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 
 bool get isMobile => isAndroid || isIOS;
+
+bool get isWeb => kIsWeb;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +35,7 @@ void flImagePickerInit() {
   FlImagePicker.assetBuilder = (entity, bool isThumbnail) =>
       AssetBuilder(entity, isThumbnail: isThumbnail);
   FlImagePicker.checkPermission = (PickerFromType fromType) async {
-    if (!isMobile) return true;
+    if (isWeb || !isMobile) return true;
     if (fromType == PickerFromType.image || fromType == PickerFromType.video) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
@@ -125,7 +125,7 @@ class _HomePage extends StatelessWidget {
           fromTypes: fromTypes,
           renovate: (AssetType assetType, XFile entity) async {
             if (assetType == AssetType.image) {
-              return await compressImage(File(entity.path));
+              return await compressImage(entity);
             }
             return null;
           },
@@ -140,7 +140,7 @@ class _HomePage extends StatelessWidget {
       SingleImagePicker(
           renovate: (AssetType assetType, XFile entity) async {
             if (assetType == AssetType.image) {
-              return await compressImage(File(entity.path));
+              return await compressImage(entity);
             }
             return null;
           },
@@ -186,7 +186,7 @@ class _HomePage extends StatelessWidget {
         fromTypes: fromTypes,
         renovate: (AssetType assetType, XFile entity) async {
           if (assetType == AssetType.image) {
-            return await compressImage(File(entity.path));
+            return await compressImage(entity);
           }
           return null;
         },
@@ -225,12 +225,9 @@ class _HomePage extends StatelessWidget {
 }
 
 /// 图片压缩
-Future<Uint8List?> compressImage(File file) async {
-  if (kIsWeb ||
-      (!kIsWeb &&
-          (defaultTargetPlatform == TargetPlatform.android ||
-              defaultTargetPlatform == TargetPlatform.iOS))) {
-    final fileName = file.path.removePrefix(file.parent.path);
+Future<Uint8List?> compressImage(XFile file) async {
+  if (isWeb || (!isWeb && isMobile)) {
+    final fileName = file.path.removePrefix(file.path);
     final suffix = fileName.split('.').last.toLowerCase();
     CompressFormat? format;
     if (suffix == 'jpg' || suffix == 'jpeg') {

@@ -1,6 +1,7 @@
 ## fl_image_picker
 
 - 简单封装 `image_picker`
+- Web [image_picker](https://wayaer.github.io/fl_assets_picker/fl_image_picker/example/app/web/index.html#/)
 
 ```dart
 
@@ -53,7 +54,6 @@ void main() {
 
 ```
 
-
 ```dart
 /// 单选
 SingleImagePicker();
@@ -63,6 +63,7 @@ MultipleImagePicker();
 ```
 
 直接调用方法选择
+
 ```dart
 
 void fun() {

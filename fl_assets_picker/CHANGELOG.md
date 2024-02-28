@@ -1,7 +1,7 @@
-## 3.0.0-dev.0
+## 3.0.0
 
 * Update dependencies
-* Migrate 3.16.0
+* Migrate 3.19.0
 
 ## 2.0.0
 

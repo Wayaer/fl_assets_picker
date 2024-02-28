@@ -93,7 +93,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
   }
 
   Widget buildEntity(ExtendedXFile entity) {
-    if (entity.previewed == null && entity.fileAsync == null) {
+    if (entity.previewed == null) {
       return widget.itemConfig.pick;
     }
     return FlImagePicker.assetBuilder(entity, true);

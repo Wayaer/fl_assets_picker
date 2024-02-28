@@ -113,7 +113,7 @@ abstract class FlImagePicker extends StatefulWidget {
     if (value is File) {
       return FileImage(value);
     } else if (value is String) {
-      if (value.startsWith('http')) {
+      if (value.startsWith('http') || value.startsWith('blob:http')) {
         return NetworkImage(value);
       } else {
         return AssetImage(value);
@@ -129,17 +129,12 @@ abstract class FlImagePicker extends StatefulWidget {
     BuildContext context, {
     /// 选择框提示item
     List<PickerFromTypeItem> fromTypes = defaultPickerFromTypeItem,
-
-    /// 资源最大占用字节
     int maxBytes = 167772160,
   }) async {
     final config = await showPickerFromType(context, fromTypes);
     if (config == null) return null;
     final entity = await showPicker(config.fromType);
-    if (entity == null) {
-      errorCallback?.call('无法获取该资源');
-      return null;
-    }
+    if (entity == null) return null;
     final fileBytes = await entity.readAsBytes();
     if (fileBytes.length > maxBytes) {
       errorCallback?.call('最大选择${_toSize(maxBytes)}');
@@ -189,15 +184,13 @@ abstract class FlImagePicker extends StatefulWidget {
           break;
       }
       if (file != null) {
-        final mimeType = lookupMimeType(file.path);
-        if (mimeType != null) {
-          if (mimeType.startsWith('video')) {
-            assetType = AssetType.video;
-          } else if (mimeType.startsWith('image')) {
-            assetType = AssetType.image;
-          }
+        final mimeType = file.mimeType;
+        if (mimeType?.startsWith('video') ?? false) {
+          assetType = AssetType.video;
+        } else if (mimeType?.startsWith('image') ?? false) {
+          assetType = AssetType.image;
         }
-        return file.toExtended(assetType, mimeType: mimeType);
+        return file.toExtended(assetType);
       }
     }
     return null;
@@ -246,10 +239,8 @@ class ImagePickerController with ChangeNotifier {
   /// 选择图片
   Future<ExtendedXFile?> pick(PickerFromType fromType) async {
     final entity = await FlImagePicker.showPicker(fromType);
-    if (entity != null) {
-      if (!allEntity.contains(entity)) {
-        return entity.toRenovated(_assetsPicker.renovate);
-      }
+    if (entity != null && !allEntity.contains(entity)) {
+      return entity.toRenovated(_assetsPicker.renovate);
     }
     return null;
   }
