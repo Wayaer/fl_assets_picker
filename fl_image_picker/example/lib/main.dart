@@ -1,12 +1,12 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:example/src/previewed.dart';
 import 'package:extended_image/extended_image.dart';
+import 'package:fl_extended/fl_extended.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:flutter_waya/flutter_waya.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 bool get isAndroid => defaultTargetPlatform == TargetPlatform.android;
@@ -21,8 +21,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   flImagePickerInit();
   runApp(MaterialApp(
-      navigatorKey: GlobalWayUI().navigatorKey,
-      scaffoldMessengerKey: GlobalWayUI().scaffoldMessengerKey,
+      navigatorKey: FlExtended().navigatorKey,
+      scaffoldMessengerKey: FlExtended().scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(useMaterial3: true),
       darkTheme: ThemeData.dark(useMaterial3: true),
