@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,15 +18,29 @@ bool get _supportable => _isAndroid || _isIOS;
 typedef FlAssetsPickerCheckPermission = Future<bool> Function(
     PickerFromType fromType);
 
-typedef FlAssetsPickerErrorCallback = void Function(String erroe);
+typedef FlAssetsPickerErrorCallback = void Function(ErrorDes des);
 
 typedef PickerFromTypeBuilder = Widget Function(
     BuildContext context, List<PickerFromTypeItem> fromTypes);
 
-typedef FlAssetFileRenovate<T> = Future<T> Function(AssetEntity entity);
+typedef FlAssetFileRenovate = Future<dynamic> Function(AssetEntity entity);
 
 typedef DeletionConfirmation = Future<bool> Function(
     ExtendedAssetEntity entity);
+
+enum ErrorDes {
+  /// 超过最大字节
+  maxBytes,
+
+  /// 超过最大数量
+  maxCount,
+
+  /// 超过最大视频数量
+  maxVideoCount,
+
+  /// 未读取到资源
+  none,
+}
 
 class AssetsPickerItemConfig {
   const AssetsPickerItemConfig(
@@ -112,7 +125,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
           showCupertinoModalPopup(context: context, builder: (_) => widget);
 
   /// 错误消息回调
-  static PickerErrorCallback? errorCallback;
+  static FlAssetsPickerErrorCallback? errorCallback;
 
   const FlAssetsPicker({
     super.key,
@@ -233,15 +246,15 @@ abstract class FlAssetsPicker extends StatefulWidget {
     if (entity == null) return null;
     final file = await entity.file;
     if (file == null) {
-      errorCallback?.call('无法获取该资源');
+      errorCallback?.call(ErrorDes.maxBytes);
       return null;
     }
     final fileBytes = file.readAsBytesSync();
     if (fileBytes.length > maxBytes) {
-      errorCallback?.call('最大选择${_toSize(maxBytes)}');
+      errorCallback?.call(ErrorDes.maxBytes);
       return null;
     }
-    return entity.toExtended(renovate: renovate);
+    return await entity.toExtended(renovate: renovate);
   }
 
   /// show 选择弹窗
@@ -314,23 +327,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
           pageRouteBuilder: pageRouteBuilder);
     }
     return null;
-  }
-
-  /// int 字节转 k MB GB
-  static String _toSize(int size) {
-    if (size < 1024) {
-      return '${size}B';
-    } else if (size >= 1024 && size < pow(1024, 2)) {
-      size = (size / 10.24).round();
-      return '${size / 100}KB';
-    } else if (size >= pow(1024, 2) && size < pow(1024, 3)) {
-      size = (size / (pow(1024, 2) * 0.01)).round();
-      return '${size / 100}MB';
-    } else if (size >= pow(1024, 3) && size < pow(1024, 4)) {
-      size = (size / (pow(1024, 3) * 0.01)).round();
-      return '${size / 100}GB';
-    }
-    return size.toString();
   }
 }
 
@@ -407,7 +403,7 @@ class AssetsPickerController with ChangeNotifier {
   Future<void> pickFromType(BuildContext context) async {
     if (_assetsPicker.maxCount > 1 &&
         allEntity.length >= _assetsPicker.maxCount) {
-      FlAssetsPicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
+      FlAssetsPicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
     final type = await FlAssetsPicker.showPickerFromType(
@@ -437,8 +433,7 @@ class AssetsPickerController with ChangeNotifier {
           for (var entity in assetsEntryList) {
             if (entity.type == AssetType.video) videos.add(entity);
             if (videos.length > _assetsPicker.maxVideoCount) {
-              FlAssetsPicker.errorCallback
-                  ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
+              FlAssetsPicker.errorCallback?.call(ErrorDes.maxVideoCount);
               continue;
             } else {
               allEntity.add(entity);
@@ -465,8 +460,7 @@ class AssetsPickerController with ChangeNotifier {
             final videos =
                 allEntity.where((element) => element.type == AssetType.video);
             if (videos.length >= _assetsPicker.maxVideoCount) {
-              FlAssetsPicker.errorCallback
-                  ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
+              FlAssetsPicker.errorCallback?.call(ErrorDes.maxVideoCount);
               return;
             }
             allEntity.add(assetsEntry);

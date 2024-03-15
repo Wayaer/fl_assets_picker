@@ -9,7 +9,7 @@ class SingleImagePicker extends FlImagePicker {
     super.renovate,
     super.itemConfig = const ImagePickerItemConfig(),
     this.initialData,
-  }) : super(maxCount: 1, maxVideoCount: 0);
+  }) : super(maxCount: 1, maxVideoCount: 1);
 
   /// 默认初始资源
   final ExtendedXFile? initialData;

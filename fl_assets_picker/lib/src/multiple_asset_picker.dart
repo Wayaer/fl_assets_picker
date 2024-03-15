@@ -42,8 +42,6 @@ typedef PickerIconBuilder = Widget Function();
 
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
-typedef PickerErrorCallback = void Function(String msg);
-
 typedef MultiplePickerItemBuilder = Widget Function(
     ExtendedAssetEntity item, int index);
 
@@ -250,7 +248,7 @@ class _MultipleAssetPickerState extends State<MultipleAssetPicker> {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsItem = controller.allEntity;
     if (assetsItem.length >= widget.maxCount) {
-      FlAssetsPicker.errorCallback?.call('最多选择${widget.maxCount}个');
+      FlAssetsPicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
     controller.pickFromType(context);

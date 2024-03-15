@@ -68,8 +68,21 @@ void flAssetsPickerInit() {
             itemBuilder: (_, int index) =>
                 FlAssetsPicker.assetBuilder(allEntity[index], false)));
   };
-  FlAssetsPicker.errorCallback = (String value) {
-    showToast(value);
+  FlAssetsPicker.errorCallback = (ErrorDes des) {
+    switch (des) {
+      case ErrorDes.maxBytes:
+        showToast('资源过大');
+        break;
+      case ErrorDes.maxCount:
+        showToast('超过最大数量');
+        break;
+      case ErrorDes.maxVideoCount:
+        showToast('超过最大视频数量');
+        break;
+      case ErrorDes.none:
+        showToast('未获取都资源');
+        break;
+    }
   };
 }
 
@@ -122,7 +135,7 @@ class _HomePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
-              'onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}'
+              'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
                   .log();
             }),
         SingleAssetPicker(
@@ -143,7 +156,8 @@ class _HomePage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(40),
                 color: Colors.amberAccent),
             onChanged: (ExtendedAssetEntity value) {
-              'onChanged ${value.realValueStr}'.log();
+              'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
+                  .log();
             }),
       ]);
 

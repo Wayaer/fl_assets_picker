@@ -4,7 +4,7 @@ import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class ExtendedAssetEntity<T> extends AssetEntity {
+class ExtendedAssetEntity extends AssetEntity {
   ExtendedAssetEntity.fromPreviewed({
     required this.previewed,
     super.width = 0,
@@ -46,11 +46,11 @@ class ExtendedAssetEntity<T> extends AssetEntity {
   /// 原始缩略图数据 bytes
   final Uint8List? thumbnailDataAsync;
 
-  /// file
+  /// 转换为 fileAsync
   final File? fileAsync;
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  final T? renovated;
+  final dynamic renovated;
 
   String? get realValueStr => previewed ?? fileAsync?.path;
 
@@ -90,9 +90,9 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
 
 extension ExtensionAssetEntity on AssetEntity {
   ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
-  Future<ExtendedAssetEntity> toExtended<T>(
-      {FlAssetFileRenovate<T>? renovate}) async {
-    return ExtendedAssetEntity<T>(
+  Future<ExtendedAssetEntity> toExtended(
+      {FlAssetFileRenovate? renovate}) async {
+    return ExtendedAssetEntity(
         thumbnailDataAsync: await thumbnailData,
         fileAsync: await file,
         renovated: await renovate?.call(this),

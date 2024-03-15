@@ -15,7 +15,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     this.builder,
     this.initialData,
     this.allowDelete = true,
-  }) : super(maxCount: 1, maxVideoCount: 0);
+  }) : super(maxCount: 1, maxVideoCount: 1);
 
   /// 是否显示删除按钮
   final bool allowDelete;
@@ -108,7 +108,7 @@ class _SingleAssetPickerState extends State<SingleAssetPicker> {
   }
 
   Widget entryBuild(ExtendedAssetEntity entity) {
-    if (entity.previewed == null && entity.fileAsync == null) {
+    if (entity.realValue == null) {
       return widget.itemConfig.pick;
     }
     return FlAssetsPicker.assetBuilder(entity, true);

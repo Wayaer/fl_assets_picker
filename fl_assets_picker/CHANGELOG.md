@@ -1,3 +1,8 @@
+## 3.0.1
+
+* Fixed an issue with `SingleAssetPicker` not showing
+* Error callback changed to enum
+
 ## 3.0.0
 
 * Update dependencies
