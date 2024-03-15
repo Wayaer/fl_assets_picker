@@ -65,8 +65,18 @@ void flImagePickerInit() {
             itemBuilder: (_, int index) =>
                 FlImagePicker.assetBuilder(allEntity[index], false)));
   };
-  FlImagePicker.errorCallback = (String value) {
-    showToast(value);
+  FlImagePicker.errorCallback = (ErrorDes des) {
+    switch (des) {
+      case ErrorDes.maxBytes:
+        showToast('资源过大');
+        break;
+      case ErrorDes.maxCount:
+        showToast('超过最大数量');
+        break;
+      case ErrorDes.maxVideoCount:
+        showToast('超过最大视频数量');
+        break;
+    }
   };
 }
 

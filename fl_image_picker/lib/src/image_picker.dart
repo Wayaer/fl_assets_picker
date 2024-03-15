@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -25,6 +24,17 @@ enum AssetType {
 
   /// The asset is a video file.
   video,
+}
+
+enum ErrorDes {
+  /// 超过最大字节
+  maxBytes,
+
+  /// 超过最大数量
+  maxCount,
+
+  /// 超过最大视频数量
+  maxVideoCount,
 }
 
 typedef FlAssetBuilder = Widget Function(
@@ -109,6 +119,7 @@ abstract class FlImagePicker extends StatefulWidget {
   ///
   final ImagePickerItemConfig itemConfig;
 
+  /// value 转换为 [ImageProvider]
   static ImageProvider? buildImageProvider(dynamic value) {
     if (value is File) {
       return FileImage(value);
@@ -137,7 +148,7 @@ abstract class FlImagePicker extends StatefulWidget {
     if (entity == null) return null;
     final fileBytes = await entity.readAsBytes();
     if (fileBytes.length > maxBytes) {
-      errorCallback?.call('最大选择${_toSize(maxBytes)}');
+      errorCallback?.call(ErrorDes.maxBytes);
       return null;
     }
     return entity;
@@ -203,23 +214,6 @@ abstract class FlImagePicker extends StatefulWidget {
     if (permissionState) return await imagePicker.pickMultiImage();
     return null;
   }
-
-  /// int 字节转 k MB GB
-  static String _toSize(int size) {
-    if (size < 1024) {
-      return '${size}B';
-    } else if (size >= 1024 && size < pow(1024, 2)) {
-      size = (size / 10.24).round();
-      return '${size / 100}KB';
-    } else if (size >= pow(1024, 2) && size < pow(1024, 3)) {
-      size = (size / (pow(1024, 2) * 0.01)).round();
-      return '${size / 100}MB';
-    } else if (size >= pow(1024, 3) && size < pow(1024, 4)) {
-      size = (size / (pow(1024, 3) * 0.01)).round();
-      return '${size / 100}GB';
-    }
-    return size.toString();
-  }
 }
 
 class ImagePickerController with ChangeNotifier {
@@ -246,10 +240,10 @@ class ImagePickerController with ChangeNotifier {
   }
 
   /// 弹窗选择类型
-  Future<void> pickFromType(BuildContext context, {bool mounted = true}) async {
+  Future<void> pickFromType(BuildContext context) async {
     if (_assetsPicker.maxCount > 1 &&
         allEntity.length >= _assetsPicker.maxCount) {
-      FlImagePicker.errorCallback?.call('最多添加${_assetsPicker.maxCount}个资源');
+      FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
     final fromTypeConfig = await FlImagePicker.showPickerFromType(
@@ -262,8 +256,7 @@ class ImagePickerController with ChangeNotifier {
           .where((element) => element.type == AssetType.video)
           .toList();
       if (videos.length >= _assetsPicker.maxVideoCount) {
-        FlImagePicker.errorCallback
-            ?.call('最多添加${_assetsPicker.maxVideoCount}个视频');
+        FlImagePicker.errorCallback?.call(ErrorDes.maxVideoCount);
         return;
       } else {
         allEntity.add(entity);

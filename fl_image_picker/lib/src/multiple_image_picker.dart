@@ -42,12 +42,12 @@ typedef PickerIconBuilder = Widget Function();
 
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
 
-typedef PickerErrorCallback = void Function(String msg);
+typedef PickerErrorCallback = void Function(ErrorDes msg);
 
 typedef MultiplePickerItemBuilder = Widget Function(
     ExtendedXFile item, int index);
 
-class MultipleImagePicker extends FlImagePicker {
+class MultipleImagePicker<T> extends FlImagePicker {
   const MultipleImagePicker({
     super.key,
     this.onChanged,
@@ -145,7 +145,7 @@ class MultipleImagePicker extends FlImagePicker {
   }
 }
 
-class _MultipleImagePickerState extends State<MultipleImagePicker> {
+class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
   late ImagePickerController controller;
 
   @override
@@ -245,10 +245,10 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsEntry = controller.allEntity;
     if (assetsEntry.length >= widget.maxCount) {
-      FlImagePicker.errorCallback?.call('最多选择${widget.maxCount}个');
+      FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    controller.pickFromType(context, mounted: mounted);
+    controller.pickFromType(context);
   }
 
   /// 选择框

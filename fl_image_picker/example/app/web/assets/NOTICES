@@ -7202,9 +7202,9 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
+fl_extended
 fl_image_picker
 fl_video
-flutter_waya
 
 MIT License
 
@@ -7465,6 +7465,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 flutter_image_compress
 flutter_image_compress_common
 flutter_image_compress_macos
+flutter_image_compress_ohos
 flutter_image_compress_platform_interface
 flutter_image_compress_web
 

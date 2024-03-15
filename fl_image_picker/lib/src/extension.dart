@@ -1,9 +1,10 @@
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/material.dart';
 
-typedef FlAssetFileRenovate<T> = Future<T> Function(AssetType type, XFile file);
+typedef FlAssetFileRenovate = Future<dynamic> Function(
+    AssetType type, XFile file);
 
-class ExtendedXFile<T> extends XFile {
+class ExtendedXFile extends XFile {
   ExtendedXFile.fromPreviewed(this.previewed, this.type)
       : renovated = null,
         isLocalData = false,
@@ -29,7 +30,7 @@ class ExtendedXFile<T> extends XFile {
   final String? previewed;
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  final T? renovated;
+  final dynamic renovated;
 
   String? get realValueStr => previewed ?? path;
 
@@ -37,9 +38,8 @@ class ExtendedXFile<T> extends XFile {
 }
 
 extension ExtensionExtendedXFile on ExtendedXFile {
-  Future<ExtendedXFile> toRenovated<T>(
-          FlAssetFileRenovate<T>? renovate) async =>
-      ExtendedXFile<T>(path, type, renovated: await renovate?.call(type, this));
+  Future<ExtendedXFile> toRenovated(FlAssetFileRenovate? renovate) async =>
+      ExtendedXFile(path, type, renovated: await renovate?.call(type, this));
 
   /// previewed > renovated > path
   ImageProvider? toImageProvider() {
@@ -57,7 +57,7 @@ extension ExtensionExtendedXFile on ExtendedXFile {
 
 extension ExtensionXFile on XFile {
   ///  to [ExtendedXFile] and renovate [XFile];
-  ExtendedXFile toExtended<T>(AssetType type) => ExtendedXFile<T>(path, type);
+  ExtendedXFile toExtended(AssetType type) => ExtendedXFile(path, type);
 }
 
 enum ImageCroppingQuality {

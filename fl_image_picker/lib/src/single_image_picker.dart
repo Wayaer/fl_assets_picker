@@ -93,7 +93,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
   }
 
   Widget buildEntity(ExtendedXFile entity) {
-    if (entity.previewed == null) {
+    if (entity.realValue == null) {
       return widget.itemConfig.pick;
     }
     return FlImagePicker.assetBuilder(entity, true);
@@ -101,7 +101,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
 
   void pickerAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    controller.pickFromType(context, mounted: mounted);
+    controller.pickFromType(context);
   }
 
   @override
