@@ -7,7 +7,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     super.key,
     this.onChanged,
     super.enablePicker = true,
-    super.fromRequestTypes = defaultPickerFromTypeItem,
+    super.actions = defaultPickerActions,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
     super.renovate,

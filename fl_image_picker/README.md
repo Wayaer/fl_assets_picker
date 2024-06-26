@@ -13,9 +13,9 @@ void main() {
       AssetBuilder(entity, isThumbnail: isThumbnail);
 
   /// 设置权限申请回调
-  FlImagePicker.checkPermission = (PickerFromType fromType) async {
+  FlImagePicker.checkPermission = (PickerOptionalActions action) async {
     if (!isMobile) return true;
-    if (fromType == PickerFromType.image || fromType == PickerFromType.video) {
+    if (action == PickerOptionalActions.image || action == PickerOptionalActions.video) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -23,8 +23,8 @@ void main() {
         return resultStorage;
       }
       return false;
-    } else if (fromType == PickerFromType.takePictures ||
-        fromType == PickerFromType.recording) {
+    } else if (action == PickerOptionalActions.takePictures ||
+        action == PickerOptionalActions.recording) {
       final permissionState = await Permission.camera.request();
       return permissionState.isGranted;
     }
@@ -78,7 +78,7 @@ MultipleImagePicker();
 
 void fun() {
   /// 不同picker类型选择
-  FlImagePicker.showPickerFromType();
+  FlImagePicker.showPickerOptionalActions();
 
   /// 最原始的选择器
   FlImagePicker.showPicker();

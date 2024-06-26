@@ -1,3 +1,10 @@
+## 4.0.0
+
+* Change the `PickerFromTypeItem` to the `PickerActions`
+* Change the `PickerFromType` to the `PickerOptionalActions`
+* Change the `fromTypes` to the `actions`
+* Fix known issues
+
 ## 3.0.1
 
 * Fixed an issue with `SingleAssetPicker` not showing

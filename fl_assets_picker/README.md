@@ -12,9 +12,9 @@ void main() {
       AssetBuilder(entity, isThumbnail: isThumbnail);
 
   /// 设置权限申请回调
-  FlAssetsPicker.checkPermission = (PickerFromType fromType) async {
+  FlAssetsPicker.checkPermission = (PickerOptionalActions action) async {
     if (!isMobile) return true;
-    if (fromType == PickerFromType.gallery) {
+    if (action == PickerOptionalActions.gallery) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -22,7 +22,7 @@ void main() {
         return resultStorage;
       }
       return false;
-    } else if (fromType == PickerFromType.camera) {
+    } else if (action == PickerOptionalActions.camera) {
       final permissionState = await Permission.camera.request();
       return permissionState.isGranted;
     }
@@ -79,7 +79,7 @@ MultipleImagePicker();
 
 void fun() {
   /// 不同picker类型选择
-  FlAssetsPicker.showPickerFromType();
+  FlAssetsPicker.showPickerOptionalActions();
 
   /// 最原始的资源选择器
   FlAssetsPicker.showPickerAssets();

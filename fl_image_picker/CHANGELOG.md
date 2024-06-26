@@ -1,3 +1,10 @@
+## 1.0.0
+
+* Change the `PickerFromTypeItem` to the `PickerActions`
+* Change the `PickerFromType` to the `PickerOptionalActions`
+* Change the `fromTypes` to the `actions`
+* Fix known issues
+
 ## 0.1.2
 
 * Fixed an issue with `SingleImagePicker` not showing

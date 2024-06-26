@@ -1,4 +1,4 @@
-- `video_player` 使用了 [fl_video](https://pub.dev/packages/fl_video)
+- `video_player` 使用 [fl_video](https://pub.dev/packages/fl_video)
 
 ## [fl_assets_picker](https://github.com/Wayaer/fl_assets_picker/tree/main/fl_assets_picker)
 

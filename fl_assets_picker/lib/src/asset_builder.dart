@@ -2,23 +2,23 @@ import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class PickerFromTypeItem {
-  const PickerFromTypeItem(
-      {required this.fromType,
+class PickerActions {
+  const PickerActions(
+      {required this.action,
       required this.text,
       this.requestType = RequestType.common});
 
   /// 选择来源
-  final PickerFromType fromType;
+  final PickerOptionalActions action;
 
   /// 显示的文字
   final Widget text;
 
-  /// [PickerFromType.values];
+  /// [PickerOptionalActions.values];
   final RequestType requestType;
 }
 
-enum PickerFromType {
+enum PickerOptionalActions {
   /// 从图库中选择
   gallery,
 
@@ -29,17 +29,17 @@ enum PickerFromType {
   cancel,
 }
 
-const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
-  PickerFromTypeItem(
-      fromType: PickerFromType.gallery,
+const List<PickerActions> defaultPickerActions = [
+  PickerActions(
+      action: PickerOptionalActions.gallery,
       text: Text('图库选择'),
       requestType: RequestType.image),
-  PickerFromTypeItem(
-      fromType: PickerFromType.camera,
+  PickerActions(
+      action: PickerOptionalActions.camera,
       text: Text('相机拍摄'),
       requestType: RequestType.image),
-  PickerFromTypeItem(
-      fromType: PickerFromType.cancel,
+  PickerActions(
+      action: PickerOptionalActions.cancel,
       text: Text('取消', style: TextStyle(color: Colors.red))),
 ];
 
@@ -88,10 +88,10 @@ class DefaultDeleteIcon extends StatelessWidget {
       child: icon ?? Icon(Icons.clear, size: size, color: iconColor));
 }
 
-class FlPickFromTypeBuilder extends StatelessWidget {
-  const FlPickFromTypeBuilder(this.list, {super.key});
+class FlPickerOptionalActionsBuilder extends StatelessWidget {
+  const FlPickerOptionalActionsBuilder(this.list, {super.key});
 
-  final List<PickerFromTypeItem> list;
+  final List<PickerActions> list;
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +102,7 @@ class FlPickFromTypeBuilder extends StatelessWidget {
           onPressed: () => Navigator.of(context).maybePop(element),
           isDefaultAction: false,
           child: element.text);
-      if (element.fromType != PickerFromType.cancel) {
+      if (element.action != PickerOptionalActions.cancel) {
         actions.add(entry);
       } else {
         cancelButton = entry;

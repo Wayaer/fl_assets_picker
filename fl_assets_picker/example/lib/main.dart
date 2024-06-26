@@ -38,9 +38,9 @@ Future<void> main() async {
 void flAssetsPickerInit() {
   FlAssetsPicker.assetBuilder = (entity, bool isThumbnail) =>
       AssetBuilder(entity, isThumbnail: isThumbnail);
-  FlAssetsPicker.checkPermission = (PickerFromType fromType) async {
+  FlAssetsPicker.checkPermission = (PickerOptionalActions action) async {
     if (!isMobile) return true;
-    if (fromType == PickerFromType.gallery) {
+    if (action == PickerOptionalActions.gallery) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -52,7 +52,7 @@ void flAssetsPickerInit() {
             (await Permission.videos.request()).isGranted;
       }
       return false;
-    } else if (fromType == PickerFromType.camera) {
+    } else if (action == PickerOptionalActions.camera) {
       final permissionState = await Permission.camera.request();
       return permissionState.isGranted;
     }
@@ -111,21 +111,21 @@ class _HomePage extends StatelessWidget {
   }
 
   Widget buildSingleAssetPicker(RequestType requestType) {
-    final fromRequestTypes = [
-      PickerFromTypeItem(
-          fromType: PickerFromType.gallery,
+    final actions = [
+      PickerActions(
+          action: PickerOptionalActions.gallery,
           requestType: requestType,
           text: const Text('图库选择')),
-      PickerFromTypeItem(
-          fromType: PickerFromType.camera,
+      PickerActions(
+          action: PickerOptionalActions.camera,
           requestType: requestType,
           text: const Text('相机拍摄')),
-      const PickerFromTypeItem(
-          fromType: PickerFromType.cancel, text: Text('取消'))
+      const PickerActions(
+          action: PickerOptionalActions.cancel, text: Text('取消'))
     ];
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
       SingleAssetPicker(
-          fromRequestTypes: fromRequestTypes,
+          actions: actions,
           renovate: (AssetEntity entity) async {
             final file = await entity.file;
             if (file != null) return await compressImage(file);
@@ -140,7 +140,7 @@ class _HomePage extends StatelessWidget {
                 .log();
           }),
       SingleAssetPicker(
-          fromRequestTypes: fromRequestTypes,
+          actions: actions,
           initialData: SingleAssetPicker.convertUrl(url),
           itemConfig: AssetsPickerItemConfig(
               borderRadius: BorderRadius.circular(40),
@@ -155,17 +155,17 @@ class _HomePage extends StatelessWidget {
   Widget buildMultipleAssetPicker(RequestType requestType) =>
       MultipleAssetPicker(
           initialData: MultipleAssetPicker.convertUrls(url),
-          fromRequestTypes: [
-            PickerFromTypeItem(
-                fromType: PickerFromType.gallery,
+          actions: [
+            PickerActions(
+                action: PickerOptionalActions.gallery,
                 text: const Text('图库选择'),
                 requestType: requestType),
-            PickerFromTypeItem(
-                fromType: PickerFromType.camera,
+            PickerActions(
+                action: PickerOptionalActions.camera,
                 text: const Text('相机拍摄'),
                 requestType: requestType),
-            const PickerFromTypeItem(
-                fromType: PickerFromType.cancel, text: Text('取消')),
+            const PickerActions(
+                action: PickerOptionalActions.cancel, text: Text('取消')),
           ],
           itemConfig: AssetsPickerItemConfig(
               delete: const DefaultDeleteIcon(backgroundColor: Colors.blue),

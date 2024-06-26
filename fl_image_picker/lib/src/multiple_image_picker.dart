@@ -62,7 +62,7 @@ class MultipleImagePicker<T> extends FlImagePicker {
     super.enablePicker = true,
     super.maxVideoCount = 1,
     super.maxCount = 9,
-    super.fromTypes = defaultPickerFromTypeItem,
+    super.actions = defaultPickerActions,
     super.renovate,
   });
 

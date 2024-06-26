@@ -16,12 +16,12 @@ bool get _isIOS => defaultTargetPlatform == TargetPlatform.iOS;
 bool get _supportable => _isAndroid || _isIOS;
 
 typedef FlAssetsPickerCheckPermission = Future<bool> Function(
-    PickerFromType fromType);
+    PickerOptionalActions action);
 
 typedef FlAssetsPickerErrorCallback = void Function(ErrorDes des);
 
-typedef PickerFromTypeBuilder = Widget Function(
-    BuildContext context, List<PickerFromTypeItem> fromTypes);
+typedef PickerOptionalActionsBuilder = Widget Function(
+    BuildContext context, List<PickerActions> actions);
 
 typedef FlAssetFileRenovate = Future<dynamic> Function(AssetEntity entity);
 
@@ -95,8 +95,9 @@ FlAssetBuilder _defaultFlAssetBuilder =
   return unsupported();
 };
 
-PickerFromTypeBuilder _defaultFromTypesBuilder =
-    (_, List<PickerFromTypeItem> fromTypes) => FlPickFromTypeBuilder(fromTypes);
+PickerOptionalActionsBuilder _defaultFromTypesBuilder =
+    (_, List<PickerActions> actions) =>
+        FlPickerOptionalActionsBuilder(actions);
 
 FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
     FlPreviewGesturePageView(
@@ -114,7 +115,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   static FlAssetsPickerCheckPermission? checkPermission;
 
   /// 类型来源选择器
-  static PickerFromTypeBuilder fromTypesBuilder = _defaultFromTypesBuilder;
+  static PickerOptionalActionsBuilder actionsBuilder = _defaultFromTypesBuilder;
 
   /// 资源预览UI [MultipleImagePicker] 使用
   static FlPreviewAssetsBuilder previewBuilder = _defaultPreviewBuilder;
@@ -132,7 +133,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     this.renovate,
     required this.maxVideoCount,
     required this.maxCount,
-    required this.fromRequestTypes,
+    required this.actions,
     this.itemConfig = const AssetsPickerItemConfig(),
     this.enablePicker = true,
     this.pageRouteBuilderForCameraPicker,
@@ -146,7 +147,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   final int maxCount;
 
   /// 请求类型
-  final List<PickerFromTypeItem> fromRequestTypes;
+  final List<PickerActions> actions;
 
   /// 是否开启 资源选择
   final bool enablePicker;
@@ -184,7 +185,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   static Future<ExtendedAssetEntity?> showPickerWithFormType(
     BuildContext context, {
     /// 选择框提示item
-    List<PickerFromTypeItem> fromTypes = defaultPickerFromTypeItem,
+    List<PickerActions> actions = defaultPickerActions,
 
     /// 资源选择器配置信息
     AssetPickerConfig? assetPickerConfig,
@@ -203,11 +204,12 @@ abstract class FlAssetsPicker extends StatefulWidget {
     int maxBytes = 167772160,
   }) async {
     if (!_supportable) return null;
-    final pickerFromTypeConfig = await showPickerFromType(context, fromTypes);
+    final pickerFromTypeConfig =
+        await showPickerOptionalActions(context, actions);
     if (pickerFromTypeConfig == null) return null;
     AssetEntity? entity;
-    switch (pickerFromTypeConfig.fromType) {
-      case PickerFromType.gallery:
+    switch (pickerFromTypeConfig.action) {
+      case PickerOptionalActions.gallery:
         if (context.mounted) {
           final assetsEntity = await showPickerAssets(context,
               pageRouteBuilder: pageRouteBuilderForAssetPicker,
@@ -221,7 +223,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
           return null;
         }
         break;
-      case PickerFromType.camera:
+      case PickerOptionalActions.camera:
         if (context.mounted) {
           entity = await showPickerFromCamera(context,
               pageRouteBuilder: pageRouteBuilderForCameraPicker,
@@ -258,17 +260,17 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// show 选择弹窗
-  static Future<PickerFromTypeItem?> showPickerFromType(
-      BuildContext context, List<PickerFromTypeItem> fromTypes) async {
-    PickerFromTypeItem? type;
-    final types = fromTypes.where((e) => e.fromType != PickerFromType.cancel);
+  static Future<PickerActions?> showPickerOptionalActions(
+      BuildContext context, List<PickerActions> actions) async {
+    PickerActions? type;
+    final types =
+        actions.where((e) => e.action != PickerOptionalActions.cancel);
     if (types.length == 1) {
       type = types.first;
     } else {
-      type = await showCupertinoModalPopup<PickerFromTypeItem?>(
+      type = await showCupertinoModalPopup<PickerActions?>(
           context: context,
-          builder: (BuildContext context) =>
-              fromTypesBuilder(context, fromTypes));
+          builder: (BuildContext context) => actionsBuilder(context, actions));
     }
     return type;
   }
@@ -281,7 +283,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder,
   }) async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.gallery) ?? true;
+        await checkPermission?.call(PickerOptionalActions.gallery) ?? true;
     if (permissionState && context.mounted) {
       return await AssetPicker.pickAssets(context,
           pickerConfig: pickerConfig,
@@ -300,7 +302,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     AssetPickerPageRouteBuilder<List<Asset>>? pageRouteBuilder,
   }) async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.gallery) ?? true;
+        await checkPermission?.call(PickerOptionalActions.gallery) ?? true;
     if (context.mounted && permissionState) {
       return await AssetPicker.pickAssetsWithDelegate<Asset, Path,
               PickerProvider>(context,
@@ -320,7 +322,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
         pageRouteBuilder,
   }) async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.camera) ?? true;
+        await checkPermission?.call(PickerOptionalActions.camera) ?? true;
     if (context.mounted && permissionState) {
       return await CameraPicker.pickFromCamera(context,
           pickerConfig: pickerConfig,
@@ -407,10 +409,10 @@ class AssetsPickerController with ChangeNotifier {
       FlAssetsPicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    final type = await FlAssetsPicker.showPickerFromType(
-        context, _assetsPicker.fromRequestTypes);
-    switch (type?.fromType) {
-      case PickerFromType.gallery:
+    final type = await FlAssetsPicker.showPickerOptionalActions(
+        context, _assetsPicker.actions);
+    switch (type?.action) {
+      case PickerOptionalActions.gallery:
         if (!context.mounted) return;
         List<AssetEntity> selectedAssets = [];
         int maxAssets = 1;
@@ -446,7 +448,7 @@ class AssetsPickerController with ChangeNotifier {
         }
         notifyListeners();
         break;
-      case PickerFromType.camera:
+      case PickerOptionalActions.camera:
         if (!context.mounted) return;
         final assetsEntry = await pickFromCamera(context,
             pickerConfig: _cameraConfig.copyWith(
@@ -471,7 +473,7 @@ class AssetsPickerController with ChangeNotifier {
           notifyListeners();
         }
         break;
-      case PickerFromType.cancel:
+      case PickerOptionalActions.cancel:
         break;
       default:
         break;

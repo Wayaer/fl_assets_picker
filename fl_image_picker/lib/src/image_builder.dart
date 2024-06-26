@@ -2,17 +2,17 @@ import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class PickerFromTypeItem {
-  const PickerFromTypeItem({required this.fromType, required this.text});
+class PickerActions {
+  const PickerActions({required this.action, required this.text});
 
   /// 来源
-  final PickerFromType fromType;
+  final PickerOptionalActions action;
 
   /// 显示的文字
   final Widget text;
 }
 
-enum PickerFromType {
+enum PickerOptionalActions {
   /// 仅图片
   image,
 
@@ -29,13 +29,17 @@ enum PickerFromType {
   cancel,
 }
 
-const List<PickerFromTypeItem> defaultPickerFromTypeItem = [
-  PickerFromTypeItem(fromType: PickerFromType.image, text: Text('选择图片')),
-  PickerFromTypeItem(fromType: PickerFromType.video, text: Text('选择视频')),
-  PickerFromTypeItem(fromType: PickerFromType.takePictures, text: Text('相机拍照')),
-  PickerFromTypeItem(fromType: PickerFromType.recording, text: Text('相机录像')),
-  PickerFromTypeItem(
-      fromType: PickerFromType.cancel,
+const List<PickerActions> defaultPickerActions = [
+  PickerActions(
+      action: PickerOptionalActions.image, text: Text('选择图片')),
+  PickerActions(
+      action: PickerOptionalActions.video, text: Text('选择视频')),
+  PickerActions(
+      action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
+  PickerActions(
+      action: PickerOptionalActions.recording, text: Text('相机录像')),
+  PickerActions(
+      action: PickerOptionalActions.cancel,
       text: Text('取消', style: TextStyle(color: Colors.red))),
 ];
 
@@ -114,10 +118,10 @@ class DefaultDeleteIcon extends StatelessWidget {
       child: icon ?? Icon(Icons.clear, size: size, color: iconColor));
 }
 
-class FlPickFromTypeBuilder extends StatelessWidget {
-  const FlPickFromTypeBuilder(this.list, {super.key});
+class FlPickerOptionalActionsBuilder extends StatelessWidget {
+  const FlPickerOptionalActionsBuilder(this.list, {super.key});
 
-  final List<PickerFromTypeItem> list;
+  final List<PickerActions> list;
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +132,7 @@ class FlPickFromTypeBuilder extends StatelessWidget {
           onPressed: () => Navigator.of(context).maybePop(element),
           isDefaultAction: false,
           child: element.text);
-      if (element.fromType != PickerFromType.cancel) {
+      if (element.action != PickerOptionalActions.cancel) {
         actions.add(entry);
       } else {
         cancelButton = entry;

@@ -60,7 +60,7 @@ class MultipleAssetPicker extends FlAssetsPicker {
     super.enablePicker = true,
     super.maxVideoCount = 1,
     super.maxCount = 9,
-    super.fromRequestTypes = defaultPickerFromTypeItem,
+    super.actions = defaultPickerActions,
     super.renovate,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,

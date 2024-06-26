@@ -5,7 +5,7 @@ class SingleImagePicker extends FlImagePicker {
     super.key,
     this.onChanged,
     super.enablePicker = true,
-    super.fromTypes = defaultPickerFromTypeItem,
+    super.actions = defaultPickerActions,
     super.renovate,
     super.itemConfig = const ImagePickerItemConfig(),
     this.initialData,

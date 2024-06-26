@@ -10,10 +10,10 @@ part 'single_image_picker.dart';
 part 'multiple_image_picker.dart';
 
 typedef FlImagePickerCheckPermission = Future<bool> Function(
-    PickerFromType fromType);
+    PickerOptionalActions action);
 
-typedef PickerFromTypeBuilder = Widget Function(
-    BuildContext context, List<PickerFromTypeItem> fromTypes);
+typedef PickerOptionalActionsBuilder = Widget Function(
+    BuildContext context, List<PickerActions> actions);
 
 enum AssetType {
   /// The asset is not an image, video
@@ -54,8 +54,9 @@ FlAssetBuilder _defaultFlAssetBuilder =
   return unsupported();
 };
 
-PickerFromTypeBuilder _defaultFromTypesBuilder =
-    (_, List<PickerFromTypeItem> fromTypes) => FlPickFromTypeBuilder(fromTypes);
+PickerOptionalActionsBuilder _defaultFromTypesBuilder =
+    (_, List<PickerActions> actions) =>
+        FlPickerOptionalActionsBuilder(actions);
 
 FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
     FlPreviewGesturePageView(
@@ -76,7 +77,7 @@ abstract class FlImagePicker extends StatefulWidget {
   static FlImagePickerCheckPermission? checkPermission;
 
   /// 类型来源选择器
-  static PickerFromTypeBuilder fromTypesBuilder = _defaultFromTypesBuilder;
+  static PickerOptionalActionsBuilder actionsBuilder = _defaultFromTypesBuilder;
 
   /// 资源预览UI [MultipleImagePicker] 使用
   static FlPreviewAssetsBuilder previewBuilder = _defaultPreviewBuilder;
@@ -94,7 +95,7 @@ abstract class FlImagePicker extends StatefulWidget {
     this.renovate,
     required this.maxVideoCount,
     required this.maxCount,
-    required this.fromTypes,
+    required this.actions,
     this.itemConfig = const ImagePickerItemConfig(),
     this.enablePicker = true,
   });
@@ -106,7 +107,7 @@ abstract class FlImagePicker extends StatefulWidget {
   final int maxCount;
 
   /// 请求类型
-  final List<PickerFromTypeItem> fromTypes;
+  final List<PickerActions> actions;
 
   /// 是否开启 资源选择
   final bool enablePicker;
@@ -116,7 +117,7 @@ abstract class FlImagePicker extends StatefulWidget {
   /// 资源重新编辑
   final FlAssetFileRenovate? renovate;
 
-  ///
+  /// item 样式配置
   final ImagePickerItemConfig itemConfig;
 
   /// value 转换为 [ImageProvider]
@@ -139,12 +140,12 @@ abstract class FlImagePicker extends StatefulWidget {
   static Future<ExtendedXFile?> showPickerWithFormType(
     BuildContext context, {
     /// 选择框提示item
-    List<PickerFromTypeItem> fromTypes = defaultPickerFromTypeItem,
+    List<PickerActions> actions = defaultPickerActions,
     int maxBytes = 167772160,
   }) async {
-    final config = await showPickerFromType(context, fromTypes);
+    final config = await showPickerOptionalActions(context, actions);
     if (config == null) return null;
-    final entity = await showPicker(config.fromType);
+    final entity = await showPicker(config.action);
     if (entity == null) return null;
     final fileBytes = await entity.readAsBytes();
     if (fileBytes.length > maxBytes) {
@@ -155,45 +156,45 @@ abstract class FlImagePicker extends StatefulWidget {
   }
 
   /// 不同picker类型选择
-  static Future<PickerFromTypeItem?> showPickerFromType(
-      BuildContext context, List<PickerFromTypeItem> fromTypes) async {
-    PickerFromTypeItem? type;
-    final types = fromTypes.where((e) => e.fromType != PickerFromType.cancel);
+  static Future<PickerActions?> showPickerOptionalActions(
+      BuildContext context, List<PickerActions> actions) async {
+    PickerActions? type;
+    final types =
+        actions.where((e) => e.action != PickerOptionalActions.cancel);
     if (types.length == 1) {
       type = types.first;
     } else {
-      type = await showCupertinoModalPopup<PickerFromTypeItem?>(
+      type = await showCupertinoModalPopup<PickerActions?>(
           context: context,
-          builder: (BuildContext context) =>
-              fromTypesBuilder(context, fromTypes));
+          builder: (BuildContext context) => actionsBuilder(context, actions));
     }
     return type;
   }
 
   /// show picker
-  static Future<ExtendedXFile?> showPicker(PickerFromType fromType) async {
-    final permissionState = await checkPermission?.call(fromType) ?? true;
+  static Future<ExtendedXFile?> showPicker(PickerOptionalActions action) async {
+    final permissionState = await checkPermission?.call(action) ?? true;
     XFile? file;
     AssetType assetType = AssetType.other;
     if (permissionState) {
-      switch (fromType) {
-        case PickerFromType.image:
+      switch (action) {
+        case PickerOptionalActions.image:
           file = await imagePicker.pickImage(source: ImageSource.gallery);
           assetType = AssetType.image;
           break;
-        case PickerFromType.video:
+        case PickerOptionalActions.video:
           file = await imagePicker.pickVideo(source: ImageSource.gallery);
           assetType = AssetType.video;
           break;
-        case PickerFromType.takePictures:
+        case PickerOptionalActions.takePictures:
           file = await imagePicker.pickImage(source: ImageSource.camera);
           assetType = AssetType.image;
           break;
-        case PickerFromType.recording:
+        case PickerOptionalActions.recording:
           file = await imagePicker.pickVideo(source: ImageSource.camera);
           assetType = AssetType.video;
           break;
-        case PickerFromType.cancel:
+        case PickerOptionalActions.cancel:
           break;
       }
       if (file != null) {
@@ -212,7 +213,7 @@ abstract class FlImagePicker extends StatefulWidget {
   /// show picker
   static Future<List<XFile>?> showImagePickerMultiple() async {
     final permissionState =
-        await checkPermission?.call(PickerFromType.image) ?? true;
+        await checkPermission?.call(PickerOptionalActions.image) ?? true;
     if (permissionState) return await imagePicker.pickMultiImage();
     return null;
   }
@@ -233,8 +234,8 @@ class ImagePickerController with ChangeNotifier {
   }
 
   /// 选择图片
-  Future<ExtendedXFile?> pick(PickerFromType fromType) async {
-    final entity = await FlImagePicker.showPicker(fromType);
+  Future<ExtendedXFile?> pick(PickerOptionalActions action) async {
+    final entity = await FlImagePicker.showPicker(action);
     if (entity != null && !allEntity.contains(entity)) {
       return entity.toRenovated(_assetsPicker.renovate);
     }
@@ -248,10 +249,10 @@ class ImagePickerController with ChangeNotifier {
       FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    final fromTypeConfig = await FlImagePicker.showPickerFromType(
-        context, _assetsPicker.fromTypes);
-    if (fromTypeConfig == null) return;
-    final entity = await pick(fromTypeConfig.fromType);
+    final actionConfig = await FlImagePicker.showPickerOptionalActions(
+        context, _assetsPicker.actions);
+    if (actionConfig == null) return;
+    final entity = await pick(actionConfig.action);
     if (entity == null) return;
     if (_assetsPicker.maxCount > 1) {
       var videos = allEntity
