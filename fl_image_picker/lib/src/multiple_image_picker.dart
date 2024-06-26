@@ -167,6 +167,12 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
   }
 
   @override
+  void didUpdateWidget(covariant MultipleImagePicker<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    controller.assetsPicker = widget;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final children = controller.allEntity
         .asMap()

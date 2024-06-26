@@ -57,6 +57,12 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     controller.addListener(listener);
   }
 
+  @override
+  void didUpdateWidget(covariant SingleImagePicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    controller.assetsPicker = widget;
+  }
+
   void listener() {
     if (controller.allEntity.isNotEmpty) {
       widget.onChanged?.call(controller.allEntity.first);

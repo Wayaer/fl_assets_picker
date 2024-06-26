@@ -164,6 +164,12 @@ class _MultipleAssetPickerState extends State<MultipleAssetPicker> {
     controller.addListener(listener);
   }
 
+  @override
+  void didUpdateWidget(covariant MultipleAssetPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    controller.assetsPicker = widget;
+  }
+
   void listener() {
     widget.onChanged?.call(controller.allEntity);
     if (mounted) setState(() {});

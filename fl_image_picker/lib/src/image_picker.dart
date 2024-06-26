@@ -158,12 +158,14 @@ abstract class FlImagePicker extends StatefulWidget {
   static Future<PickerFromTypeItem?> showPickerFromType(
       BuildContext context, List<PickerFromTypeItem> fromTypes) async {
     PickerFromTypeItem? type;
-    if (fromTypes.length == 1 &&
-        fromTypes.first.fromType != PickerFromType.cancel) {
-      type = fromTypes.first;
+    final types = fromTypes.where((e) => e.fromType != PickerFromType.cancel);
+    if (types.length == 1) {
+      type = types.first;
     } else {
       type = await showCupertinoModalPopup<PickerFromTypeItem?>(
-          context: context, builder: (_) => fromTypesBuilder(_, fromTypes));
+          context: context,
+          builder: (BuildContext context) =>
+              fromTypesBuilder(context, fromTypes));
     }
     return type;
   }

@@ -110,56 +110,47 @@ class _HomePage extends StatelessWidget {
         ]);
   }
 
-  Widget buildSingleAssetPicker(RequestType requestType) =>
-      Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-        SingleAssetPicker(
-            fromRequestTypes: [
-              PickerFromTypeItem(
-                  fromType: PickerFromType.gallery,
-                  requestType: requestType,
-                  text: const Text('图库选择')),
-              PickerFromTypeItem(
-                  fromType: PickerFromType.camera,
-                  requestType: requestType,
-                  text: const Text('相机拍摄')),
-              const PickerFromTypeItem(
-                  fromType: PickerFromType.cancel, text: Text('取消')),
-            ],
-            renovate: (AssetEntity entity) async {
-              final file = await entity.file;
-              if (file != null) return await compressImage(file);
-              return null;
-            },
-            initialData: SingleAssetPicker.convertUrl(url),
-            itemConfig: AssetsPickerItemConfig(
-                borderRadius: BorderRadius.circular(10),
-                color: Colors.amberAccent),
-            onChanged: (ExtendedAssetEntity value) {
-              'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
-                  .log();
-            }),
-        SingleAssetPicker(
-            fromRequestTypes: [
-              PickerFromTypeItem(
-                  fromType: PickerFromType.gallery,
-                  text: const Text('图库选择'),
-                  requestType: requestType),
-              PickerFromTypeItem(
-                  fromType: PickerFromType.camera,
-                  text: const Text('相机拍摄'),
-                  requestType: requestType),
-              const PickerFromTypeItem(
-                  fromType: PickerFromType.cancel, text: Text('取消')),
-            ],
-            initialData: SingleAssetPicker.convertUrl(url),
-            itemConfig: AssetsPickerItemConfig(
-                borderRadius: BorderRadius.circular(40),
-                color: Colors.amberAccent),
-            onChanged: (ExtendedAssetEntity value) {
-              'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
-                  .log();
-            }),
-      ]);
+  Widget buildSingleAssetPicker(RequestType requestType) {
+    final fromRequestTypes = [
+      PickerFromTypeItem(
+          fromType: PickerFromType.gallery,
+          requestType: requestType,
+          text: const Text('图库选择')),
+      PickerFromTypeItem(
+          fromType: PickerFromType.camera,
+          requestType: requestType,
+          text: const Text('相机拍摄')),
+      const PickerFromTypeItem(
+          fromType: PickerFromType.cancel, text: Text('取消'))
+    ];
+    return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
+      SingleAssetPicker(
+          fromRequestTypes: fromRequestTypes,
+          renovate: (AssetEntity entity) async {
+            final file = await entity.file;
+            if (file != null) return await compressImage(file);
+            return null;
+          },
+          initialData: SingleAssetPicker.convertUrl(url),
+          itemConfig: AssetsPickerItemConfig(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.amberAccent),
+          onChanged: (ExtendedAssetEntity value) {
+            'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
+                .log();
+          }),
+      SingleAssetPicker(
+          fromRequestTypes: fromRequestTypes,
+          initialData: SingleAssetPicker.convertUrl(url),
+          itemConfig: AssetsPickerItemConfig(
+              borderRadius: BorderRadius.circular(40),
+              color: Colors.amberAccent),
+          onChanged: (ExtendedAssetEntity value) {
+            'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
+                .log();
+          }),
+    ]);
+  }
 
   Widget buildMultipleAssetPicker(RequestType requestType) =>
       MultipleAssetPicker(
