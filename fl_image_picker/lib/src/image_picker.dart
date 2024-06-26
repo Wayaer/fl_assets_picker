@@ -55,8 +55,7 @@ FlAssetBuilder _defaultFlAssetBuilder =
 };
 
 PickerOptionalActionsBuilder _defaultFromTypesBuilder =
-    (_, List<PickerActions> actions) =>
-        FlPickerOptionalActionsBuilder(actions);
+    (_, List<PickerActions> actions) => FlPickerOptionalActionsBuilder(actions);
 
 FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
     FlPreviewGesturePageView(
@@ -136,16 +135,16 @@ abstract class FlImagePicker extends StatefulWidget {
     return null;
   }
 
-  /// 选择图片或者视频
-  static Future<ExtendedXFile?> showPickerWithFormType(
+  /// 从可选配置中选择
+  static Future<ExtendedXFile?> showPickWithOptionalActions(
     BuildContext context, {
     /// 选择框提示item
     List<PickerActions> actions = defaultPickerActions,
     int maxBytes = 167772160,
   }) async {
-    final config = await showPickerOptionalActions(context, actions);
+    final config = await showPickActions(context, actions);
     if (config == null) return null;
-    final entity = await showPicker(config.action);
+    final entity = await showPick(config.action);
     if (entity == null) return null;
     final fileBytes = await entity.readAsBytes();
     if (fileBytes.length > maxBytes) {
@@ -156,7 +155,7 @@ abstract class FlImagePicker extends StatefulWidget {
   }
 
   /// 不同picker类型选择
-  static Future<PickerActions?> showPickerOptionalActions(
+  static Future<PickerActions?> showPickActions(
       BuildContext context, List<PickerActions> actions) async {
     PickerActions? type;
     final types =
@@ -171,8 +170,8 @@ abstract class FlImagePicker extends StatefulWidget {
     return type;
   }
 
-  /// show picker
-  static Future<ExtendedXFile?> showPicker(PickerOptionalActions action) async {
+  /// show pick
+  static Future<ExtendedXFile?> showPick(PickerOptionalActions action) async {
     final permissionState = await checkPermission?.call(action) ?? true;
     XFile? file;
     AssetType assetType = AssetType.other;
@@ -210,8 +209,8 @@ abstract class FlImagePicker extends StatefulWidget {
     return null;
   }
 
-  /// show picker
-  static Future<List<XFile>?> showImagePickerMultiple() async {
+  /// show pick multiple image
+  static Future<List<XFile>?> showPickMultipleImage() async {
     final permissionState =
         await checkPermission?.call(PickerOptionalActions.image) ?? true;
     if (permissionState) return await imagePicker.pickMultiImage();
@@ -235,7 +234,7 @@ class ImagePickerController with ChangeNotifier {
 
   /// 选择图片
   Future<ExtendedXFile?> pick(PickerOptionalActions action) async {
-    final entity = await FlImagePicker.showPicker(action);
+    final entity = await FlImagePicker.showPick(action);
     if (entity != null && !allEntity.contains(entity)) {
       return entity.toRenovated(_assetsPicker.renovate);
     }
@@ -243,14 +242,14 @@ class ImagePickerController with ChangeNotifier {
   }
 
   /// 弹窗选择类型
-  Future<void> pickFromType(BuildContext context) async {
+  Future<void> pickActions(BuildContext context) async {
     if (_assetsPicker.maxCount > 1 &&
         allEntity.length >= _assetsPicker.maxCount) {
       FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    final actionConfig = await FlImagePicker.showPickerOptionalActions(
-        context, _assetsPicker.actions);
+    final actionConfig =
+        await FlImagePicker.showPickActions(context, _assetsPicker.actions);
     if (actionConfig == null) return;
     final entity = await pick(actionConfig.action);
     if (entity == null) return;

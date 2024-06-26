@@ -78,16 +78,16 @@ MultipleImagePicker();
 
 void fun() {
   /// 不同picker类型选择
-  FlImagePicker.showPickerOptionalActions();
+  FlImagePicker.showPickActions();
 
   /// 最原始的选择器
-  FlImagePicker.showPicker();
+  FlImagePicker.showPick();
 
   /// 以上两个方法调用
-  FlImagePicker.showPickerWithFormType();
+  FlImagePicker.showPickWithOptionalActions();
 
   /// 最原始的多选择器 只能图片多选
-  FlImagePicker.showImagePickerMultiple();
+  FlImagePicker.showPickMultipleImage();
 }
 
 ```

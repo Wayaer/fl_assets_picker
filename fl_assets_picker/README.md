@@ -79,14 +79,14 @@ MultipleImagePicker();
 
 void fun() {
   /// 不同picker类型选择
-  FlAssetsPicker.showPickerOptionalActions();
+  FlAssetsPicker.showPickActions();
 
   /// 最原始的资源选择器
-  FlAssetsPicker.showPickerAssets();
-  FlAssetsPicker.showPickerAssetsWithDelegate();
+  FlAssetsPicker.showPickAssets();
+  FlAssetsPicker.showPickAssetsWithDelegate();
 
   /// 从相机拍摄
-  FlAssetsPicker.showPickerFromCamera();
+  FlAssetsPicker.showPickFromCamera();
 }
 
 ```

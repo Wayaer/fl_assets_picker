@@ -55,7 +55,6 @@ class MultipleAssetPicker extends FlAssetsPicker {
     this.wrapBuilder,
     this.initialData = const [],
     this.allowDelete = true,
-    this.pickerIconBuilder,
     super.itemConfig = const AssetsPickerItemConfig(),
     super.enablePicker = true,
     super.maxVideoCount = 1,
@@ -81,10 +80,8 @@ class MultipleAssetPicker extends FlAssetsPicker {
   /// wrap UI 样式配置
   final PickerWrapBuilderConfig wrapConfig;
 
+  /// wrap 自定义
   final PickerWrapBuilder? wrapBuilder;
-
-  /// 资源选择 icon 自定义构造
-  final PickerIconBuilder? pickerIconBuilder;
 
   /// 资源渲染子元素自定义构造
   final MultiplePickerItemBuilder? itemBuilder;
@@ -257,7 +254,7 @@ class _MultipleAssetPickerState extends State<MultipleAssetPicker> {
       FlAssetsPicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    controller.pickFromType(context);
+    controller.pickActions(context);
   }
 
   /// 选择框
@@ -273,8 +270,7 @@ class _MultipleAssetPickerState extends State<MultipleAssetPicker> {
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
-    current = GestureDetector(
-        onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? current);
+    current = GestureDetector(onTap: pickerAsset, child: current);
     return current;
   }
 

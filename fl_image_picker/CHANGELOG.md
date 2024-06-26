@@ -1,3 +1,7 @@
+## 1.0.1
+
+* Remove `pickerIconBuilder` from `MultipleImagePicker`,Please use the `pick` of `itemConfig`
+
 ## 1.0.0
 
 * Change the `PickerFromTypeItem` to the `PickerActions`

@@ -30,14 +30,10 @@ enum PickerOptionalActions {
 }
 
 const List<PickerActions> defaultPickerActions = [
-  PickerActions(
-      action: PickerOptionalActions.image, text: Text('选择图片')),
-  PickerActions(
-      action: PickerOptionalActions.video, text: Text('选择视频')),
-  PickerActions(
-      action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
-  PickerActions(
-      action: PickerOptionalActions.recording, text: Text('相机录像')),
+  PickerActions(action: PickerOptionalActions.image, text: Text('选择图片')),
+  PickerActions(action: PickerOptionalActions.video, text: Text('选择视频')),
+  PickerActions(action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
+  PickerActions(action: PickerOptionalActions.recording, text: Text('相机录像')),
   PickerActions(
       action: PickerOptionalActions.cancel,
       text: Text('取消', style: TextStyle(color: Colors.red))),
@@ -63,7 +59,7 @@ class ImagePickerItemConfig {
   /// 视频预览 播放 icon
   final Widget play;
 
-  /// 添加 框的
+  /// 添加选择item
   final Widget pick;
 
   /// 删除按钮

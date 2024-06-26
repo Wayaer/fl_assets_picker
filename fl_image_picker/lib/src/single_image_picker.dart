@@ -89,7 +89,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
       current = ColoredBox(color: config.color!, child: current);
     }
     if (widget.enablePicker) {
-      current = GestureDetector(onTap: pickerAsset, child: current);
+      current = GestureDetector(onTap: pickAsset, child: current);
     }
     current = SizedBox.fromSize(size: config.size, child: current);
     if (config.borderRadius != null) {
@@ -105,9 +105,9 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     return FlImagePicker.assetBuilder(entity, true);
   }
 
-  void pickerAsset() async {
+  void pickAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
-    controller.pickFromType(context);
+    controller.pickActions(context);
   }
 
   @override

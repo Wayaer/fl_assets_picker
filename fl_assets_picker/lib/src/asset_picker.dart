@@ -62,7 +62,7 @@ class AssetsPickerItemConfig {
   /// 视频预览 播放 icon
   final Widget play;
 
-  /// 添加 框的
+  /// 添加选择item
   final Widget pick;
 
   /// 删除按钮
@@ -96,8 +96,7 @@ FlAssetBuilder _defaultFlAssetBuilder =
 };
 
 PickerOptionalActionsBuilder _defaultFromTypesBuilder =
-    (_, List<PickerActions> actions) =>
-        FlPickerOptionalActionsBuilder(actions);
+    (_, List<PickerActions> actions) => FlPickerOptionalActionsBuilder(actions);
 
 FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
     FlPreviewGesturePageView(
@@ -181,8 +180,8 @@ abstract class FlAssetsPicker extends StatefulWidget {
     return null;
   }
 
-  /// 选择图片或者视频
-  static Future<ExtendedAssetEntity?> showPickerWithFormType(
+  /// 从可选配置中选择
+  static Future<ExtendedAssetEntity?> showPickWithOptionalActions(
     BuildContext context, {
     /// 选择框提示item
     List<PickerActions> actions = defaultPickerActions,
@@ -204,14 +203,13 @@ abstract class FlAssetsPicker extends StatefulWidget {
     int maxBytes = 167772160,
   }) async {
     if (!_supportable) return null;
-    final pickerFromTypeConfig =
-        await showPickerOptionalActions(context, actions);
+    final pickerFromTypeConfig = await showPickActions(context, actions);
     if (pickerFromTypeConfig == null) return null;
     AssetEntity? entity;
     switch (pickerFromTypeConfig.action) {
       case PickerOptionalActions.gallery:
         if (context.mounted) {
-          final assetsEntity = await showPickerAssets(context,
+          final assetsEntity = await showPickAssets(context,
               pageRouteBuilder: pageRouteBuilderForAssetPicker,
               pickerConfig: AssetPickerConfig(
                   maxAssets: 1,
@@ -225,7 +223,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
         break;
       case PickerOptionalActions.camera:
         if (context.mounted) {
-          entity = await showPickerFromCamera(context,
+          entity = await showPickFromCamera(context,
               pageRouteBuilder: pageRouteBuilderForCameraPicker,
               pickerConfig: const CameraPickerConfig(
                       resolutionPreset: ResolutionPreset.high)
@@ -260,7 +258,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// show 选择弹窗
-  static Future<PickerActions?> showPickerOptionalActions(
+  static Future<PickerActions?> showPickActions(
       BuildContext context, List<PickerActions> actions) async {
     PickerActions? type;
     final types =
@@ -276,7 +274,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// 选择图片
-  static Future<List<AssetEntity>?> showPickerAssets(
+  static Future<List<AssetEntity>?> showPickAssets(
     BuildContext context, {
     bool useRootNavigator = true,
     AssetPickerConfig pickerConfig = const AssetPickerConfig(),
@@ -294,7 +292,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// 选择图片
-  static Future<List<Asset>?> showPickerAssetsWithDelegate<Asset, Path,
+  static Future<List<Asset>?> showPickAssetsWithDelegate<Asset, Path,
       PickerProvider extends AssetPickerProvider<Asset, Path>>(
     BuildContext context, {
     required AssetPickerBuilderDelegate<Asset, Path> delegate,
@@ -314,7 +312,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   }
 
   /// 通过相机拍照
-  static Future<AssetEntity?> showPickerFromCamera(
+  static Future<AssetEntity?> showPickFromCamera(
     BuildContext context, {
     bool useRootNavigator = true,
     CameraPickerConfig pickerConfig = const CameraPickerConfig(),
@@ -368,7 +366,7 @@ class AssetsPickerController with ChangeNotifier {
       {bool useRootNavigator = true,
       AssetPickerConfig? pickerConfig,
       AssetPickerPageRouteBuilder<List<AssetEntity>>? pageRouteBuilder}) async {
-    final List<AssetEntity>? assets = await FlAssetsPicker.showPickerAssets(
+    final List<AssetEntity>? assets = await FlAssetsPicker.showPickAssets(
         context,
         pickerConfig: pickerConfig ?? _assetConfig,
         useRootNavigator: useRootNavigator,
@@ -391,8 +389,7 @@ class AssetsPickerController with ChangeNotifier {
       CameraPickerConfig? pickerConfig,
       CameraPickerPageRoute<AssetEntity> Function(Widget picker)?
           pageRouteBuilder}) async {
-    final AssetEntity? entity = await FlAssetsPicker.showPickerFromCamera(
-        context,
+    final AssetEntity? entity = await FlAssetsPicker.showPickFromCamera(context,
         pickerConfig: pickerConfig ?? _cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilder);
@@ -403,14 +400,14 @@ class AssetsPickerController with ChangeNotifier {
   }
 
   /// 弹窗选择类型
-  Future<void> pickFromType(BuildContext context) async {
+  Future<void> pickActions(BuildContext context) async {
     if (_assetsPicker.maxCount > 1 &&
         allEntity.length >= _assetsPicker.maxCount) {
       FlAssetsPicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    final type = await FlAssetsPicker.showPickerOptionalActions(
-        context, _assetsPicker.actions);
+    final type =
+        await FlAssetsPicker.showPickActions(context, _assetsPicker.actions);
     switch (type?.action) {
       case PickerOptionalActions.gallery:
         if (!context.mounted) return;

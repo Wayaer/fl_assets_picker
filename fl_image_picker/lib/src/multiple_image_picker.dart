@@ -58,7 +58,6 @@ class MultipleImagePicker<T> extends FlImagePicker {
     this.wrapBuilder,
     this.initialData = const [],
     this.allowDelete = true,
-    this.pickerIconBuilder,
     super.enablePicker = true,
     super.maxVideoCount = 1,
     super.maxCount = 9,
@@ -81,10 +80,8 @@ class MultipleImagePicker<T> extends FlImagePicker {
   /// wrap UI 样式配置
   final PickerWrapBuilderConfig wrapConfig;
 
+  /// wrap 自定义
   final PickerWrapBuilder? wrapBuilder;
-
-  /// 资源选择 icon 自定义构造
-  final PickerIconBuilder? pickerIconBuilder;
 
   /// 资源渲染子元素自定义构造
   final MultiplePickerItemBuilder? itemBuilder;
@@ -247,14 +244,14 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
         context, FlImagePicker.previewBuilder(context, entity, allEntity));
   }
 
-  void pickerAsset() async {
+  void pickAsset() async {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsEntry = controller.allEntity;
     if (assetsEntry.length >= widget.maxCount) {
       FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
-    controller.pickFromType(context);
+    controller.pickActions(context);
   }
 
   /// 选择框
@@ -270,8 +267,7 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
-    current = GestureDetector(
-        onTap: pickerAsset, child: widget.pickerIconBuilder?.call() ?? current);
+    current = GestureDetector(onTap: pickAsset, child: current);
     return current;
   }
 
