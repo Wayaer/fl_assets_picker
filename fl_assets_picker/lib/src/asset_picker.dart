@@ -28,6 +28,12 @@ typedef FlAssetFileRenovate = Future<dynamic> Function(AssetEntity entity);
 typedef DeletionConfirmation = Future<bool> Function(
     ExtendedAssetEntity entity);
 
+typedef FlPreviewAssetsModalPopupBuilder = void Function(
+    BuildContext context, Widget previewAssets);
+
+typedef FlPreviewAssetsBuilder = Widget Function(BuildContext context,
+    ExtendedAssetEntity entity, List<ExtendedAssetEntity> entitys);
+
 enum ErrorDes {
   /// 超过最大字节
   maxBytes,
@@ -55,8 +61,13 @@ class AssetsPickerItemConfig {
       this.play = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D))});
 
+  /// 颜色
   final Color? color;
+
+  /// 尺寸
   final Size size;
+
+  /// 圆角
   final BorderRadiusGeometry? borderRadius;
 
   /// 视频预览 播放 icon
@@ -165,6 +176,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
   /// item UI 样式配置
   final AssetsPickerItemConfig itemConfig;
 
+  /// value 转换为 [ImageProvider]
   static ImageProvider? buildImageProvider(dynamic value) {
     if (value is File) {
       return FileImage(value);
@@ -257,7 +269,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     return await entity.toExtended(renovate: renovate);
   }
 
-  /// show 选择弹窗
+  /// 选择Actions
   static Future<PickerActions?> showPickActions(
       BuildContext context, List<PickerActions> actions) async {
     PickerActions? type;

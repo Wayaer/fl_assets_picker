@@ -3,11 +3,11 @@ part of 'image_picker.dart';
 class SingleImagePicker extends FlImagePicker {
   const SingleImagePicker({
     super.key,
-    this.onChanged,
     super.enablePicker = true,
     super.actions = defaultPickerActions,
     super.renovate,
     super.itemConfig = const ImagePickerItemConfig(),
+    this.onChanged,
     this.initialData,
   }) : super(maxCount: 1, maxVideoCount: 1);
 

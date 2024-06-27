@@ -15,6 +15,8 @@ typedef FlImagePickerCheckPermission = Future<bool> Function(
 typedef PickerOptionalActionsBuilder = Widget Function(
     BuildContext context, List<PickerActions> actions);
 
+typedef PickerErrorCallback = void Function(ErrorDes msg);
+
 enum AssetType {
   /// The asset is not an image, video
   other,
@@ -39,6 +41,12 @@ enum ErrorDes {
 
 typedef FlAssetBuilder = Widget Function(
     ExtendedXFile entity, bool isThumbnail);
+
+typedef FlPreviewAssetsModalPopupBuilder = void Function(
+    BuildContext context, Widget previewAssets);
+
+typedef FlPreviewAssetsBuilder = Widget Function(
+    BuildContext context, ExtendedXFile current, List<ExtendedXFile> entitys);
 
 FlAssetBuilder _defaultFlAssetBuilder =
     (ExtendedXFile entity, bool isThumbnail) {
@@ -154,7 +162,7 @@ abstract class FlImagePicker extends StatefulWidget {
     return entity;
   }
 
-  /// 不同picker类型选择
+  /// 选择Actions
   static Future<PickerActions?> showPickActions(
       BuildContext context, List<PickerActions> actions) async {
     PickerActions? type;

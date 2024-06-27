@@ -78,7 +78,7 @@ MultipleImagePicker();
 ```dart
 
 void fun() {
-  /// 不同picker类型选择
+  /// 选择Actions
   FlAssetsPicker.showPickActions();
 
   /// 最原始的资源选择器
@@ -87,6 +87,9 @@ void fun() {
 
   /// 从相机拍摄
   FlAssetsPicker.showPickFromCamera();
+
+  /// 依次选择Actions和资源选择器
+  FlAssetsPicker.showPickWithOptionalActions();
 }
 
 ```

@@ -77,17 +77,17 @@ MultipleImagePicker();
 ```dart
 
 void fun() {
-  /// 不同picker类型选择
+  /// 选择Actions
   FlImagePicker.showPickActions();
 
   /// 最原始的选择器
   FlImagePicker.showPick();
 
-  /// 以上两个方法调用
-  FlImagePicker.showPickWithOptionalActions();
-
   /// 最原始的多选择器 只能图片多选
   FlImagePicker.showPickMultipleImage();
+
+  /// 以上两个方法依次调用
+  FlImagePicker.showPickWithOptionalActions();
 }
 
 ```

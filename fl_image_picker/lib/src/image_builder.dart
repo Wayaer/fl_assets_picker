@@ -52,8 +52,13 @@ class ImagePickerItemConfig {
       this.play = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D))});
 
+  /// 颜色
   final Color? color;
+
+  /// 尺寸
   final Size size;
+
+  /// 圆角
   final BorderRadiusGeometry? borderRadius;
 
   /// 视频预览 播放 icon
@@ -79,11 +84,22 @@ class DefaultPickIcon extends StatelessWidget {
       this.icon,
       this.size = 30});
 
+  /// 圆角
   final BorderRadiusGeometry? borderRadius;
+
+  /// 边框
   final Color? borderColor;
+
+  /// 图标
   final Color iconColor;
+
+  /// 背景
   final Color? backgroundColor;
+
+  /// 尺寸
   final double size;
+
+  /// 图标
   final Widget? icon;
 
   @override

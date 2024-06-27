@@ -1,9 +1,7 @@
 ## 4.0.1
 
+* Modify the static method name of `FlAssetsPicker`
 * Remove `pickerIconBuilder` from `MultipleImagePicker`,Please use the `pickIcon` of `itemConfig`
-
-## 4.0.0
-
 * Change the `PickerFromTypeItem` to the `PickerActions`
 * Change the `PickerFromType` to the `PickerOptionalActions`
 * Change the `fromTypes` to the `actions`

@@ -1,11 +1,5 @@
 part of 'asset_picker.dart';
 
-typedef FlPreviewAssetsModalPopupBuilder = void Function(
-    BuildContext context, Widget previewAssets);
-
-typedef FlPreviewAssetsBuilder = Widget Function(BuildContext context,
-    ExtendedAssetEntity entity, List<ExtendedAssetEntity> entitys);
-
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
       {this.direction = Axis.horizontal,
@@ -37,8 +31,6 @@ class PickerWrapBuilderConfig {
   final Decoration? decoration;
   final EdgeInsetsGeometry? margin;
 }
-
-typedef PickerIconBuilder = Widget Function();
 
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
 

@@ -1,11 +1,5 @@
 part of 'image_picker.dart';
 
-typedef FlPreviewAssetsModalPopupBuilder = void Function(
-    BuildContext context, Widget previewAssets);
-
-typedef FlPreviewAssetsBuilder = Widget Function(
-    BuildContext context, ExtendedXFile current, List<ExtendedXFile> entitys);
-
 class PickerWrapBuilderConfig {
   const PickerWrapBuilderConfig(
       {this.direction = Axis.horizontal,
@@ -38,11 +32,7 @@ class PickerWrapBuilderConfig {
   final EdgeInsetsGeometry? margin;
 }
 
-typedef PickerIconBuilder = Widget Function();
-
 typedef PickerWrapBuilder = Widget Function(List<Widget>);
-
-typedef PickerErrorCallback = void Function(ErrorDes msg);
 
 typedef MultiplePickerItemBuilder = Widget Function(
     ExtendedXFile item, int index);

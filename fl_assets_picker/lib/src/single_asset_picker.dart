@@ -5,13 +5,13 @@ typedef SinglePickerEntryBuilder = Widget Function(ExtendedAssetEntity entry);
 class SingleAssetPicker extends FlAssetsPicker {
   const SingleAssetPicker({
     super.key,
-    this.onChanged,
     super.enablePicker = true,
     super.actions = defaultPickerActions,
     super.pageRouteBuilderForCameraPicker,
     super.pageRouteBuilderForAssetPicker,
     super.renovate,
     super.itemConfig = const AssetsPickerItemConfig(),
+    this.onChanged,
     this.builder,
     this.initialData,
     this.allowDelete = true,
