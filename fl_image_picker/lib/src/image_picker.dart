@@ -17,7 +17,7 @@ typedef PickerOptionalActionsBuilder = Widget Function(
 
 typedef PickerErrorCallback = void Function(ErrorDes msg);
 
-enum AssetType {
+enum ImageType {
   /// The asset is not an image, video
   other,
 
@@ -39,19 +39,19 @@ enum ErrorDes {
   maxVideoCount,
 }
 
-typedef FlAssetBuilder = Widget Function(
+typedef FlImageBuilder = Widget Function(
     ExtendedXFile entity, bool isThumbnail);
 
-typedef FlPreviewAssetsModalPopupBuilder = void Function(
-    BuildContext context, Widget previewAssets);
+typedef FlPreviewImagesModalPopupBuilder = void Function(
+    BuildContext context, Widget previewImages);
 
-typedef FlPreviewAssetsBuilder = Widget Function(
+typedef FlPreviewImagesBuilder = Widget Function(
     BuildContext context, ExtendedXFile current, List<ExtendedXFile> entitys);
 
-FlAssetBuilder _defaultFlAssetBuilder =
+FlImageBuilder _defaultFlImageBuilder =
     (ExtendedXFile entity, bool isThumbnail) {
   Widget unsupported() => const Center(child: Text('No preview'));
-  if (entity.type == AssetType.image) {
+  if (entity.type == ImageType.image) {
     final imageProvider = entity.toImageProvider();
     if (imageProvider != null) {
       return Image(
@@ -65,20 +65,20 @@ FlAssetBuilder _defaultFlAssetBuilder =
 PickerOptionalActionsBuilder _defaultFromTypesBuilder =
     (_, List<PickerActions> actions) => FlPickerOptionalActionsBuilder(actions);
 
-FlPreviewAssetsBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
+FlPreviewImagesBuilder _defaultPreviewBuilder = (context, entity, allEntity) =>
     FlPreviewGesturePageView(
         pageView: PageView.builder(
             controller: PageController(initialPage: allEntity.indexOf(entity)),
             itemCount: allEntity.length,
             itemBuilder: (_, int index) => Center(
-                child: FlImagePicker.assetBuilder(allEntity[index], false))));
+                child: FlImagePicker.imageBuilder(allEntity[index], false))));
 
 abstract class FlImagePicker extends StatefulWidget {
   /// image picker
   static ImagePicker imagePicker = ImagePicker();
 
-  /// assetBuilder
-  static FlAssetBuilder assetBuilder = _defaultFlAssetBuilder;
+  /// imageBuilder
+  static FlImageBuilder imageBuilder = _defaultFlImageBuilder;
 
   /// 权限申请
   static FlImagePickerCheckPermission? checkPermission;
@@ -87,10 +87,10 @@ abstract class FlImagePicker extends StatefulWidget {
   static PickerOptionalActionsBuilder actionsBuilder = _defaultFromTypesBuilder;
 
   /// 资源预览UI [MultipleImagePicker] 使用
-  static FlPreviewAssetsBuilder previewBuilder = _defaultPreviewBuilder;
+  static FlPreviewImagesBuilder previewBuilder = _defaultPreviewBuilder;
 
   /// 资源预览UI全屏弹出渲染 [MultipleImagePicker] 使用
-  static FlPreviewAssetsModalPopupBuilder previewModalPopup =
+  static FlPreviewImagesModalPopupBuilder previewModalPopup =
       (context, Widget widget) =>
           showCupertinoModalPopup(context: context, builder: (_) => widget);
 
@@ -122,7 +122,7 @@ abstract class FlImagePicker extends StatefulWidget {
   final bool useRootNavigator = true;
 
   /// 资源重新编辑
-  final FlAssetFileRenovate? renovate;
+  final FlImageFileRenovate? renovate;
 
   /// item 样式配置
   final ImagePickerItemConfig itemConfig;
@@ -182,24 +182,24 @@ abstract class FlImagePicker extends StatefulWidget {
   static Future<ExtendedXFile?> showPick(PickerOptionalActions action) async {
     final permissionState = await checkPermission?.call(action) ?? true;
     XFile? file;
-    AssetType assetType = AssetType.other;
+    ImageType assetType = ImageType.other;
     if (permissionState) {
       switch (action) {
         case PickerOptionalActions.image:
           file = await imagePicker.pickImage(source: ImageSource.gallery);
-          assetType = AssetType.image;
+          assetType = ImageType.image;
           break;
         case PickerOptionalActions.video:
           file = await imagePicker.pickVideo(source: ImageSource.gallery);
-          assetType = AssetType.video;
+          assetType = ImageType.video;
           break;
         case PickerOptionalActions.takePictures:
           file = await imagePicker.pickImage(source: ImageSource.camera);
-          assetType = AssetType.image;
+          assetType = ImageType.image;
           break;
         case PickerOptionalActions.recording:
           file = await imagePicker.pickVideo(source: ImageSource.camera);
-          assetType = AssetType.video;
+          assetType = ImageType.video;
           break;
         case PickerOptionalActions.cancel:
           break;
@@ -207,9 +207,9 @@ abstract class FlImagePicker extends StatefulWidget {
       if (file != null) {
         final mimeType = file.mimeType;
         if (mimeType?.startsWith('video') ?? false) {
-          assetType = AssetType.video;
+          assetType = ImageType.video;
         } else if (mimeType?.startsWith('image') ?? false) {
-          assetType = AssetType.image;
+          assetType = ImageType.image;
         }
         return file.toExtended(assetType);
       }
@@ -229,10 +229,10 @@ abstract class FlImagePicker extends StatefulWidget {
 class ImagePickerController with ChangeNotifier {
   List<ExtendedXFile> allEntity = [];
 
-  late FlImagePicker _assetsPicker;
+  late FlImagePicker _imagePicker;
 
-  set assetsPicker(FlImagePicker assetsPicker) {
-    _assetsPicker = assetsPicker;
+  set imagePicker(FlImagePicker imagePicker) {
+    _imagePicker = imagePicker;
   }
 
   void delete(ExtendedXFile entity) {
@@ -244,33 +244,34 @@ class ImagePickerController with ChangeNotifier {
   Future<ExtendedXFile?> pick(PickerOptionalActions action) async {
     final entity = await FlImagePicker.showPick(action);
     if (entity != null && !allEntity.contains(entity)) {
-      return entity.toRenovated(_assetsPicker.renovate);
+      return entity.toRenovated(_imagePicker.renovate);
     }
     return null;
   }
 
   /// 弹窗选择类型
   Future<void> pickActions(BuildContext context) async {
-    if (_assetsPicker.maxCount > 1 &&
-        allEntity.length >= _assetsPicker.maxCount) {
+    if (_imagePicker.maxCount > 1 &&
+        allEntity.length >= _imagePicker.maxCount) {
       FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
       return;
     }
     final actionConfig =
-        await FlImagePicker.showPickActions(context, _assetsPicker.actions);
+        await FlImagePicker.showPickActions(context, _imagePicker.actions);
     if (actionConfig == null) return;
     final entity = await pick(actionConfig.action);
     if (entity == null) return;
-    if (_assetsPicker.maxCount > 1) {
-      var videos = allEntity
-          .where((element) => element.type == AssetType.video)
-          .toList();
-      if (videos.length >= _assetsPicker.maxVideoCount) {
-        FlImagePicker.errorCallback?.call(ErrorDes.maxVideoCount);
-        return;
-      } else {
-        allEntity.add(entity);
+    if (_imagePicker.maxCount > 1) {
+      if (_imagePicker.maxVideoCount > 0) {
+        var videos = allEntity
+            .where((element) => element.type == ImageType.video)
+            .toList();
+        if (videos.length >= _imagePicker.maxVideoCount) {
+          FlImagePicker.errorCallback?.call(ErrorDes.maxVideoCount);
+          return;
+        }
       }
+      allEntity.add(entity);
     } else {
       /// 单资源
       allEntity = [entity];

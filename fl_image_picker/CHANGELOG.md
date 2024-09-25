@@ -1,3 +1,10 @@
+## 2.0.0
+
+* `assetXXX` -> `imageXXX`
+* `AssetXXX` -> `ImageXXX`
+* Fix some issues
+* `maxVideoCount` defaults to 0
+
 ## 1.0.1
 
 * Modify the static method name of `FlImagePicker`

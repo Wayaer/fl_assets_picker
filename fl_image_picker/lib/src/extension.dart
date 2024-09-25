@@ -1,8 +1,8 @@
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/material.dart';
 
-typedef FlAssetFileRenovate = Future<dynamic> Function(
-    AssetType type, XFile file);
+typedef FlImageFileRenovate = Future<dynamic> Function(
+    ImageType type, XFile file);
 
 class ExtendedXFile extends XFile {
   ExtendedXFile.fromPreviewed(this.previewed, this.type)
@@ -24,10 +24,11 @@ class ExtendedXFile extends XFile {
   final bool isLocalData;
 
   /// 资源类型
-  final AssetType type;
+  final ImageType type;
 
-  /// [previewed] 主要用于复显 可使用url 或者 assetPath
-  final String? previewed;
+  /// [previewed] 主要用于复显
+  /// 支持 url， assetPath， file
+  final dynamic previewed;
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
   final dynamic renovated;
@@ -38,7 +39,7 @@ class ExtendedXFile extends XFile {
 }
 
 extension ExtensionExtendedXFile on ExtendedXFile {
-  Future<ExtendedXFile> toRenovated(FlAssetFileRenovate? renovate) async =>
+  Future<ExtendedXFile> toRenovated(FlImageFileRenovate? renovate) async =>
       ExtendedXFile(path, type, renovated: await renovate?.call(type, this));
 
   /// previewed > renovated > path
@@ -57,7 +58,7 @@ extension ExtensionExtendedXFile on ExtendedXFile {
 
 extension ExtensionXFile on XFile {
   ///  to [ExtendedXFile] and renovate [XFile];
-  ExtendedXFile toExtended(AssetType type) => ExtendedXFile(path, type);
+  ExtendedXFile toExtended(ImageType type) => ExtendedXFile(path, type);
 }
 
 enum ImageCroppingQuality {

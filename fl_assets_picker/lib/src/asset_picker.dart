@@ -255,6 +255,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
       default:
         return null;
     }
+
     if (entity == null) return null;
     final file = await entity.file;
     if (file == null) {
@@ -469,11 +470,13 @@ class AssetsPickerController with ChangeNotifier {
             pageRouteBuilder: _assetsPicker.pageRouteBuilderForCameraPicker);
         if (assetsEntry != null) {
           if (_assetsPicker.maxCount > 1) {
-            final videos =
-                allEntity.where((element) => element.type == AssetType.video);
-            if (videos.length >= _assetsPicker.maxVideoCount) {
-              FlAssetsPicker.errorCallback?.call(ErrorDes.maxVideoCount);
-              return;
+            if (_assetsPicker.maxVideoCount > 0) {
+              final videos =
+                  allEntity.where((element) => element.type == AssetType.video);
+              if (videos.length >= _assetsPicker.maxVideoCount) {
+                FlAssetsPicker.errorCallback?.call(ErrorDes.maxVideoCount);
+                return;
+              }
             }
             allEntity.add(assetsEntry);
           } else {

@@ -49,7 +49,7 @@ class MultipleImagePicker<T> extends FlImagePicker {
     this.initialData = const [],
     this.allowDelete = true,
     super.enablePicker = true,
-    super.maxVideoCount = 1,
+    super.maxVideoCount = 0,
     super.maxCount = 9,
     super.actions = defaultPickerActions,
     super.renovate,
@@ -79,9 +79,9 @@ class MultipleImagePicker<T> extends FlImagePicker {
   @override
   State<MultipleImagePicker> createState() => _MultipleImagePickerState();
 
-  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [paths] 文件地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
   static List<ExtendedXFile> convertPaths(List<String> paths,
-      {AssetType assetsType = AssetType.image}) {
+      {ImageType assetsType = ImageType.image}) {
     List<ExtendedXFile> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
@@ -91,9 +91,9 @@ class MultipleImagePicker<T> extends FlImagePicker {
     return list;
   }
 
-  /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [url] 地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
   static List<ExtendedXFile> convertUrls(String url,
-      {AssetType assetsType = AssetType.image, String? splitPattern}) {
+      {ImageType assetsType = ImageType.image, String? splitPattern}) {
     List<ExtendedXFile> list = [];
     if (url.isEmpty) return list;
     if (splitPattern != null && url.contains(splitPattern)) {
@@ -143,7 +143,7 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
 
   void initialize() {
     controller = widget.controller ?? ImagePickerController();
-    controller.assetsPicker = widget;
+    controller.imagePicker = widget;
     controller.allEntity.insertAll(0, widget.initialData);
     controller.addListener(listener);
   }
@@ -156,7 +156,7 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
   @override
   void didUpdateWidget(covariant MultipleImagePicker<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    controller.assetsPicker = widget;
+    controller.imagePicker = widget;
   }
 
   @override
@@ -189,8 +189,8 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
   Widget buildEntry(MapEntry<int, ExtendedXFile> item) {
     final entity = item.value;
     final config = widget.itemConfig;
-    Widget current = FlImagePicker.assetBuilder(entity, true);
-    if (entity.type == AssetType.video) {
+    Widget current = FlImagePicker.imageBuilder(entity, true);
+    if (entity.type == ImageType.video) {
       current = Stack(children: [
         SizedBox.expand(child: current),
         Align(alignment: Alignment.center, child: config.play),
@@ -200,7 +200,7 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
       current = ColoredBox(color: config.color!, child: current);
     }
     current = GestureDetector(
-        onTap: () => previewAssets(item.value),
+        onTap: () => previewImages(item.value),
         child: widget.itemBuilder?.call(item.value, item.key) ?? current);
     if (widget.allowDelete) {
       current = Stack(children: [
@@ -228,13 +228,13 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
   }
 
   /// 全屏预览
-  void previewAssets(ExtendedXFile entity) {
+  void previewImages(ExtendedXFile entity) {
     final allEntity = controller.allEntity;
     FlImagePicker.previewModalPopup(
         context, FlImagePicker.previewBuilder(context, entity, allEntity));
   }
 
-  void pickAsset() async {
+  void pickImage() async {
     FocusScope.of(context).requestFocus(FocusNode());
     final assetsEntry = controller.allEntity;
     if (assetsEntry.length >= widget.maxCount) {
@@ -257,7 +257,7 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
-    current = GestureDetector(onTap: pickAsset, child: current);
+    current = GestureDetector(onTap: pickImage, child: current);
     return current;
   }
 

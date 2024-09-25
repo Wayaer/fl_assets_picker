@@ -13,7 +13,7 @@ class PickerWrapBuilderConfig {
       this.decoration,
       this.spacing = 10,
       this.runSpacing = 10,
-      this.margin = const EdgeInsets.all(10)});
+      this.margin});
 
   /// [Wrap]
   final double spacing;
@@ -49,7 +49,7 @@ class MultipleAssetPicker extends FlAssetsPicker {
     this.allowDelete = true,
     super.itemConfig = const AssetsPickerItemConfig(),
     super.enablePicker = true,
-    super.maxVideoCount = 1,
+    super.maxVideoCount = 0,
     super.maxCount = 9,
     super.actions = defaultPickerActions,
     super.renovate,

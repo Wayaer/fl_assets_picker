@@ -40,8 +40,9 @@ class ExtendedAssetEntity extends AssetEntity {
 
   final bool isLocalData;
 
-  /// [previewed] 主要用于复显 可使用url 或者 assetPath
-  final String? previewed;
+  /// [previewed] 主要用于复显
+  /// 支持 url， assetPath， file
+  final dynamic previewed;
 
   /// 原始缩略图数据 bytes
   final Uint8List? thumbnailDataAsync;
@@ -95,7 +96,7 @@ extension ExtensionAssetEntity on AssetEntity {
     return ExtendedAssetEntity(
         thumbnailDataAsync: await thumbnailData,
         fileAsync: await file,
-        renovated: await renovate?.call(this),
+        renovated: renovate == null ? null : await renovate(this),
         id: id,
         typeInt: typeInt,
         width: width,

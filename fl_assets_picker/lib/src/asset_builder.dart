@@ -100,7 +100,6 @@ class FlPickerOptionalActionsBuilder extends StatelessWidget {
     for (var element in list) {
       final entry = CupertinoActionSheetAction(
           onPressed: () => Navigator.of(context).maybePop(element),
-          isDefaultAction: false,
           child: element.text);
       if (element.action != PickerOptionalActions.cancel) {
         actions.add(entry);

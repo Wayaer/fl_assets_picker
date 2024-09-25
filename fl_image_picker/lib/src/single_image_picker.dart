@@ -17,18 +17,18 @@ class SingleImagePicker extends FlImagePicker {
   /// 资源选择变化
   final ValueChanged<ExtendedXFile>? onChanged;
 
-  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [paths] 文件地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
   static ExtendedXFile? convertPaths(String path,
-      {AssetType assetsType = AssetType.image}) {
+      {ImageType assetsType = ImageType.image}) {
     if (path.isNotEmpty) {
       return ExtendedXFile.fromPreviewed(path, assetsType);
     }
     return null;
   }
 
-  /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [url] 地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
   static ExtendedXFile? convertUrl(String url,
-      {AssetType assetsType = AssetType.image}) {
+      {ImageType assetsType = ImageType.image}) {
     if (url.isNotEmpty) {
       return ExtendedXFile.fromPreviewed(url, assetsType);
     }
@@ -50,7 +50,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
 
   void initialize() {
     controller = ImagePickerController();
-    controller.assetsPicker = widget;
+    controller.imagePicker = widget;
     if (widget.initialData != null) {
       controller.allEntity = [widget.initialData!];
     }
@@ -60,7 +60,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
   @override
   void didUpdateWidget(covariant SingleImagePicker oldWidget) {
     super.didUpdateWidget(oldWidget);
-    controller.assetsPicker = widget;
+    controller.imagePicker = widget;
   }
 
   void listener() {
@@ -78,7 +78,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     if (allEntity.isNotEmpty) {
       final entity = allEntity.first;
       current = buildEntity(entity);
-      if (entity.type == AssetType.video) {
+      if (entity.type == ImageType.video) {
         current = Stack(children: [
           SizedBox.expand(child: current),
           Align(alignment: Alignment.center, child: config.play),
@@ -89,7 +89,7 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
       current = ColoredBox(color: config.color!, child: current);
     }
     if (widget.enablePicker) {
-      current = GestureDetector(onTap: pickAsset, child: current);
+      current = GestureDetector(onTap: pickImage, child: current);
     }
     current = SizedBox.fromSize(size: config.size, child: current);
     if (config.borderRadius != null) {
@@ -102,10 +102,10 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     if (entity.realValue == null) {
       return widget.itemConfig.pick;
     }
-    return FlImagePicker.assetBuilder(entity, true);
+    return FlImagePicker.imageBuilder(entity, true);
   }
 
-  void pickAsset() async {
+  void pickImage() async {
     FocusScope.of(context).requestFocus(FocusNode());
     controller.pickActions(context);
   }

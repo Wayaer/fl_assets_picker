@@ -32,8 +32,8 @@ Future<void> main() async {
 }
 
 void flImagePickerInit() {
-  FlImagePicker.assetBuilder = (entity, bool isThumbnail) =>
-      AssetBuilder(entity, isThumbnail: isThumbnail);
+  FlImagePicker.imageBuilder = (entity, bool isThumbnail) =>
+      ImageBuilder(entity, isThumbnail: isThumbnail);
   FlImagePicker.checkPermission = (PickerOptionalActions action) async {
     if (isWeb || !isMobile) return true;
     if (action == PickerOptionalActions.image ||
@@ -64,7 +64,7 @@ void flImagePickerInit() {
             controller:
                 ExtendedPageController(initialPage: allEntity.indexOf(entity)),
             itemBuilder: (_, int index) =>
-                FlImagePicker.assetBuilder(allEntity[index], false)));
+                FlImagePicker.imageBuilder(allEntity[index], false)));
   };
   FlImagePicker.errorCallback = (ErrorDes des) {
     switch (des) {
@@ -94,26 +94,26 @@ class _HomePage extends StatelessWidget {
         isScroll: true,
         children: [
           const Text('单资源选择 仅图片').marginAll(12),
-          buildSingleImagePicker(AssetType.image),
+          buildSingleImagePicker(ImageType.image),
           const Text('单资源选择 仅视频').marginAll(12),
-          buildSingleImagePicker(AssetType.video),
+          buildSingleImagePicker(ImageType.video),
           const Text('多资源选择 仅图片').marginAll(12),
-          buildMultiImagePicker(AssetType.image),
+          buildMultiImagePicker(ImageType.image),
           const Text('多资源选择 仅视频').marginAll(12),
-          buildMultiImagePicker(AssetType.video),
+          buildMultiImagePicker(ImageType.video),
         ]);
   }
 
-  Widget buildSingleImagePicker(AssetType assetType) {
+  Widget buildSingleImagePicker(ImageType imageType) {
     List<PickerActions> actions = [
       const PickerActions(
           action: PickerOptionalActions.cancel, text: Text('取消')),
     ];
 
-    switch (assetType) {
-      case AssetType.other:
+    switch (imageType) {
+      case ImageType.other:
         break;
-      case AssetType.image:
+      case ImageType.image:
         actions.insertAll(0, const [
           PickerActions(
               action: PickerOptionalActions.image, text: Text('图库选择')),
@@ -121,7 +121,7 @@ class _HomePage extends StatelessWidget {
               action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
         ]);
         break;
-      case AssetType.video:
+      case ImageType.video:
         actions.insertAll(0, const [
           PickerActions(
               action: PickerOptionalActions.video, text: Text('图库选择')),
@@ -134,8 +134,8 @@ class _HomePage extends StatelessWidget {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
       SingleImagePicker(
           actions: actions,
-          renovate: (AssetType assetType, XFile entity) async {
-            if (assetType == AssetType.image) {
+          renovate: (ImageType imageType, XFile entity) async {
+            if (imageType == ImageType.image) {
               return await compressImage(entity);
             }
             return null;
@@ -149,8 +149,8 @@ class _HomePage extends StatelessWidget {
                 .log();
           }),
       SingleImagePicker(
-          renovate: (AssetType assetType, XFile entity) async {
-            if (assetType == AssetType.image) {
+          renovate: (ImageType imageType, XFile entity) async {
+            if (imageType == ImageType.image) {
               return await compressImage(entity);
             }
             return null;
@@ -166,16 +166,16 @@ class _HomePage extends StatelessWidget {
     ]);
   }
 
-  Widget buildMultiImagePicker(AssetType assetType) {
+  Widget buildMultiImagePicker(ImageType imageType) {
     List<PickerActions> actions = [
       const PickerActions(
           action: PickerOptionalActions.cancel, text: Text('取消')),
     ];
 
-    switch (assetType) {
-      case AssetType.other:
+    switch (imageType) {
+      case ImageType.other:
         break;
-      case AssetType.image:
+      case ImageType.image:
         actions.insertAll(0, const [
           PickerActions(
               action: PickerOptionalActions.image, text: Text('图库选择')),
@@ -183,7 +183,7 @@ class _HomePage extends StatelessWidget {
               action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
         ]);
         break;
-      case AssetType.video:
+      case ImageType.video:
         actions.insertAll(0, const [
           PickerActions(
               action: PickerOptionalActions.video, text: Text('图库选择')),
@@ -195,8 +195,8 @@ class _HomePage extends StatelessWidget {
     return MultipleImagePicker(
         initialData: MultipleImagePicker.convertUrls(url),
         actions: actions,
-        renovate: (AssetType assetType, XFile entity) async {
-          if (assetType == AssetType.image) {
+        renovate: (ImageType imageType, XFile entity) async {
+          if (imageType == ImageType.image) {
             return await compressImage(entity);
           }
           return null;

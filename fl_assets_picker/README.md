@@ -67,10 +67,10 @@ void main() {
 
 ```dart
 /// 单选
-SingleImagePicker();
+SingleAssetPicker();
 
 /// 多选
-MultipleImagePicker();
+MultipleAssetPicker();
 ```
 
 直接调用方法选择

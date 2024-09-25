@@ -15,7 +15,7 @@ class ExtendedImageWithImagePicker extends ExtendedImage {
       : super(image: image, enableLoadState: true);
 
   /// fileAsync > previewUrl > previewPath
-  static ImageProvider? assetEntityToImageProvider(ExtendedXFile xFile) {
+  static ImageProvider? imageEntityToImageProvider(ExtendedXFile xFile) {
     ImageProvider? provider;
     if (xFile.renovated != null) {
       provider =
@@ -24,7 +24,8 @@ class ExtendedImageWithImagePicker extends ExtendedImage {
       provider =
           ExtendedImageWithImagePicker.buildImageProvider(xFile.previewed);
     } else {
-      provider = ExtendedImageWithImagePicker.buildImageProvider(xFile.path);
+      provider =
+          ExtendedImageWithImagePicker.buildImageProvider(File(xFile.path));
     }
     return provider;
   }

@@ -5,8 +5,8 @@ import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class AssetBuilder extends StatelessWidget {
-  const AssetBuilder(this.xFile, {super.key, this.isThumbnail = true});
+class ImageBuilder extends StatelessWidget {
+  const ImageBuilder(this.xFile, {super.key, this.isThumbnail = true});
 
   final ExtendedXFile xFile;
 
@@ -17,11 +17,11 @@ class AssetBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     const unsupported = Center(child: Text('Preview not supported'));
     switch (xFile.type) {
-      case AssetType.other:
+      case ImageType.other:
         break;
-      case AssetType.image:
+      case ImageType.image:
         final imageProvider =
-            ExtendedImageWithImagePicker.assetEntityToImageProvider(xFile);
+            ExtendedImageWithImagePicker.imageEntityToImageProvider(xFile);
         if (imageProvider != null) {
           return ExtendedImageWithImagePicker(imageProvider,
               mode: isThumbnail
@@ -38,7 +38,7 @@ class AssetBuilder extends StatelessWidget {
               fit: isThumbnail ? BoxFit.cover : BoxFit.contain);
         }
         break;
-      case AssetType.video:
+      case ImageType.video:
         if (isThumbnail) {
           return Container(
               color: Colors.black26,

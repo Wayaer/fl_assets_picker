@@ -9,8 +9,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// 先设置 资源渲染组件（默认仅支持图片预览）
-  FlImagePicker.assetBuilder = (entity, bool isThumbnail) =>
-      AssetBuilder(entity, isThumbnail: isThumbnail);
+  FlImagePicker.imageBuilder = (entity, bool isThumbnail) =>
+      ImageBuilder(entity, isThumbnail: isThumbnail);
 
   /// 设置权限申请回调
   FlImagePicker.checkPermission = (PickerOptionalActions action) async {
@@ -42,7 +42,7 @@ void main() {
             controller:
             ExtendedPageController(initialPage: allEntity.indexOf(entity)),
             itemBuilder: (_, int index) =>
-                FlImagePicker.assetBuilder(allEntity[index], false)));
+                FlImagePicker.imageBuilder(allEntity[index], false)));
   };
 
   /// 设置错误回调的提示

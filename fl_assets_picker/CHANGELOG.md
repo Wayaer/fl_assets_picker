@@ -1,3 +1,8 @@
+## 4.1.0
+
+* Fix some issues
+* `maxVideoCount` defaults to 0
+
 ## 4.0.1
 
 * Modify the static method name of `FlAssetsPicker`
