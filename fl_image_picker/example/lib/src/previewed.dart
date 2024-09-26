@@ -1,6 +1,8 @@
+import 'dart:io';
+
+import 'package:example/main.dart';
 import 'package:example/src/extended_image.dart';
 import 'package:example/src/fl_video.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -23,18 +25,8 @@ class ImageBuilder extends StatelessWidget {
         final imageProvider =
             ExtendedImageWithImagePicker.imageEntityToImageProvider(xFile);
         if (imageProvider != null) {
-          return ExtendedImageWithImagePicker(imageProvider,
-              mode: isThumbnail
-                  ? ExtendedImageMode.none
-                  : ExtendedImageMode.gesture,
-              initGestureConfigHandler: !isThumbnail
-                  ? null
-                  : (ExtendedImageState state) => GestureConfig(
-                      inPageView: true,
-                      initialScale: 1.0,
-                      maxScale: 5.0,
-                      animationMaxScale: 6.0,
-                      initialAlignment: InitialAlignment.center),
+          return Image(
+              image: imageProvider,
               fit: isThumbnail ? BoxFit.cover : BoxFit.contain);
         }
         break;
@@ -45,9 +37,12 @@ class ImageBuilder extends StatelessWidget {
               width: double.infinity,
               height: double.infinity);
         } else if (supportable) {
+          var real = xFile.realValue;
+          if (real is String && !isWeb) {
+            real = File(real);
+          }
           final controller =
-              FlVideoPlayerWithImagePicker.buildVideoPlayerController(
-                  xFile.realValue);
+              FlVideoPlayerWithImagePicker.buildVideoPlayerController(real);
           if (controller != null) {
             return FlVideoPlayerWithImagePicker(controller: controller);
           }

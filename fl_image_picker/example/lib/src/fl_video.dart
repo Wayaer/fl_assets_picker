@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:example/main.dart';
 import 'package:fl_video/fl_video.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,14 +45,14 @@ class FlVideoPlayerWithImagePicker extends StatefulWidget {
   /// 根据 [value] 不同的值 转换不同的 [VideoPlayerController]
   static VideoPlayerController? buildVideoPlayerController(dynamic value) {
     if (value != null) {
-      if (value is File) {
-        return VideoPlayerController.file(value);
-      } else if (value is String) {
+      if (value is String) {
         if (value.startsWith('http') || value.startsWith('blob:http')) {
           return VideoPlayerController.networkUrl(Uri.parse(value));
+        } else {
+          return VideoPlayerController.asset(value);
         }
-      } else {
-        return VideoPlayerController.asset(value);
+      } else if (!isWeb && value is File) {
+        return VideoPlayerController.file(value);
       }
     }
     return null;

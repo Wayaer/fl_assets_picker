@@ -155,6 +155,7 @@ class _HomePage extends StatelessWidget {
   Widget buildMultipleAssetPicker(RequestType requestType) =>
       MultipleAssetPicker(
           initialData: MultipleAssetPicker.convertUrls(url),
+          maxVideoCount: 6,
           actions: [
             PickerActions(
                 action: PickerOptionalActions.gallery,

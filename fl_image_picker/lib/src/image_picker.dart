@@ -4,6 +4,7 @@ import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mime/mime.dart';
 
 part 'single_image_picker.dart';
 
@@ -205,7 +206,7 @@ abstract class FlImagePicker extends StatefulWidget {
           break;
       }
       if (file != null) {
-        final mimeType = file.mimeType;
+        final mimeType = file.mimeType ?? lookupMimeType(file.path);
         if (mimeType?.startsWith('video') ?? false) {
           assetType = ImageType.video;
         } else if (mimeType?.startsWith('image') ?? false) {

@@ -148,7 +148,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     this.enablePicker = true,
     this.pageRouteBuilderForCameraPicker,
     this.pageRouteBuilderForAssetPicker,
-  });
+  }) : assert(maxVideoCount <= maxCount);
 
   /// 最大选择视频数量
   final int maxVideoCount;
@@ -259,7 +259,7 @@ abstract class FlAssetsPicker extends StatefulWidget {
     if (entity == null) return null;
     final file = await entity.file;
     if (file == null) {
-      errorCallback?.call(ErrorDes.maxBytes);
+      errorCallback?.call(ErrorDes.none);
       return null;
     }
     final fileBytes = file.readAsBytesSync();

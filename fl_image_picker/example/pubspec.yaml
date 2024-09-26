@@ -15,13 +15,11 @@ dependencies:
   flutter_image_compress: ^2.3.0
   device_info_plus: ^10.1.2
   fl_video: ^1.4.1
-  extended_image: ^8.3.0
-  extended_image_library: ^4.0.2
   fl_image_picker:
     path: ../
 
 dev_dependencies:
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

@@ -9,6 +9,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
+        android:largeHeap="true"
         android:label="FlAssetsPicker">
         <activity
             android:name=".MainActivity"

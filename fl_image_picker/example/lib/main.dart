@@ -1,6 +1,5 @@
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:example/src/previewed.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_extended/fl_extended.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -59,10 +58,8 @@ void flImagePickerInit() {
   FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
   FlImagePicker.previewBuilder = (context, entity, allEntity) {
     return FlPreviewGesturePageView(
-        pageView: ExtendedImageGesturePageView.builder(
+        pageView: PageView.builder(
             itemCount: allEntity.length,
-            controller:
-                ExtendedPageController(initialPage: allEntity.indexOf(entity)),
             itemBuilder: (_, int index) =>
                 FlImagePicker.imageBuilder(allEntity[index], false)));
   };
