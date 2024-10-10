@@ -13,7 +13,7 @@ dependencies:
   fl_extended: ^1.5.0
   permission_handler: ^11.3.1
   flutter_image_compress: ^2.3.0
-  device_info_plus: ^10.1.2
+  device_info_plus: ^11.0.0
   fl_video: ^1.4.1
   fl_image_picker:
     path: ../
