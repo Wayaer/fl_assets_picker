@@ -10,9 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  wechat_assets_picker: ^9.3.0
-  wechat_camera_picker: ^4.3.2
-  photo_manager: ^3.4.0
+  wechat_assets_picker: ^9.4.1
+  wechat_camera_picker: ^4.3.4
+  photo_manager: ^3.6.3
 
 dev_dependencies:
   flutter_lints: ^5.0.0
