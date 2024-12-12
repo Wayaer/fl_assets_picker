@@ -17,7 +17,7 @@ class SingleImagePicker extends FlImagePicker {
   /// 资源选择变化
   final ValueChanged<ExtendedXFile>? onChanged;
 
-  /// [paths] 文件地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
+  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
   static ExtendedXFile? convertPaths(String path,
       {ImageType assetsType = ImageType.image}) {
     if (path.isNotEmpty) {
@@ -26,7 +26,7 @@ class SingleImagePicker extends FlImagePicker {
     return null;
   }
 
-  /// [url] 地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
+  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
   static ExtendedXFile? convertUrl(String url,
       {ImageType assetsType = ImageType.image}) {
     if (url.isNotEmpty) {

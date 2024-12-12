@@ -79,7 +79,7 @@ class MultipleImagePicker<T> extends FlImagePicker {
   @override
   State<MultipleImagePicker> createState() => _MultipleImagePickerState();
 
-  /// [paths] 文件地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
+  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
   static List<ExtendedXFile> convertPaths(List<String> paths,
       {ImageType assetsType = ImageType.image}) {
     List<ExtendedXFile> list = [];
@@ -91,7 +91,7 @@ class MultipleImagePicker<T> extends FlImagePicker {
     return list;
   }
 
-  /// [url] 地址转换 List<ExtendedImageModel> 默认类型为  [ImageType.image]
+  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
   static List<ExtendedXFile> convertUrls(String url,
       {ImageType assetsType = ImageType.image, String? splitPattern}) {
     List<ExtendedXFile> list = [];

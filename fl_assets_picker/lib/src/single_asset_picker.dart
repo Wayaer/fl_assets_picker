@@ -29,7 +29,7 @@ class SingleAssetPicker extends FlAssetsPicker {
   /// 资源渲染子元素自定义构造
   final SinglePickerEntryBuilder? builder;
 
-  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertPath(String path,
       {AssetType assetsType = AssetType.image}) {
     if (path.isNotEmpty) {
@@ -39,7 +39,7 @@ class SingleAssetPicker extends FlAssetsPicker {
     return null;
   }
 
-  /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertUrl(String url,
       {AssetType assetsType = AssetType.image}) {
     if (url.isNotEmpty) {

@@ -1,3 +1,7 @@
+## 2.2.0
+
+* Update `mime`
+
 ## 2.0.0
 
 * `assetXXX` -> `imageXXX`

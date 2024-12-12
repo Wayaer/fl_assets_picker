@@ -81,7 +81,7 @@ class MultipleAssetPicker extends FlAssetsPicker {
   @override
   State<MultipleAssetPicker> createState() => _MultipleAssetPickerState();
 
-  /// [paths] 文件地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
   static List<ExtendedAssetEntity> convertPaths(List<String> paths,
       {AssetType assetsType = AssetType.image}) {
     List<ExtendedAssetEntity> list = [];
@@ -94,7 +94,7 @@ class MultipleAssetPicker extends FlAssetsPicker {
     return list;
   }
 
-  /// [url] 地址转换 List<ExtendedAssetModel> 默认类型为  [AssetType.image]
+  /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
   static List<ExtendedAssetEntity> convertUrls(String url,
       {AssetType assetsType = AssetType.image, String? splitPattern}) {
     List<ExtendedAssetEntity> list = [];
