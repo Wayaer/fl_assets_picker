@@ -8,7 +8,7 @@
 PRODUCT_NAME = example
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.fl.assets.picker.example
+PRODUCT_BUNDLE_IDENTIFIER = fl.assets.picker.example
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2023 com.fl.assets.picker. All rights reserved.
