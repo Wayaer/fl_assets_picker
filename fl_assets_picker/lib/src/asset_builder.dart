@@ -1,30 +1,18 @@
 part of '../fl_assets_picker.dart';
 
 class PickerActionOptions {
-  const PickerActionOptions(
-      {required this.action,
-      required this.text,
-      this.requestType = RequestType.common});
+  const PickerActionOptions({required this.action, required this.text});
 
   /// 选择来源
   final PickerAction action;
 
   /// 显示的文字
   final Widget text;
-
-  /// [PickerAction.values];
-  final RequestType requestType;
 }
 
 List<PickerActionOptions> get defaultPickerActionOptions => [
-      PickerActionOptions(
-          action: PickerAction.gallery,
-          text: Text('图库选择'),
-          requestType: RequestType.image),
-      PickerActionOptions(
-          action: PickerAction.camera,
-          text: Text('相机拍摄'),
-          requestType: RequestType.image),
+      PickerActionOptions(action: PickerAction.gallery, text: Text('图库选择')),
+      PickerActionOptions(action: PickerAction.camera, text: Text('相机拍摄')),
       PickerActionOptions(
           action: PickerAction.cancel,
           text: Text('取消', style: TextStyle(color: Colors.red))),

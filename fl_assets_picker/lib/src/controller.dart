@@ -72,13 +72,14 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
     final actionOptions =
         await FlAssetsPicker.showPickActions(context, actions);
     if (actionOptions == null) return;
-    switch (actionOptions.action) {
-      case PickerAction.gallery:
-        if (context.mounted) await pickAssets(context, reset: reset);
-      case PickerAction.camera:
-        if (context.mounted) await pickFromCamera(context, reset: reset);
-      case PickerAction.cancel:
-        break;
+    if (context.mounted) {
+      final assets = await actionOptions.action.pick(context, options: this);
+      if (assets.isEmpty) return;
+      if (reset) entities.clear();
+      for (final asset in assets) {
+        entities.add(await asset.toExtended(renovate: onRenovate));
+      }
+      notifyListeners();
     }
   }
 
