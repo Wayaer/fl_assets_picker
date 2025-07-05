@@ -1,3 +1,8 @@
+## 5.0.0
+
+* Breaking change， Please refer to
+  the [example](https://github.com/Wayaer/fl_assets_picker/blob/main/fl_assets_picker/example/lib/main.dart)
+
 ## 4.1.0
 
 * Fix some issues
@@ -7,14 +12,14 @@
 
 * Modify the static method name of `FlAssetsPicker`
 * Remove `pickerIconBuilder` from `MultipleImagePicker`,Please use the `pickIcon` of `itemConfig`
-* Change the `PickerFromTypeItem` to the `PickerActions`
-* Change the `PickerFromType` to the `PickerOptionalActions`
+* Change the `PickerFromTypeItem` to the `PickerActionOptions`
+* Change the `PickerFromType` to the `PickerAction`
 * Change the `fromTypes` to the `actions`
 * Fix known issues
 
 ## 3.0.1
 
-* Fixed an issue with `SingleAssetPicker` not showing
+* Fixed an issue with `SingleAssetsPicker` not showing
 * Error callback changed to enum
 
 ## 3.0.0

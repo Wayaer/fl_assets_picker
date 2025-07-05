@@ -12,9 +12,9 @@ void main() {
       AssetBuilder(entity, isThumbnail: isThumbnail);
 
   /// 设置权限申请回调
-  FlAssetsPicker.checkPermission = (PickerOptionalActions action) async {
+  FlAssetsPicker.checkPermission = (PickerAction action) async {
     if (!isMobile) return true;
-    if (action == PickerOptionalActions.gallery) {
+    if (action == PickerAction.gallery) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -22,7 +22,7 @@ void main() {
         return resultStorage;
       }
       return false;
-    } else if (action == PickerOptionalActions.camera) {
+    } else if (action == PickerAction.camera) {
       final permissionState = await Permission.camera.request();
       return permissionState.isGranted;
     }
@@ -67,7 +67,7 @@ void main() {
 
 ```dart
 /// 单选
-SingleAssetPicker();
+SingleAssetsPicker();
 
 /// 多选
 MultipleAssetPicker();

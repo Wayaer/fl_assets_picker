@@ -1,8 +1,4 @@
-import 'dart:io';
-
-import 'package:fl_assets_picker/fl_assets_picker.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+part of '../fl_assets_picker.dart';
 
 class ExtendedAssetEntity extends AssetEntity {
   ExtendedAssetEntity.fromPreviewed({
@@ -89,14 +85,17 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
   }
 }
 
+typedef ExtendedAssetEntityRenovate = FutureOr<dynamic> Function(
+    AssetEntity entity);
+
 extension ExtensionAssetEntity on AssetEntity {
   ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
   Future<ExtendedAssetEntity> toExtended(
-      {FlAssetFileRenovate? renovate}) async {
+      {ExtendedAssetEntityRenovate? renovate}) async {
     return ExtendedAssetEntity(
         thumbnailDataAsync: await thumbnailData,
         fileAsync: await file,
-        renovated: renovate == null ? null : await renovate(this),
+        renovated: await renovate?.call(this),
         id: id,
         typeInt: typeInt,
         width: width,

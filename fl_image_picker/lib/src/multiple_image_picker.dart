@@ -30,7 +30,7 @@ typedef MultipleImagePickerListBuilder = Widget Function(List<Widget> images);
 typedef MultiplePickerListItemBuilder = Widget Function(
     ExtendedXFile item, int index);
 
-class MultipleImagePicker<T> extends FlImagePicker {
+class MultipleImagePicker extends FlImagePicker {
   const MultipleImagePicker({
     super.key,
     required super.controller,
@@ -114,7 +114,7 @@ class MultipleImagePicker<T> extends FlImagePicker {
   }
 }
 
-class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
+class _MultipleImagePickerState extends State<MultipleImagePicker> {
   @override
   void initState() {
     super.initState();

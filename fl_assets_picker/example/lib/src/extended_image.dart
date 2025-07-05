@@ -1,11 +1,6 @@
-import 'dart:io';
-
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-typedef ExtendedImageLoadStateBuilder = Widget Function(ExtendedImageState);
 
 class ExtendedImageWithImagePicker extends ExtendedImage {
   ExtendedImageWithImagePicker(ImageProvider image,

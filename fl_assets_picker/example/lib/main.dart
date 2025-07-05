@@ -1,8 +1,5 @@
-import 'dart:io';
-
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:example/src/previewed.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:fl_extended/fl_extended.dart';
 import 'package:flutter/cupertino.dart';
@@ -38,9 +35,9 @@ Future<void> main() async {
 void flAssetsPickerInit() {
   FlAssetsPicker.assetBuilder = (entity, bool isThumbnail) =>
       AssetBuilder(entity, isThumbnail: isThumbnail);
-  FlAssetsPicker.checkPermission = (PickerOptionalActions action) async {
+  FlAssetsPicker.checkPermission = (PickerAction action) async {
     if (!isMobile) return true;
-    if (action == PickerOptionalActions.gallery) {
+    if (action == PickerAction.gallery) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -52,150 +49,152 @@ void flAssetsPickerInit() {
             (await Permission.videos.request()).isGranted;
       }
       return false;
-    } else if (action == PickerOptionalActions.camera) {
+    } else if (action == PickerAction.camera) {
       final permissionState = await Permission.camera.request();
       return permissionState.isGranted;
     }
     return false;
   };
-  FlAssetsPicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
-  FlAssetsPicker.previewBuilder = (context, entity, allEntity) {
-    return FlPreviewGesturePageView(
-        pageView: ExtendedImageGesturePageView.builder(
-            itemCount: allEntity.length,
-            controller:
-                ExtendedPageController(initialPage: allEntity.indexOf(entity)),
-            itemBuilder: (_, int index) =>
-                FlAssetsPicker.assetBuilder(allEntity[index], false)));
-  };
-  FlAssetsPicker.errorCallback = (ErrorDes des) {
-    switch (des) {
-      case ErrorDes.maxBytes:
-        showToast('资源过大');
-        break;
-      case ErrorDes.maxCount:
-        showToast('超过最大数量');
-        break;
-      case ErrorDes.maxVideoCount:
-        showToast('超过最大视频数量');
-        break;
-      case ErrorDes.none:
-        showToast('未获取都资源');
-        break;
-    }
-  };
 }
 
-class _HomePage extends StatelessWidget {
+/// 自定义图片选择器
+class BaseAssetsPickerController extends AssetsPickerController {
+  BaseAssetsPickerController({
+    super.actions,
+    super.allowPick = true,
+    super.entities,
+    super.assetConfig = const AssetPickerConfig(),
+    super.cameraConfig = const CameraPickerConfig(),
+    super.useRootNavigator = true,
+    super.pageRouteBuilderForAssetPicker,
+    super.pageRouteBuilderForCameraPicker,
+  });
+
+  @override
+  Future<void> pickAssets(BuildContext context, {bool reset = false}) {
+    log('Start Pick Assets');
+    return super.pickAssets(context, reset: reset);
+  }
+
+  @override
+  Future<void> pickFromCamera(BuildContext context, {bool reset = false}) {
+    log('Start Pick From Camera');
+    return super.pickFromCamera(context, reset: reset);
+  }
+
+  @override
+  Future<void> pickActions(BuildContext context,
+      {bool requestFocus = true, bool reset = false}) async {
+    log('Start Pick Actions');
+    super.pickActions(context, reset: reset, requestFocus: requestFocus);
+  }
+
+  @override
+  ExtendedAssetEntityRenovate? get onRenovate => (AssetEntity entity) async {
+        if (entity.type == AssetType.image) {
+          final file = await entity.file;
+          if (file != null) return await compressImage(file);
+        }
+        return null;
+      };
+
+  @override
+  Future<void> delete(ExtendedAssetEntity entity) async {
+    final value = await CupertinoAlertDialog(
+        content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            constraints: const BoxConstraints(maxHeight: 100),
+            child: const Text('确定要删除么')),
+        actions: [
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(false);
+              },
+              child: const BText('取消', fontSize: 14, color: Colors.grey)),
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(true);
+              },
+              child: const BText('确定', fontSize: 14, color: Colors.grey)),
+        ]).popupCupertinoModal<bool?>();
+    if (value == true) return super.delete(entity);
+  }
+
+  @override
+  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
+    final builder = buildPreviewModal(initialIndex: initialIndex);
+    if (context.mounted) return await builder.popupDialog<T>();
+    return super.preview(context, initialIndex: initialIndex);
+  }
+}
+
+class _HomePage extends StatefulWidget {
   const _HomePage();
+
+  @override
+  State<_HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<_HomePage> {
+  BaseAssetsPickerController singlePickerController =
+      BaseAssetsPickerController();
+  BaseAssetsPickerController multiplePickerController =
+      BaseAssetsPickerController();
+
+  @override
+  void initState() {
+    super.initState();
+    final initialData = SingleAssetsPicker.convertUrl(url);
+    if (initialData != null) {
+      singlePickerController.entities = [initialData];
+    }
+    multiplePickerController.entities = MultipleAssetsPicker.convertUrls(url);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Universal(
         padding: const EdgeInsets.all(12),
         isScroll: true,
+        spacing: 12,
         children: [
-          const Text('单资源选择 混选').marginAll(12),
-          buildSingleAssetPicker(RequestType.common),
-          const Text('单资源选择 仅图片').marginAll(12),
-          buildSingleAssetPicker(RequestType.image),
-          const Text('单资源选择 仅视频').marginAll(12),
-          buildSingleAssetPicker(RequestType.video),
-          const Text('多资源选择 混选').marginAll(12),
-          buildMultipleAssetPicker(RequestType.common),
-          const Text('多资源选择 仅图片').marginAll(12),
-          buildMultipleAssetPicker(RequestType.image),
-          const Text('多资源选择 仅视频').marginAll(12),
-          buildMultipleAssetPicker(RequestType.video),
+          const Text('单资源选择'),
+          buildSingleAssetsPicker(singlePickerController),
+          const Text('多资源选择 混选'),
+          buildMultipleAssetPicker(multiplePickerController),
         ]);
   }
 
-  Widget buildSingleAssetPicker(RequestType requestType) {
-    final actions = [
-      PickerActions(
-          action: PickerOptionalActions.gallery,
-          requestType: requestType,
-          text: const Text('图库选择')),
-      PickerActions(
-          action: PickerOptionalActions.camera,
-          requestType: requestType,
-          text: const Text('相机拍摄')),
-      const PickerActions(
-          action: PickerOptionalActions.cancel, text: Text('取消'))
-    ];
+  Widget buildSingleAssetsPicker(AssetsPickerController controller) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-      SingleAssetPicker(
-          actions: actions,
-          renovate: (AssetEntity entity) async {
-            final file = await entity.file;
-            if (file != null) return await compressImage(file);
-            return null;
-          },
-          initialData: SingleAssetPicker.convertUrl(url),
-          itemConfig: AssetsPickerItemConfig(
+      SingleAssetsPicker(
+          controller: controller,
+          itemConfig: FlAssetsPickerItemConfig(
               borderRadius: BorderRadius.circular(10),
-              color: Colors.amberAccent),
-          onChanged: (ExtendedAssetEntity value) {
-            'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
+              backgroundColor: Colors.amberAccent),
+          onChanged: (ExtendedAssetEntity? value) {
+            'onChanged ${value?.realValueStr}  realValue Type: ${value?.realValue?.runtimeType}'
                 .log();
           }),
-      SingleAssetPicker(
-          actions: actions,
-          initialData: SingleAssetPicker.convertUrl(url),
-          itemConfig: AssetsPickerItemConfig(
+      SingleAssetsPicker(
+          controller: controller,
+          itemConfig: FlAssetsPickerItemConfig(
               borderRadius: BorderRadius.circular(40),
-              color: Colors.amberAccent),
-          onChanged: (ExtendedAssetEntity value) {
-            'onChanged ${value.realValueStr}  realValue Type: ${value.realValue.runtimeType}'
+              backgroundColor: Colors.amberAccent),
+          onChanged: (ExtendedAssetEntity? value) {
+            'onChanged ${value?.realValueStr}  realValue Type: ${value?.realValue?.runtimeType}'
                 .log();
           }),
     ]);
   }
 
-  Widget buildMultipleAssetPicker(RequestType requestType) =>
-      MultipleAssetPicker(
-          initialData: MultipleAssetPicker.convertUrls(url),
-          maxVideoCount: 6,
-          actions: [
-            PickerActions(
-                action: PickerOptionalActions.gallery,
-                text: const Text('图库选择'),
-                requestType: requestType),
-            PickerActions(
-                action: PickerOptionalActions.camera,
-                text: const Text('相机拍摄'),
-                requestType: requestType),
-            const PickerActions(
-                action: PickerOptionalActions.cancel, text: Text('取消')),
-          ],
-          itemConfig: AssetsPickerItemConfig(
-              delete: const DefaultDeleteIcon(backgroundColor: Colors.blue),
-              deletionConfirmation: (_) async {
-                final value = await CupertinoAlertDialog(
-                    content: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        constraints: const BoxConstraints(maxHeight: 100),
-                        child: const Text('确定要删除么')),
-                    actions: [
-                      Universal(
-                          height: 45,
-                          alignment: Alignment.center,
-                          onTap: () {
-                            pop(false);
-                          },
-                          child: const BText('取消',
-                              fontSize: 14, color: Colors.grey)),
-                      Universal(
-                          height: 45,
-                          alignment: Alignment.center,
-                          onTap: () {
-                            pop(true);
-                          },
-                          child: const BText('确定',
-                              fontSize: 14, color: Colors.grey)),
-                    ]).popupCupertinoModal<bool?>();
-                return value ?? false;
-              }),
+  Widget buildMultipleAssetPicker(AssetsPickerController controller) =>
+      MultipleAssetsPicker(
+          controller: controller,
           onChanged: (List<ExtendedAssetEntity> value) {
             'onChanged ${value.builder((item) => item.realValueStr)}'.log();
           });

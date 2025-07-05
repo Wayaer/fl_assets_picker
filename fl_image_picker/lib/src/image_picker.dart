@@ -180,7 +180,7 @@ FlImageBuilder get _defaultImageBuilder =>
     };
 
 /// 默认 [PickerActionBuilder]
-PickerActionBuilder get _defaultFromTypesBuilder =>
+PickerActionBuilder get _defaultActionsBuilder =>
     (_, List<PickerActionOptions> actions) => FlPickerActionBuilder(actions);
 
 abstract class FlImagePicker extends StatefulWidget {
@@ -194,7 +194,7 @@ abstract class FlImagePicker extends StatefulWidget {
   static FlImagePickerCheckPermission? checkPermission;
 
   /// 类型来源选择器
-  static PickerActionBuilder actionsBuilder = _defaultFromTypesBuilder;
+  static PickerActionBuilder actionsBuilder = _defaultActionsBuilder;
 
   const FlImagePicker({
     super.key,

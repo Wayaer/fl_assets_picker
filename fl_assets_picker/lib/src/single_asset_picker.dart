@@ -1,33 +1,24 @@
-part of 'asset_picker.dart';
+part of '../fl_assets_picker.dart';
 
-typedef SinglePickerEntryBuilder = Widget Function(ExtendedAssetEntity entry);
-
-class SingleAssetPicker extends FlAssetsPicker {
-  const SingleAssetPicker({
+class SingleAssetsPicker extends FlAssetsPicker {
+  const SingleAssetsPicker({
     super.key,
-    super.enablePicker = true,
-    super.actions = defaultPickerActions,
-    super.pageRouteBuilderForCameraPicker,
-    super.pageRouteBuilderForAssetPicker,
-    super.renovate,
-    super.itemConfig = const AssetsPickerItemConfig(),
+    required super.controller,
+    super.disposeController = false,
+    super.itemConfig = const FlAssetsPickerItemConfig(),
     this.onChanged,
-    this.builder,
-    this.initialData,
-    this.allowDelete = true,
-  }) : super(maxCount: 1, maxVideoCount: 1);
-
-  /// 是否显示删除按钮
-  final bool allowDelete;
-
-  /// 默认初始资源
-  final ExtendedAssetEntity? initialData;
+    this.size = 60,
+    this.height = 60,
+    this.width = 60,
+  });
 
   /// 资源选择变化
-  final ValueChanged<ExtendedAssetEntity>? onChanged;
+  final ValueChanged<ExtendedAssetEntity?>? onChanged;
 
-  /// 资源渲染子元素自定义构造
-  final SinglePickerEntryBuilder? builder;
+  /// [size] > [height]、[width]
+  final double? size;
+  final double height;
+  final double width;
 
   /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
   static ExtendedAssetEntity? convertPath(String path,
@@ -50,85 +41,66 @@ class SingleAssetPicker extends FlAssetsPicker {
   }
 
   @override
-  State<SingleAssetPicker> createState() => _SingleAssetPickerState();
+  State<SingleAssetsPicker> createState() => _SingleAssetsPickerState();
 }
 
-class _SingleAssetPickerState extends State<SingleAssetPicker> {
-  late AssetsPickerController controller;
-
+class _SingleAssetsPickerState extends State<SingleAssetsPicker> {
   @override
   void initState() {
     super.initState();
-    initialize();
-  }
-
-  void initialize() {
-    controller = AssetsPickerController();
-    controller.assetsPicker = widget;
-    if (widget.initialData != null) {
-      controller.allEntity = [widget.initialData!];
-    }
-    controller.addListener(listener);
-  }
-
-  @override
-  void didUpdateWidget(covariant SingleAssetPicker oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    controller.assetsPicker = widget;
+    widget.controller.addListener(listener);
   }
 
   void listener() {
-    if (controller.allEntity.isNotEmpty) {
-      widget.onChanged?.call(controller.allEntity.first);
-      if (mounted) setState(() {});
-    }
+    widget.onChanged?.call(widget.controller.entities.firstOrNull);
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     Widget current = widget.itemConfig.pick;
-    final allEntity = controller.allEntity;
+    final entities = widget.controller.entities;
     final config = widget.itemConfig;
-    if (allEntity.isNotEmpty) {
-      final entity = allEntity.first;
-      current = widget.builder?.call(entity) ?? entryBuild(entity);
-      if (entity.type == AssetType.video || entity.type == AssetType.audio) {
+    if (entities.isNotEmpty) {
+      final entity = entities.first;
+      current = buildEntity(entity);
+      if (entity.type == AssetType.video) {
         current = Stack(children: [
           SizedBox.expand(child: current),
-          if (entity.type == AssetType.video || entity.type == AssetType.audio)
-            Align(alignment: Alignment.center, child: config.play),
+          Align(alignment: Alignment.center, child: config.play),
         ]);
       }
     }
-    if (config.color != null) {
-      current = ColoredBox(color: config.color!, child: current);
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
     }
-    if (widget.enablePicker) {
-      current = GestureDetector(onTap: pickerAsset, child: current);
+    if (widget.controller.allowPick) {
+      current = GestureDetector(
+          onTap: () {
+            widget.controller.pickActions(context, reset: true);
+          },
+          child: current);
     }
-    current = SizedBox.fromSize(size: config.size, child: current);
+    current = SizedBox.fromSize(
+        size: Size(widget.size ?? widget.width, widget.size ?? widget.height),
+        child: current);
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
   }
 
-  Widget entryBuild(ExtendedAssetEntity entity) {
+  Widget buildEntity(ExtendedAssetEntity entity) {
     if (entity.realValue == null) {
       return widget.itemConfig.pick;
     }
     return FlAssetsPicker.assetBuilder(entity, true);
   }
 
-  void pickerAsset() async {
-    FocusScope.of(context).requestFocus(FocusNode());
-    controller.pickActions(context);
-  }
-
   @override
   void dispose() {
     super.dispose();
-    controller.removeListener(listener);
-    controller.dispose();
+    widget.controller.removeListener(listener);
+    if (widget.disposeController) widget.controller.dispose();
   }
 }

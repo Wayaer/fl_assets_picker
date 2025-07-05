@@ -1,7 +1,6 @@
 import 'package:example/main.dart';
 import 'package:example/src/extended_image.dart';
 import 'package:example/src/fl_video.dart';
-import 'package:extended_image/extended_image.dart';
 import 'package:fl_assets_picker/fl_assets_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
