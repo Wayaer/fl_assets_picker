@@ -126,7 +126,7 @@ class _FlVideoPlayerWithImagePickerState
   void dispose() {
     super.dispose();
     flController?.pause();
-    flController?.dispose();
+    flController?.dispose(true);
     WidgetsBinding.instance.removeObserver(this);
   }
 }

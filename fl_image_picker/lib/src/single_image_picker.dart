@@ -1,34 +1,37 @@
-part of 'image_picker.dart';
+part of '../fl_image_picker.dart';
 
 class SingleImagePicker extends FlImagePicker {
   const SingleImagePicker({
     super.key,
-    super.enablePicker = true,
-    super.actions = defaultPickerActions,
-    super.renovate,
-    super.itemConfig = const ImagePickerItemConfig(),
+    required super.controller,
+    super.disposeController = false,
+    super.itemConfig = const FlImagePickerItemConfig(),
     this.onChanged,
-    this.initialData,
-  }) : super(maxCount: 1, maxVideoCount: 1);
-
-  /// 默认初始资源
-  final ExtendedXFile? initialData;
+    this.size = 60,
+    this.height = 60,
+    this.width = 60,
+  });
 
   /// 资源选择变化
-  final ValueChanged<ExtendedXFile>? onChanged;
+  final ValueChanged<ExtendedXFile?>? onChanged;
 
-  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
+  /// [size] > [height]、[width]
+  final double? size;
+  final double height;
+  final double width;
+
+  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
   static ExtendedXFile? convertPaths(String path,
-      {ImageType assetsType = ImageType.image}) {
+      {AssetType assetsType = AssetType.image}) {
     if (path.isNotEmpty) {
       return ExtendedXFile.fromPreviewed(path, assetsType);
     }
     return null;
   }
 
-  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
+  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
   static ExtendedXFile? convertUrl(String url,
-      {ImageType assetsType = ImageType.image}) {
+      {AssetType assetsType = AssetType.image}) {
     if (url.isNotEmpty) {
       return ExtendedXFile.fromPreviewed(url, assetsType);
     }
@@ -40,58 +43,45 @@ class SingleImagePicker extends FlImagePicker {
 }
 
 class _SingleImagePickerState extends State<SingleImagePicker> {
-  late ImagePickerController controller;
-
   @override
   void initState() {
     super.initState();
-    initialize();
-  }
-
-  void initialize() {
-    controller = ImagePickerController();
-    controller.imagePicker = widget;
-    if (widget.initialData != null) {
-      controller.allEntity = [widget.initialData!];
-    }
-    controller.addListener(listener);
-  }
-
-  @override
-  void didUpdateWidget(covariant SingleImagePicker oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    controller.imagePicker = widget;
+    widget.controller.addListener(listener);
   }
 
   void listener() {
-    if (controller.allEntity.isNotEmpty) {
-      widget.onChanged?.call(controller.allEntity.first);
-      if (mounted) setState(() {});
-    }
+    widget.onChanged?.call(widget.controller.entities.firstOrNull);
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     Widget current = widget.itemConfig.pick;
-    final allEntity = controller.allEntity;
+    final entities = widget.controller.entities;
     final config = widget.itemConfig;
-    if (allEntity.isNotEmpty) {
-      final entity = allEntity.first;
+    if (entities.isNotEmpty) {
+      final entity = entities.first;
       current = buildEntity(entity);
-      if (entity.type == ImageType.video) {
+      if (entity.type == AssetType.video) {
         current = Stack(children: [
           SizedBox.expand(child: current),
           Align(alignment: Alignment.center, child: config.play),
         ]);
       }
     }
-    if (config.color != null) {
-      current = ColoredBox(color: config.color!, child: current);
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
     }
-    if (widget.enablePicker) {
-      current = GestureDetector(onTap: pickImage, child: current);
+    if (widget.controller.allowPick) {
+      current = GestureDetector(
+          onTap: () {
+            widget.controller.pickActions(context, reset: true);
+          },
+          child: current);
     }
-    current = SizedBox.fromSize(size: config.size, child: current);
+    current = SizedBox.fromSize(
+        size: Size(widget.size ?? widget.width, widget.size ?? widget.height),
+        child: current);
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
@@ -105,15 +95,10 @@ class _SingleImagePickerState extends State<SingleImagePicker> {
     return FlImagePicker.imageBuilder(entity, true);
   }
 
-  void pickImage() async {
-    FocusScope.of(context).requestFocus(FocusNode());
-    controller.pickActions(context);
-  }
-
   @override
   void dispose() {
     super.dispose();
-    controller.removeListener(listener);
-    controller.dispose();
+    widget.controller.removeListener(listener);
+    if (widget.disposeController) widget.controller.dispose();
   }
 }

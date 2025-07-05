@@ -1,62 +1,41 @@
-import 'package:fl_image_picker/fl_image_picker.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+part of '../fl_image_picker.dart';
 
-class PickerActions {
-  const PickerActions({required this.action, required this.text});
+class PickerActionOptions {
+  const PickerActionOptions({required this.action, required this.text});
 
   /// 来源
-  final PickerOptionalActions action;
+  final PickerAction action;
 
   /// 显示的文字
   final Widget text;
 }
 
-enum PickerOptionalActions {
-  /// 仅图片
-  image,
+List<PickerActionOptions> get defaultImagePickerActionOptions => [
+      PickerActionOptions(action: PickerAction.image, text: Text('单图片选择')),
+      PickerActionOptions(action: PickerAction.multiImage, text: Text('多图片选择')),
+      PickerActionOptions(action: PickerAction.video, text: Text('单视频选择')),
+      PickerActionOptions(action: PickerAction.media, text: Text('单媒体选择')),
+      PickerActionOptions(action: PickerAction.multiMedia, text: Text('多媒体选择')),
+      PickerActionOptions(action: PickerAction.takePicture, text: Text('相机拍照')),
+      PickerActionOptions(
+          action: PickerAction.cameraRecording, text: Text('相机录像')),
+      PickerActionOptions(
+          action: PickerAction.cancel,
+          text: Text('取消', style: TextStyle(color: Colors.red))),
+    ];
 
-  /// 仅视频
-  video,
-
-  /// 拍照
-  takePictures,
-
-  /// 相机录像
-  recording,
-
-  /// 取消
-  cancel,
-}
-
-const List<PickerActions> defaultPickerActions = [
-  PickerActions(action: PickerOptionalActions.image, text: Text('选择图片')),
-  PickerActions(action: PickerOptionalActions.video, text: Text('选择视频')),
-  PickerActions(action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
-  PickerActions(action: PickerOptionalActions.recording, text: Text('相机录像')),
-  PickerActions(
-      action: PickerOptionalActions.cancel,
-      text: Text('取消', style: TextStyle(color: Colors.red))),
-];
-
-typedef DeletionConfirmation = Future<bool> Function(ExtendedXFile entity);
-
-class ImagePickerItemConfig {
-  const ImagePickerItemConfig(
-      {this.color,
+/// 图片选择器 item 配置
+class FlImagePickerItemConfig {
+  const FlImagePickerItemConfig(
+      {this.backgroundColor,
       this.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      this.size = const Size(65, 65),
-      this.pick = const DefaultPickIcon(),
-      this.delete = const DefaultDeleteIcon(),
-      this.deletionConfirmation,
+      this.pick = const FlImagePickerPickIcon(),
+      this.delete = const FlImagePickerDeleteIcon(),
       this.play = const Icon(Icons.play_circle_outline,
           size: 30, color: Color(0x804D4D4D))});
 
   /// 颜色
-  final Color? color;
-
-  /// 尺寸
-  final Size size;
+  final Color? backgroundColor;
 
   /// 圆角
   final BorderRadiusGeometry? borderRadius;
@@ -64,25 +43,29 @@ class ImagePickerItemConfig {
   /// 视频预览 播放 icon
   final Widget play;
 
-  /// 添加选择item
+  /// 添加选择 item
   final Widget pick;
 
   /// 删除按钮
   final Widget delete;
-
-  /// 删除确认
-  final DeletionConfirmation? deletionConfirmation;
 }
 
-class DefaultPickIcon extends StatelessWidget {
-  const DefaultPickIcon(
-      {super.key,
-      this.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      this.borderColor = const Color(0x804D4D4D),
-      this.iconColor = const Color(0x804D4D4D),
-      this.backgroundColor,
-      this.icon,
-      this.size = 30});
+/// Image picker icon
+class FlImagePickerIcon extends StatelessWidget {
+  const FlImagePickerIcon({
+    super.key,
+    this.shape = BoxShape.rectangle,
+    this.borderRadius,
+    this.borderColor,
+    this.borderWidth = 1,
+    required this.iconColor,
+    this.backgroundColor,
+    required this.size,
+    this.icon,
+    this.iconData,
+    this.padding,
+    this.alignment,
+  });
 
   /// 圆角
   final BorderRadiusGeometry? borderRadius;
@@ -90,66 +73,98 @@ class DefaultPickIcon extends StatelessWidget {
   /// 边框
   final Color? borderColor;
 
+  /// 边框
+  final double borderWidth;
+
   /// 图标
   final Color iconColor;
+
+  /// 图标
+  final IconData? iconData;
+
+  /// 图标
+  final Widget? icon;
 
   /// 背景
   final Color? backgroundColor;
 
-  /// 尺寸
+  /// size
   final double size;
 
-  /// 图标
-  final Widget? icon;
+  /// padding
+  final EdgeInsetsGeometry? padding;
 
-  @override
-  Widget build(BuildContext context) => Container(
-      decoration: BoxDecoration(
-          border: borderColor == null ? null : Border.all(color: borderColor!),
-          borderRadius: borderRadius),
-      child: icon ?? Icon(Icons.add, size: size, color: iconColor));
-}
+  /// 形状
+  final BoxShape shape;
 
-class DefaultDeleteIcon extends StatelessWidget {
-  const DefaultDeleteIcon(
-      {super.key,
-      this.icon,
-      this.iconColor = Colors.white,
-      this.backgroundColor = Colors.redAccent,
-      this.size = 12});
-
-  final Widget? icon;
-  final Color iconColor;
-  final Color backgroundColor;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) => Container(
-      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
-      padding: const EdgeInsets.all(2),
-      child: icon ?? Icon(Icons.clear, size: size, color: iconColor));
-}
-
-class FlPickerOptionalActionsBuilder extends StatelessWidget {
-  const FlPickerOptionalActionsBuilder(this.list, {super.key});
-
-  final List<PickerActions> list;
+  /// 对齐方式
+  final AlignmentGeometry? alignment;
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> actions = [];
-    Widget? cancelButton;
-    for (var element in list) {
+    return Container(
+        alignment: alignment,
+        decoration: BoxDecoration(
+            color: backgroundColor,
+            shape: shape,
+            border: borderColor == null
+                ? null
+                : Border.all(color: borderColor!, width: borderWidth),
+            borderRadius: borderRadius),
+        padding: padding,
+        child: icon ?? Icon(iconData, size: size, color: iconColor));
+  }
+}
+
+/// Pick icon
+class FlImagePickerPickIcon extends FlImagePickerIcon {
+  const FlImagePickerPickIcon(
+      {super.key,
+      super.icon,
+      super.borderRadius = const BorderRadius.all(Radius.circular(8)),
+      super.borderColor = const Color(0x804D4D4D),
+      super.iconColor = const Color(0x804D4D4D),
+      super.backgroundColor,
+      super.shape,
+      super.iconData = Icons.add,
+      super.size = 30})
+      : super(alignment: Alignment.center);
+}
+
+/// Delete icon
+class FlImagePickerDeleteIcon extends FlImagePickerIcon {
+  const FlImagePickerDeleteIcon(
+      {super.key,
+      super.icon,
+      super.iconColor = Colors.white,
+      super.backgroundColor = Colors.redAccent,
+      super.size = 12,
+      super.shape = BoxShape.circle,
+      super.iconData = Icons.close,
+      super.padding = const EdgeInsets.all(2)});
+}
+
+/// [PickerActionOptions] Action builder
+class FlPickerActionBuilder extends StatelessWidget {
+  const FlPickerActionBuilder(this.actions, {super.key});
+
+  final List<PickerActionOptions> actions;
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> list = [];
+    Widget? cancel;
+    for (var element in actions) {
       final entry = CupertinoActionSheetAction(
           onPressed: () => Navigator.of(context).maybePop(element),
           isDefaultAction: false,
           child: element.text);
-      if (element.action != PickerOptionalActions.cancel) {
-        actions.add(entry);
+      if (element.action != PickerAction.cancel) {
+        list.add(entry);
       } else {
-        cancelButton = entry;
+        cancel = entry;
       }
     }
-    return CupertinoActionSheet(cancelButton: cancelButton, actions: actions);
+    return CupertinoActionSheet(cancelButton: cancel, actions: list);
   }
 }

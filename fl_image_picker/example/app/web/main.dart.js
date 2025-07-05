@@ -25725,7 +25725,7 @@ $idp:1}
 A.kh.prototype={
 F(){return"ImageFileType."+this.b}}
 A.i_.prototype={
-F(){return"ImageType."+this.b}}
+F(){return"AssetType."+this.b}}
 A.iT.prototype={
 F(){return"ImageFileSignature."+this.b}}
 A.aeQ.prototype={
@@ -36659,7 +36659,7 @@ A.W9.prototype={
 $0(){return A.kz(this.a,!1).ME(this.b)},
 $S:0}
 A.mC.prototype={
-F(){return"ImageType."+this.b}}
+F(){return"AssetType."+this.b}}
 A.oS.prototype={
 F(){return"ErrorDes."+this.b}}
 A.afk.prototype={

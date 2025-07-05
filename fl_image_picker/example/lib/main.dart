@@ -33,10 +33,15 @@ Future<void> main() async {
 void flImagePickerInit() {
   FlImagePicker.imageBuilder = (entity, bool isThumbnail) =>
       ImageBuilder(entity, isThumbnail: isThumbnail);
-  FlImagePicker.checkPermission = (PickerOptionalActions action) async {
+  FlImagePicker.checkPermission = (PickerAction action) async {
     if (isWeb || !isMobile) return true;
-    if (action == PickerOptionalActions.image ||
-        action == PickerOptionalActions.video) {
+    if (action == PickerAction.takePicture ||
+        action == PickerAction.cameraRecording) {
+      final permissionState = await Permission.camera.request();
+      return permissionState.isGranted;
+    } else if (action == PickerAction.video ||
+        action == PickerAction.multiImage ||
+        action == PickerAction.image) {
       if (isIOS) {
         return (await Permission.photos.request()).isGranted;
       } else if (isAndroid) {
@@ -47,185 +52,146 @@ void flImagePickerInit() {
         return (await Permission.photos.request()).isGranted &&
             (await Permission.videos.request()).isGranted;
       }
-      return false;
-    } else if (action == PickerOptionalActions.takePictures ||
-        action == PickerOptionalActions.recording) {
-      final permissionState = await Permission.camera.request();
-      return permissionState.isGranted;
+    } else if (action == PickerAction.media ||
+        action == PickerAction.multiMedia) {
+      return true;
     }
     return false;
-  };
-  FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
-  FlImagePicker.previewBuilder = (context, entity, allEntity) {
-    return FlPreviewGesturePageView(
-        pageView: PageView.builder(
-            itemCount: allEntity.length,
-            itemBuilder: (_, int index) =>
-                FlImagePicker.imageBuilder(allEntity[index], false)));
-  };
-  FlImagePicker.errorCallback = (ErrorDes des) {
-    switch (des) {
-      case ErrorDes.maxBytes:
-        showToast('资源过大');
-        break;
-      case ErrorDes.maxCount:
-        showToast('超过最大数量');
-        break;
-      case ErrorDes.maxVideoCount:
-        showToast('超过最大视频数量');
-        break;
-    }
   };
 }
 
 const url =
     'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201612%2F31%2F20161231205134_uVTex.thumb.400_0.jpeg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1666931842&t=44493a6c92d1ddda89367519c6206491';
 
-class _HomePage extends StatelessWidget {
+/// 自定义图片选择器
+class BaseImagePickerController extends ImagePickerController {
+  BaseImagePickerController(
+      {super.actions,
+      super.allowPick = true,
+      super.entities,
+      super.options = const ImagePickerOptions()});
+
+  @override
+  Future<void> pick(PickerAction action, {bool reset = false}) async {
+    log('Start Pick');
+    super.pick(action, reset: reset);
+  }
+
+  @override
+  Future<void> pickActions(BuildContext context,
+      {bool requestFocus = true, bool reset = false}) async {
+    log('Start Pick Actions');
+    super.pickActions(context, reset: reset, requestFocus: requestFocus);
+  }
+
+  @override
+  ExtendedXFileRenovate? get onRenovate => (AssetType type, XFile file) async {
+        if (type == AssetType.image) {
+          return await compressImage(file);
+        }
+        return null;
+      };
+
+  @override
+  Future<void> delete(ExtendedXFile entity) async {
+    final value = await CupertinoAlertDialog(
+        content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            constraints: const BoxConstraints(maxHeight: 100),
+            child: const Text('确定要删除么')),
+        actions: [
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(false);
+              },
+              child: const BText('取消', fontSize: 14, color: Colors.grey)),
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(true);
+              },
+              child: const BText('确定', fontSize: 14, color: Colors.grey)),
+        ]).popupCupertinoModal<bool?>();
+    if (value == true) return super.delete(entity);
+  }
+
+  @override
+  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
+    final builder = buildPreviewModal(initialIndex: initialIndex);
+    if (context.mounted) return await builder.popupDialog<T>();
+    return super.preview(context, initialIndex: initialIndex);
+  }
+}
+
+class _HomePage extends StatefulWidget {
   const _HomePage();
+
+  @override
+  State<_HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<_HomePage> {
+  BaseImagePickerController singlePickerController =
+      BaseImagePickerController();
+  BaseImagePickerController multiplePickerController =
+      BaseImagePickerController();
+
+  @override
+  void initState() {
+    super.initState();
+    final initialData = SingleImagePicker.convertUrl(url);
+    if (initialData != null) {
+      singlePickerController.entities = [initialData];
+    }
+    multiplePickerController.entities = MultipleImagePicker.convertUrls(url);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Universal(
         padding: const EdgeInsets.all(12),
         isScroll: true,
+        spacing: 12,
         children: [
-          const Text('单资源选择 仅图片').marginAll(12),
-          buildSingleImagePicker(ImageType.image),
-          const Text('单资源选择 仅视频').marginAll(12),
-          buildSingleImagePicker(ImageType.video),
-          const Text('多资源选择 仅图片').marginAll(12),
-          buildMultiImagePicker(ImageType.image),
-          const Text('多资源选择 仅视频').marginAll(12),
-          buildMultiImagePicker(ImageType.video),
+          const Text('SingleImagePicker'),
+          buildSingleImagePicker(singlePickerController),
+          const Text('MultipleImagePicker'),
+          buildMultiImagePicker(multiplePickerController),
         ]);
   }
 
-  Widget buildSingleImagePicker(ImageType imageType) {
-    List<PickerActions> actions = [
-      const PickerActions(
-          action: PickerOptionalActions.cancel, text: Text('取消')),
-    ];
-
-    switch (imageType) {
-      case ImageType.other:
-        break;
-      case ImageType.image:
-        actions.insertAll(0, const [
-          PickerActions(
-              action: PickerOptionalActions.image, text: Text('图库选择')),
-          PickerActions(
-              action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
-        ]);
-        break;
-      case ImageType.video:
-        actions.insertAll(0, const [
-          PickerActions(
-              action: PickerOptionalActions.video, text: Text('图库选择')),
-          PickerActions(
-              action: PickerOptionalActions.recording, text: Text('相机拍摄')),
-        ]);
-        break;
-    }
-
+  Widget buildSingleImagePicker(ImagePickerController controller) {
     return Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
       SingleImagePicker(
-          actions: actions,
-          renovate: (ImageType imageType, XFile entity) async {
-            if (imageType == ImageType.image) {
-              return await compressImage(entity);
-            }
-            return null;
-          },
-          initialData: SingleImagePicker.convertUrl(url),
-          itemConfig: ImagePickerItemConfig(
+          controller: controller,
+          itemConfig: FlImagePickerItemConfig(
               borderRadius: BorderRadius.circular(10),
-              color: Colors.amberAccent),
-          onChanged: (ExtendedXFile value) {
-            'onChanged ${value.realValueStr}  renovated Type: ${value.renovated.runtimeType}'
+              backgroundColor: Colors.amberAccent),
+          onChanged: (ExtendedXFile? value) {
+            'onChanged ${value?.realValueStr}  renovated Type: ${value?.renovated.runtimeType}'
                 .log();
           }),
       SingleImagePicker(
-          renovate: (ImageType imageType, XFile entity) async {
-            if (imageType == ImageType.image) {
-              return await compressImage(entity);
-            }
-            return null;
-          },
-          actions: actions,
-          initialData: SingleImagePicker.convertUrl(url),
-          itemConfig: ImagePickerItemConfig(
+          controller: controller,
+          itemConfig: FlImagePickerItemConfig(
               borderRadius: BorderRadius.circular(40),
-              color: Colors.amberAccent),
-          onChanged: (ExtendedXFile value) {
-            'onChanged ${value.realValueStr}'.log();
+              backgroundColor: Colors.amberAccent),
+          onChanged: (ExtendedXFile? value) {
+            'onChanged ${value?.realValueStr}  renovated Type: ${value?.renovated.runtimeType}'
+                .log();
           }),
     ]);
   }
 
-  Widget buildMultiImagePicker(ImageType imageType) {
-    List<PickerActions> actions = [
-      const PickerActions(
-          action: PickerOptionalActions.cancel, text: Text('取消')),
-    ];
-
-    switch (imageType) {
-      case ImageType.other:
-        break;
-      case ImageType.image:
-        actions.insertAll(0, const [
-          PickerActions(
-              action: PickerOptionalActions.image, text: Text('图库选择')),
-          PickerActions(
-              action: PickerOptionalActions.takePictures, text: Text('相机拍照')),
-        ]);
-        break;
-      case ImageType.video:
-        actions.insertAll(0, const [
-          PickerActions(
-              action: PickerOptionalActions.video, text: Text('图库选择')),
-          PickerActions(
-              action: PickerOptionalActions.recording, text: Text('相机拍摄')),
-        ]);
-        break;
-    }
+  Widget buildMultiImagePicker(ImagePickerController controller) {
     return MultipleImagePicker(
-        initialData: MultipleImagePicker.convertUrls(url),
-        actions: actions,
-        renovate: (ImageType imageType, XFile entity) async {
-          if (imageType == ImageType.image) {
-            return await compressImage(entity);
-          }
-          return null;
-        },
-        itemConfig: ImagePickerItemConfig(
-            delete: const DefaultDeleteIcon(backgroundColor: Colors.blue),
-            deletionConfirmation: (_) async {
-              final value = await CupertinoAlertDialog(
-                  content: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      constraints: const BoxConstraints(maxHeight: 100),
-                      child: const Text('确定要删除么')),
-                  actions: [
-                    Universal(
-                        height: 45,
-                        alignment: Alignment.center,
-                        onTap: () {
-                          pop(false);
-                        },
-                        child: const BText('取消',
-                            fontSize: 14, color: Colors.grey)),
-                    Universal(
-                        height: 45,
-                        alignment: Alignment.center,
-                        onTap: () {
-                          pop(true);
-                        },
-                        child: const BText('确定',
-                            fontSize: 14, color: Colors.grey)),
-                  ]).popupCupertinoModal<bool?>();
-              return value ?? false;
-            }),
+        controller: controller,
+        itemConfig: FlImagePickerItemConfig(
+            delete:
+                const FlImagePickerDeleteIcon(backgroundColor: Colors.blue)),
         onChanged: (List<ExtendedXFile> value) {
           'onChanged ${value.builder((item) => item.realValueStr)}'.log();
         });

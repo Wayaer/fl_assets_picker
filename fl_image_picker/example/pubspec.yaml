@@ -10,10 +10,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  fl_extended: ^1.7.2
-  permission_handler: ^11.4.0
+  fl_extended: ^1.8.0
+  permission_handler: ^12.0.1
   flutter_image_compress: ^2.4.0
-  device_info_plus: ^11.3.2
+  device_info_plus: ^11.5.0
   fl_video: ^1.4.1
   fl_image_picker:
     path: ../

@@ -1,3 +1,8 @@
+## 3.0.0
+
+* Breaking change， Please refer to
+  the [example](https://github.com/Wayaer/fl_assets_picker/blob/main/fl_image_picker/example/lib/main.dart)
+
 ## 2.1.0
 
 * Update `mime`
@@ -13,7 +18,7 @@
 
 * Modify the static method name of `FlImagePicker`
 * Remove `pickerIconBuilder` from `MultipleImagePicker`,Please use the `pick` of `itemConfig`
-* Change the `PickerFromTypeItem` to the `PickerActions`
+* Change the `PickerFromTypeItem` to the `PickerActionOptionss`
 * Change the `PickerFromType` to the `PickerOptionalActions`
 * Change the `fromTypes` to the `actions`
 * Fix known issues

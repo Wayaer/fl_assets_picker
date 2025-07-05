@@ -1,87 +1,69 @@
-part of 'image_picker.dart';
+part of '../fl_image_picker.dart';
 
-class PickerWrapBuilderConfig {
-  const PickerWrapBuilderConfig(
-      {this.direction = Axis.horizontal,
-      this.alignment = WrapAlignment.start,
-      this.crossAxisAlignment = WrapCrossAlignment.start,
-      this.verticalDirection = VerticalDirection.down,
-      this.runAlignment = WrapAlignment.start,
-      this.width = double.infinity,
-      this.height,
-      this.constraints,
-      this.decoration,
-      this.spacing = 10,
-      this.runSpacing = 10,
-      this.margin = const EdgeInsets.all(10)});
+class MultipleImagePickerListBuilderConfig {
+  const MultipleImagePickerListBuilderConfig({
+    this.childAspectRatio = 1.0,
+    this.crossAxisSpacing = 10,
+    this.mainAxisSpacing = 10,
+    this.maxCrossAxisExtent,
+    this.crossAxisCount = 4,
+  });
 
-  /// [Wrap]
-  final double spacing;
-  final double runSpacing;
-  final WrapCrossAlignment crossAxisAlignment;
-  final WrapAlignment alignment;
-  final WrapAlignment runAlignment;
-  final Axis direction;
-  final VerticalDirection verticalDirection;
+  /// 列数
+  final int crossAxisCount;
 
-  /// [Container]
-  final double? width;
-  final double? height;
-  final BoxConstraints? constraints;
-  final Decoration? decoration;
-  final EdgeInsetsGeometry? margin;
+  /// 最大列宽 [maxCrossAxisExtent] > [crossAxisCount]
+  final double? maxCrossAxisExtent;
+
+  /// 主轴间距
+  final double mainAxisSpacing;
+
+  /// 交叉轴间距
+  final double crossAxisSpacing;
+
+  /// 子元素宽高比
+  final double childAspectRatio;
 }
 
-typedef PickerWrapBuilder = Widget Function(List<Widget>);
+typedef MultipleImagePickerListBuilder = Widget Function(List<Widget> images);
 
-typedef MultiplePickerItemBuilder = Widget Function(
+typedef MultiplePickerListItemBuilder = Widget Function(
     ExtendedXFile item, int index);
 
 class MultipleImagePicker<T> extends FlImagePicker {
   const MultipleImagePicker({
     super.key,
+    required super.controller,
+    super.disposeController = false,
     this.onChanged,
-    this.controller,
-    super.itemConfig = const ImagePickerItemConfig(),
+    super.itemConfig = const FlImagePickerItemConfig(),
     this.itemBuilder,
-    this.wrapConfig = const PickerWrapBuilderConfig(),
-    this.wrapBuilder,
-    this.initialData = const [],
+    this.builderConfig = const MultipleImagePickerListBuilderConfig(),
+    this.builder,
     this.allowDelete = true,
-    super.enablePicker = true,
-    super.maxVideoCount = 0,
-    super.maxCount = 9,
-    super.actions = defaultPickerActions,
-    super.renovate,
   });
 
   /// 是否显示删除按钮
   final bool allowDelete;
 
-  /// 默认初始资源
-  final List<ExtendedXFile> initialData;
-
   /// 资源选择变化
   final ValueChanged<List<ExtendedXFile>>? onChanged;
 
-  /// 资源控制器
-  final ImagePickerController? controller;
-
   /// wrap UI 样式配置
-  final PickerWrapBuilderConfig wrapConfig;
+  final MultipleImagePickerListBuilderConfig builderConfig;
 
   /// wrap 自定义
-  final PickerWrapBuilder? wrapBuilder;
+  final MultipleImagePickerListBuilder? builder;
 
   /// 资源渲染子元素自定义构造
-  final MultiplePickerItemBuilder? itemBuilder;
+  final MultiplePickerListItemBuilder? itemBuilder;
 
   @override
   State<MultipleImagePicker> createState() => _MultipleImagePickerState();
 
-  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
+  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
   static List<ExtendedXFile> convertPaths(List<String> paths,
-      {ImageType assetsType = ImageType.image}) {
+      {AssetType assetsType = AssetType.image}) {
     List<ExtendedXFile> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
@@ -91,9 +73,9 @@ class MultipleImagePicker<T> extends FlImagePicker {
     return list;
   }
 
-  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [ImageType.image]
+  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
   static List<ExtendedXFile> convertUrls(String url,
-      {ImageType assetsType = ImageType.image, String? splitPattern}) {
+      {AssetType assetsType = AssetType.image, String? splitPattern}) {
     List<ExtendedXFile> list = [];
     if (url.isEmpty) return list;
     if (splitPattern != null && url.contains(splitPattern)) {
@@ -133,56 +115,42 @@ class MultipleImagePicker<T> extends FlImagePicker {
 }
 
 class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
-  late ImagePickerController controller;
-
   @override
   void initState() {
     super.initState();
-    initialize();
-  }
-
-  void initialize() {
-    controller = widget.controller ?? ImagePickerController();
-    controller.imagePicker = widget;
-    controller.allEntity.insertAll(0, widget.initialData);
-    controller.addListener(listener);
+    widget.controller.addListener(listener);
   }
 
   void listener() {
-    widget.onChanged?.call(controller.allEntity);
+    widget.onChanged?.call(widget.controller.entities);
     if (mounted) setState(() {});
   }
 
   @override
-  void didUpdateWidget(covariant MultipleImagePicker<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    controller.imagePicker = widget;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final children = controller.allEntity
-        .asMap()
-        .entries
-        .map((item) => buildEntry(item))
-        .toList();
-    if (widget.enablePicker) children.add(buildPicker);
-    if (widget.wrapBuilder != null) return widget.wrapBuilder!(children);
-    final wrapConfig = widget.wrapConfig;
-    return Container(
-        margin: wrapConfig.margin,
-        width: wrapConfig.width,
-        height: wrapConfig.height,
-        decoration: wrapConfig.decoration,
-        constraints: wrapConfig.constraints,
-        child: Wrap(
-            direction: wrapConfig.direction,
-            alignment: wrapConfig.alignment,
-            crossAxisAlignment: wrapConfig.crossAxisAlignment,
-            verticalDirection: wrapConfig.verticalDirection,
-            runSpacing: wrapConfig.runSpacing,
-            spacing: wrapConfig.spacing,
-            children: children));
+    final children =
+        widget.controller.entities.asMap().entries.map(buildEntry).toList();
+    if (widget.controller.allowPick) children.add(buildPicker);
+    if (widget.builder != null) return widget.builder!(children);
+    final builderConfig = widget.builderConfig;
+    SliverGridDelegate gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: builderConfig.crossAxisCount,
+        mainAxisSpacing: builderConfig.mainAxisSpacing,
+        crossAxisSpacing: builderConfig.crossAxisSpacing,
+        childAspectRatio: builderConfig.childAspectRatio);
+    if (builderConfig.maxCrossAxisExtent != null) {
+      gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: builderConfig.maxCrossAxisExtent!,
+          mainAxisSpacing: builderConfig.mainAxisSpacing,
+          crossAxisSpacing: builderConfig.crossAxisSpacing,
+          childAspectRatio: builderConfig.childAspectRatio);
+    }
+    return GridView(
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        padding: EdgeInsets.zero,
+        gridDelegate: gridDelegate,
+        children: children);
   }
 
   /// 资源预览 item
@@ -190,17 +158,19 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
     final entity = item.value;
     final config = widget.itemConfig;
     Widget current = FlImagePicker.imageBuilder(entity, true);
-    if (entity.type == ImageType.video) {
+    if (entity.type == AssetType.video) {
       current = Stack(children: [
         SizedBox.expand(child: current),
         Align(alignment: Alignment.center, child: config.play),
       ]);
     }
-    if (config.color != null) {
-      current = ColoredBox(color: config.color!, child: current);
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
     }
     current = GestureDetector(
-        onTap: () => previewImages(item.value),
+        onTap: () {
+          widget.controller.preview(context, initialIndex: item.key);
+        },
         child: widget.itemBuilder?.call(item.value, item.key) ?? current);
     if (widget.allowDelete) {
       current = Stack(children: [
@@ -209,97 +179,40 @@ class _MultipleImagePickerState<T> extends State<MultipleImagePicker<T>> {
             right: 4,
             top: 4,
             child: GestureDetector(
-              onTap: () =>
-                  widget.itemConfig.deletionConfirmation
-                      ?.call(entity)
-                      .then((value) {
-                    if (value) controller.delete(entity);
-                  }) ??
-                  controller.delete(entity),
+              onTap: () {
+                widget.controller.delete(entity);
+              },
               child: widget.itemConfig.delete,
             ))
       ]);
     }
-    current = SizedBox.fromSize(size: config.size, child: current);
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
-  }
-
-  /// 全屏预览
-  void previewImages(ExtendedXFile entity) {
-    final allEntity = controller.allEntity;
-    FlImagePicker.previewModalPopup(
-        context, FlImagePicker.previewBuilder(context, entity, allEntity));
-  }
-
-  void pickImage() async {
-    FocusScope.of(context).requestFocus(FocusNode());
-    final assetsEntry = controller.allEntity;
-    if (assetsEntry.length >= widget.maxCount) {
-      FlImagePicker.errorCallback?.call(ErrorDes.maxCount);
-      return;
-    }
-    controller.pickActions(context);
   }
 
   /// 选择框
   Widget get buildPicker {
     final config = widget.itemConfig;
-    Widget current = SizedBox(
-        width: config.size.width,
-        height: config.size.height,
-        child: config.pick);
-    if (config.color != null) {
-      current = ColoredBox(color: config.color!, child: current);
+    Widget current = config.pick;
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
     }
     if (config.borderRadius != null) {
       current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
-    current = GestureDetector(onTap: pickImage, child: current);
-    return current;
+    return GestureDetector(
+        onTap: () {
+          widget.controller.pickActions(context);
+        },
+        child: current);
   }
 
   @override
   void dispose() {
     super.dispose();
-    controller.removeListener(listener);
-    controller.dispose();
-  }
-}
-
-class FlPreviewGesturePageView extends StatelessWidget {
-  const FlPreviewGesturePageView({
-    super.key,
-    required this.pageView,
-    this.close,
-    this.overlay,
-    this.backgroundColor = Colors.black87,
-  });
-
-  final Widget pageView;
-
-  /// 关闭按钮
-  final Widget? close;
-
-  /// 在图片的上层
-  final Widget? overlay;
-
-  /// 背景色
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-        color: backgroundColor,
-        child: Stack(children: [
-          SizedBox.expand(child: pageView),
-          if (overlay != null) SizedBox.expand(child: overlay!),
-          Positioned(
-              right: 6,
-              top: MediaQuery.of(context).viewPadding.top,
-              child: close ?? const CloseButton(color: Colors.white)),
-        ]));
+    widget.controller.removeListener(listener);
+    if (widget.disposeController) widget.controller.dispose();
   }
 }

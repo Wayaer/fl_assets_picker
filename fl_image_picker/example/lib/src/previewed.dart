@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:example/main.dart';
-import 'package:example/src/extended_image.dart';
 import 'package:example/src/fl_video.dart';
 import 'package:fl_image_picker/fl_image_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -19,18 +16,15 @@ class ImageBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     const unsupported = Center(child: Text('Preview not supported'));
     switch (xFile.type) {
-      case ImageType.other:
-        break;
-      case ImageType.image:
-        final imageProvider =
-            ExtendedImageWithImagePicker.imageEntityToImageProvider(xFile);
+      case AssetType.image:
+        final imageProvider = xFile.toImageProvider();
         if (imageProvider != null) {
           return Image(
               image: imageProvider,
               fit: isThumbnail ? BoxFit.cover : BoxFit.contain);
         }
         break;
-      case ImageType.video:
+      case AssetType.video:
         if (isThumbnail) {
           return Container(
               color: Colors.black26,
@@ -47,6 +41,8 @@ class ImageBuilder extends StatelessWidget {
             return FlVideoPlayerWithImagePicker(controller: controller);
           }
         }
+        break;
+      case AssetType.media:
         break;
     }
     return unsupported;
