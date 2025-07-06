@@ -1,4 +1,4 @@
-## 3.0.0
+## 3.0.1
 
 * Breaking change， Please refer to
   the [example](https://github.com/Wayaer/fl_assets_picker/blob/main/fl_image_picker/example/lib/main.dart)
