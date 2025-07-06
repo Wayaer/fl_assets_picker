@@ -75,9 +75,9 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
 
   /// 弹窗选择类型
   Future<void> pickActions(BuildContext context,
-      {bool requestFocus = true, bool reset = false}) async {
+      {bool unfocus = true, bool reset = false}) async {
     if (!allowPick) return;
-    if (requestFocus) FocusScope.of(context).requestFocus(FocusNode());
+    if (unfocus) FocusManager.instance.primaryFocus?.unfocus();
     final actionOptions =
         await FlAssetsPicker.showPickActions(context, actions);
     if (actionOptions == null) return;

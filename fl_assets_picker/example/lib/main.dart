@@ -86,9 +86,9 @@ class CustomAssetsPickerController extends AssetsPickerController {
 
   @override
   Future<void> pickActions(BuildContext context,
-      {bool requestFocus = true, bool reset = false}) async {
+      {bool unfocus = true, bool reset = false}) async {
     log('Start Pick Actions');
-    super.pickActions(context, reset: reset, requestFocus: requestFocus);
+    super.pickActions(context, reset: reset, unfocus: unfocus);
   }
 
   @override

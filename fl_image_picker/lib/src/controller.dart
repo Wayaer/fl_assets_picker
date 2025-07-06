@@ -48,8 +48,8 @@ class ImagePickerController with ChangeNotifier {
 
   /// 弹窗选择类型
   Future<void> pickActions(BuildContext context,
-      {bool requestFocus = true, bool reset = false}) async {
-    if (requestFocus) FocusScope.of(context).requestFocus(FocusNode());
+      {bool unfocus = true, bool reset = false}) async {
+    if (unfocus) FocusManager.instance.primaryFocus?.unfocus();
     final action = await FlImagePicker.showPickActions(context, actions);
     if (action == null) return;
     await pick(action.action, reset: reset);
