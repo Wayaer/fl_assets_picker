@@ -57,9 +57,9 @@ void flAssetsPickerInit() {
   };
 }
 
-/// 自定义图片选择器
-class BaseAssetsPickerController extends AssetsPickerController {
-  BaseAssetsPickerController({
+/// 自定义 AssetsPickerController
+class CustomAssetsPickerController extends AssetsPickerController {
+  CustomAssetsPickerController({
     super.actions,
     super.allowPick = true,
     super.entities,
@@ -68,6 +68,8 @@ class BaseAssetsPickerController extends AssetsPickerController {
     super.useRootNavigator = true,
     super.pageRouteBuilderForAssetPicker,
     super.pageRouteBuilderForCameraPicker,
+    super.getFileAsync = true,
+    super.getThumbnailDataAsync = true,
   });
 
   @override
@@ -90,16 +92,16 @@ class BaseAssetsPickerController extends AssetsPickerController {
   }
 
   @override
-  ExtendedAssetEntityRenovate? get onRenovate => (AssetEntity entity) async {
-        if (entity.type == AssetType.image) {
-          final file = await entity.file;
+  FlAssetEntityRenovate? get onRenovate => (AssetEntity asset) async {
+        if (asset.type == AssetType.image) {
+          final file = await asset.file;
           if (file != null) return await compressImage(file);
         }
         return null;
       };
 
   @override
-  Future<void> delete(ExtendedAssetEntity entity) async {
+  Future<void> delete(FlAssetEntity asset) async {
     final value = await CupertinoAlertDialog(
         content: Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -121,7 +123,7 @@ class BaseAssetsPickerController extends AssetsPickerController {
               },
               child: const BText('确定', fontSize: 14, color: Colors.grey)),
         ]).popupCupertinoModal<bool?>();
-    if (value == true) return super.delete(entity);
+    if (value == true) return super.delete(asset);
   }
 
   @override
@@ -140,10 +142,10 @@ class _HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<_HomePage> {
-  BaseAssetsPickerController singlePickerController =
-      BaseAssetsPickerController();
-  BaseAssetsPickerController multiplePickerController =
-      BaseAssetsPickerController();
+  CustomAssetsPickerController singlePickerController =
+      CustomAssetsPickerController();
+  CustomAssetsPickerController multiplePickerController =
+      CustomAssetsPickerController();
 
   @override
   void initState() {
@@ -176,7 +178,7 @@ class _HomePageState extends State<_HomePage> {
           itemConfig: FlAssetsPickerItemConfig(
               borderRadius: BorderRadius.circular(10),
               backgroundColor: Colors.amberAccent),
-          onChanged: (ExtendedAssetEntity? value) {
+          onChanged: (FlAssetEntity? value) {
             'onChanged ${value?.realValueStr}  realValue Type: ${value?.realValue?.runtimeType}'
                 .log();
           }),
@@ -185,7 +187,7 @@ class _HomePageState extends State<_HomePage> {
           itemConfig: FlAssetsPickerItemConfig(
               borderRadius: BorderRadius.circular(40),
               backgroundColor: Colors.amberAccent),
-          onChanged: (ExtendedAssetEntity? value) {
+          onChanged: (FlAssetEntity? value) {
             'onChanged ${value?.realValueStr}  realValue Type: ${value?.realValue?.runtimeType}'
                 .log();
           }),
@@ -195,7 +197,7 @@ class _HomePageState extends State<_HomePage> {
   Widget buildMultipleAssetPicker(AssetsPickerController controller) =>
       MultipleAssetsPicker(
           controller: controller,
-          onChanged: (List<ExtendedAssetEntity> value) {
+          onChanged: (List<FlAssetEntity> value) {
             'onChanged ${value.builder((item) => item.realValueStr)}'.log();
           });
 }

@@ -1,11 +1,11 @@
-part of '../fl_image_picker.dart';
+part of '../fl_assets_picker.dart';
 
-class SingleImagePicker extends FlImagePicker {
-  const SingleImagePicker({
+class SingleAssetsPicker extends FlAssetsPicker {
+  const SingleAssetsPicker({
     super.key,
     required super.controller,
     super.disposeController = false,
-    super.itemConfig = const FlImagePickerItemConfig(),
+    super.itemConfig = const FlAssetsPickerItemConfig(),
     this.onChanged,
     this.size = 60,
     this.height = 60,
@@ -13,36 +13,37 @@ class SingleImagePicker extends FlImagePicker {
   });
 
   /// 资源选择变化
-  final ValueChanged<FlXFile?>? onChanged;
+  final ValueChanged<FlAssetEntity?>? onChanged;
 
   /// [size] > [height]、[width]
   final double? size;
   final double height;
   final double width;
 
-  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static FlXFile? convertPaths(String path,
+  /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
+  static FlAssetEntity? convertPath(String path,
       {AssetType assetsType = AssetType.image}) {
     if (path.isNotEmpty) {
-      return FlXFile.fromPreviewed(path, assetsType);
+      return FlAssetEntity.fromPreviewed(
+          previewed: path, assetType: assetsType);
     }
     return null;
   }
 
-  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static FlXFile? convertUrl(String url,
+  /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
+  static FlAssetEntity? convertUrl(String url,
       {AssetType assetsType = AssetType.image}) {
     if (url.isNotEmpty) {
-      return FlXFile.fromPreviewed(url, assetsType);
+      return FlAssetEntity.fromPreviewed(previewed: url, assetType: assetsType);
     }
     return null;
   }
 
   @override
-  State<SingleImagePicker> createState() => _SingleImagePickerState();
+  State<SingleAssetsPicker> createState() => _SingleAssetsPickerState();
 }
 
-class _SingleImagePickerState extends FlImagePickerState<SingleImagePicker> {
+class _SingleAssetsPickerState extends FlAssetsPickerState<SingleAssetsPicker> {
   @override
   void listener() {
     widget.onChanged?.call(widget.controller.entities.firstOrNull);
@@ -54,9 +55,9 @@ class _SingleImagePickerState extends FlImagePickerState<SingleImagePicker> {
     Widget current = widget.itemConfig.pick;
     final entities = widget.controller.entities;
     if (entities.isNotEmpty) {
-      final file = entities.first;
-      current = buildEntity(file);
-      current = buildVideo(file, current);
+      final asset = entities.first;
+      current = buildEntity(asset);
+      current = buildVideo(asset, current);
     }
     current = buildBackgroundColor(current);
     current = SizedBox.fromSize(
@@ -67,10 +68,10 @@ class _SingleImagePickerState extends FlImagePickerState<SingleImagePicker> {
     return current;
   }
 
-  Widget buildEntity(FlXFile file) {
-    if (file.realValue == null) {
+  Widget buildEntity(FlAssetEntity asset) {
+    if (asset.realValue == null) {
       return widget.itemConfig.pick;
     }
-    return FlImagePicker.imageBuilder(file, true);
+    return FlAssetsPicker.assetBuilder(asset, true);
   }
 }

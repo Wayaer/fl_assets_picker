@@ -1,15 +1,15 @@
 part of '../fl_image_picker.dart';
 
-typedef ExtendedXFileRenovate = FutureOr<dynamic> Function(
+typedef FlXFileRenovate = FutureOr<dynamic> Function(
     AssetType type, XFile file);
 
-class ExtendedXFile extends XFile {
-  ExtendedXFile.fromPreviewed(this.previewed, this.type)
+class FlXFile extends XFile {
+  FlXFile.fromPreviewed(this.previewed, this.type)
       : renovated = null,
         isLocalData = false,
         super(previewed ?? '');
 
-  ExtendedXFile(
+  FlXFile(
     super.path,
     this.type, {
     this.renovated,
@@ -39,9 +39,9 @@ class ExtendedXFile extends XFile {
   dynamic get realValue => previewed ?? renovated ?? path;
 }
 
-extension ExtensionExtendedXFile on ExtendedXFile {
-  Future<ExtendedXFile> toRenovated(ExtendedXFileRenovate? renovate) async =>
-      ExtendedXFile(path, type, renovated: await renovate?.call(type, this));
+extension ExtensionFlXFile on FlXFile {
+  Future<FlXFile> toRenovated(FlXFileRenovate? renovate) async =>
+      FlXFile(path, type, renovated: await renovate?.call(type, this));
 
   /// previewed > renovated > path
   ImageProvider? toImageProvider() {
@@ -58,6 +58,6 @@ extension ExtensionExtendedXFile on ExtendedXFile {
 }
 
 extension ExtensionXFile on XFile {
-  ///  to [ExtendedXFile] and renovate [XFile];
-  ExtendedXFile toExtended(AssetType type) => ExtendedXFile(path, type);
+  ///  to [FlXFile] and renovate [XFile];
+  FlXFile toExtended(AssetType type) => FlXFile(path, type);
 }

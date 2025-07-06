@@ -63,9 +63,9 @@ void flImagePickerInit() {
 const url =
     'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201612%2F31%2F20161231205134_uVTex.thumb.400_0.jpeg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1666931842&t=44493a6c92d1ddda89367519c6206491';
 
-/// 自定义图片选择器
-class BaseImagePickerController extends ImagePickerController {
-  BaseImagePickerController(
+/// 自定义 ImagePickerController
+class CustomImagePickerController extends ImagePickerController {
+  CustomImagePickerController(
       {super.actions,
       super.allowPick = true,
       super.entities,
@@ -85,7 +85,7 @@ class BaseImagePickerController extends ImagePickerController {
   }
 
   @override
-  ExtendedXFileRenovate? get onRenovate => (AssetType type, XFile file) async {
+  FlXFileRenovate? get onRenovate => (AssetType type, XFile file) async {
         if (type == AssetType.image) {
           return await compressImage(file);
         }
@@ -93,7 +93,7 @@ class BaseImagePickerController extends ImagePickerController {
       };
 
   @override
-  Future<void> delete(ExtendedXFile entity) async {
+  Future<void> delete(FlXFile file) async {
     final value = await CupertinoAlertDialog(
         content: Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -115,7 +115,7 @@ class BaseImagePickerController extends ImagePickerController {
               },
               child: const BText('确定', fontSize: 14, color: Colors.grey)),
         ]).popupCupertinoModal<bool?>();
-    if (value == true) return super.delete(entity);
+    if (value == true) return super.delete(file);
   }
 
   @override
@@ -134,10 +134,10 @@ class _HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<_HomePage> {
-  BaseImagePickerController singlePickerController =
-      BaseImagePickerController();
-  BaseImagePickerController multiplePickerController =
-      BaseImagePickerController();
+  CustomImagePickerController singlePickerController =
+      CustomImagePickerController();
+  CustomImagePickerController multiplePickerController =
+      CustomImagePickerController();
 
   @override
   void initState() {
@@ -170,7 +170,7 @@ class _HomePageState extends State<_HomePage> {
           itemConfig: FlImagePickerItemConfig(
               borderRadius: BorderRadius.circular(10),
               backgroundColor: Colors.amberAccent),
-          onChanged: (ExtendedXFile? value) {
+          onChanged: (FlXFile? value) {
             'onChanged ${value?.realValueStr}  renovated Type: ${value?.renovated.runtimeType}'
                 .log();
           }),
@@ -179,7 +179,7 @@ class _HomePageState extends State<_HomePage> {
           itemConfig: FlImagePickerItemConfig(
               borderRadius: BorderRadius.circular(40),
               backgroundColor: Colors.amberAccent),
-          onChanged: (ExtendedXFile? value) {
+          onChanged: (FlXFile? value) {
             'onChanged ${value?.realValueStr}  renovated Type: ${value?.renovated.runtimeType}'
                 .log();
           }),
@@ -192,7 +192,7 @@ class _HomePageState extends State<_HomePage> {
         itemConfig: FlImagePickerItemConfig(
             delete:
                 const FlImagePickerDeleteIcon(backgroundColor: Colors.blue)),
-        onChanged: (List<ExtendedXFile> value) {
+        onChanged: (List<FlXFile> value) {
           'onChanged ${value.builder((item) => item.realValueStr)}'.log();
         });
   }

@@ -12,14 +12,12 @@ typedef FlAssetsPickerCheckPermission = Future<bool> Function(
 typedef PickerActionBuilder = Widget Function(
     BuildContext context, List<PickerActionOptions> actions);
 
-typedef FlAssetBuilder = Widget Function(
-    ExtendedAssetEntity entity, bool isThumbnail);
+typedef FlAssetBuilder = Widget Function(FlAssetEntity asset, bool isThumbnail);
 
-FlAssetBuilder _defaultAssetBuilder =
-    (ExtendedAssetEntity entity, bool isThumbnail) {
+FlAssetBuilder _defaultAssetBuilder = (FlAssetEntity asset, bool isThumbnail) {
   Widget unsupported() => const Center(child: Text('No preview'));
-  if (entity.type == AssetType.image) {
-    final imageProvider = entity.toImageProvider();
+  if (asset.type == AssetType.image) {
+    final imageProvider = asset.toImageProvider();
     if (imageProvider != null) {
       return Image(
           image: imageProvider,
@@ -45,10 +43,10 @@ enum PickerAction {
 
   Future<List<AssetEntity>> pick(BuildContext context,
       {FlAssetPickerOptions options = const FlAssetPickerOptions()}) async {
-    List<AssetEntity> entities = [];
+    List<AssetEntity> assets = [];
     switch (this) {
       case PickerAction.gallery:
-        entities = await FlAssetsPicker.showPickAssets(
+        assets = await FlAssetsPicker.showPickAssets(
           context,
           pageRouteBuilder: options.pageRouteBuilderForAssetPicker,
           pickerConfig: options.assetConfig,
@@ -56,18 +54,18 @@ enum PickerAction {
         );
         break;
       case PickerAction.camera:
-        final result = await FlAssetsPicker.showPickFromCamera(
+        final asset = await FlAssetsPicker.showPickFromCamera(
           context,
           pageRouteBuilder: options.pageRouteBuilderForCameraPicker,
           pickerConfig: options.cameraConfig,
           useRootNavigator: options.useRootNavigator,
         );
-        if (result != null) entities.add(result);
+        if (asset != null) assets.add(asset);
         break;
       default:
         return [];
     }
-    return entities;
+    return assets;
   }
 }
 
@@ -103,22 +101,6 @@ abstract class FlAssetsPicker extends StatefulWidget {
 
   /// 类型来源选择器
   static PickerActionBuilder actionsBuilder = _defaultActionsBuilder;
-
-  const FlAssetsPicker({
-    super.key,
-    this.itemConfig = const FlAssetsPickerItemConfig(),
-    required this.controller,
-    this.disposeController = false,
-  });
-
-  /// 资源控制器
-  final AssetsPickerController controller;
-
-  /// dispose controller.dispose();
-  final bool disposeController;
-
-  /// item UI 样式配置
-  final FlAssetsPickerItemConfig itemConfig;
 
   /// value 转换为 [ImageProvider]
   static ImageProvider? buildImageProvider(dynamic value) {
@@ -226,11 +208,84 @@ abstract class FlAssetsPicker extends StatefulWidget {
     }
     return null;
   }
+
+  const FlAssetsPicker({
+    super.key,
+    this.itemConfig = const FlAssetsPickerItemConfig(),
+    required this.controller,
+    this.disposeController = false,
+  });
+
+  /// 资源控制器
+  final AssetsPickerController controller;
+
+  /// dispose controller.dispose();
+  final bool disposeController;
+
+  /// item UI 样式配置
+  final FlAssetsPickerItemConfig itemConfig;
+}
+
+abstract class FlAssetsPickerState<T extends FlAssetsPicker> extends State<T> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(listener);
+  }
+
+  void listener() {
+    if (mounted) setState(() {});
+  }
+
+  Widget buildVideo(FlAssetEntity asset, Widget current) {
+    final config = widget.itemConfig;
+    if (asset.type == AssetType.video) {
+      current = Stack(children: [
+        SizedBox.expand(child: current),
+        Align(alignment: Alignment.center, child: config.play),
+      ]);
+    }
+    return current;
+  }
+
+  Widget buildBackgroundColor(Widget current) {
+    final config = widget.itemConfig;
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
+    }
+    return current;
+  }
+
+  Widget buildBorderRadius(Widget current) {
+    final config = widget.itemConfig;
+    if (config.borderRadius != null) {
+      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
+    }
+    return current;
+  }
+
+  Widget buildPickActions(Widget current, {bool reset = false}) {
+    if (widget.controller.allowPick) {
+      current = GestureDetector(
+          onTap: () {
+            widget.controller.pickActions(context, reset: reset);
+          },
+          child: current);
+    }
+    return current;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.controller.removeListener(listener);
+    if (widget.disposeController) widget.controller.dispose();
+  }
 }
 
 /// 图片预览器
-class FlImagePickerPreviewModal extends StatelessWidget {
-  const FlImagePickerPreviewModal({
+class FlAssetsPickerPreviewModal extends StatelessWidget {
+  const FlAssetsPickerPreviewModal({
     super.key,
     required this.child,
     this.close,
@@ -265,8 +320,8 @@ class FlImagePickerPreviewModal extends StatelessWidget {
 }
 
 /// 图片预览器
-class FlImagePickerPreviewPageView extends StatelessWidget {
-  const FlImagePickerPreviewPageView(
+class FlAssetsPickerPreviewPageView extends StatelessWidget {
+  const FlAssetsPickerPreviewPageView(
       {super.key, required this.controller, this.initialIndex = 0});
 
   final AssetsPickerController controller;
@@ -276,7 +331,7 @@ class FlImagePickerPreviewPageView extends StatelessWidget {
   Widget build(BuildContext context) {
     final length = controller.entities.length;
     final initialPage = min(length, initialIndex);
-    return FlImagePickerPreviewModal(
+    return FlAssetsPickerPreviewModal(
         child: PageView.builder(
             controller: PageController(initialPage: initialPage),
             itemCount: length,

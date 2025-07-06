@@ -28,7 +28,7 @@ class MultipleAssetsPickerListBuilderConfig {
 typedef MultipleAssetsPickerListBuilder = Widget Function(List<Widget> images);
 
 typedef MultiplePickerListItemBuilder = Widget Function(
-    ExtendedAssetEntity item, int index);
+    FlAssetEntity asset, int index);
 
 class MultipleAssetsPicker extends FlAssetsPicker {
   const MultipleAssetsPicker({
@@ -47,7 +47,7 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   final bool allowDelete;
 
   /// 资源选择变化
-  final ValueChanged<List<ExtendedAssetEntity>>? onChanged;
+  final ValueChanged<List<FlAssetEntity>>? onChanged;
 
   /// wrap UI 样式配置
   final MultipleAssetsPickerListBuilderConfig builderConfig;
@@ -62,12 +62,12 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   State<MultipleAssetsPicker> createState() => _MultipleAssetsPickerState();
 
   /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static List<ExtendedAssetEntity> convertPaths(List<String> paths,
+  static List<FlAssetEntity> convertPaths(List<String> paths,
       {AssetType assetsType = AssetType.image}) {
-    List<ExtendedAssetEntity> list = [];
+    List<FlAssetEntity> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
-        list.add(ExtendedAssetEntity.fromPreviewed(
+        list.add(FlAssetEntity.fromPreviewed(
             previewed: element, assetType: assetsType));
       }
     }
@@ -75,27 +75,27 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   }
 
   /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static List<ExtendedAssetEntity> convertUrls(String url,
+  static List<FlAssetEntity> convertUrls(String url,
       {AssetType assetsType = AssetType.image, String? splitPattern}) {
-    List<ExtendedAssetEntity> list = [];
+    List<FlAssetEntity> list = [];
     if (url.isEmpty) return list;
     if (splitPattern != null && url.contains(splitPattern)) {
       final urls = url.split(splitPattern);
       for (var element in urls) {
         if (element.isNotEmpty) {
-          list.add(ExtendedAssetEntity.fromPreviewed(
+          list.add(FlAssetEntity.fromPreviewed(
               previewed: element, assetType: assetsType));
         }
       }
     } else {
-      list.add(ExtendedAssetEntity.fromPreviewed(
-          assetType: assetsType, previewed: url));
+      list.add(
+          FlAssetEntity.fromPreviewed(assetType: assetsType, previewed: url));
     }
     return list;
   }
 
   /// 具体的数据  顺序为 url > path > file
-  static List<String> toStringList(List<ExtendedAssetEntity> list) {
+  static List<String> toStringList(List<FlAssetEntity> list) {
     List<String> value = [];
     for (var element in list) {
       if (element.realValueStr != null) {
@@ -106,7 +106,7 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   }
 
   /// 具体的数据  顺序为 url > path > file
-  static List<dynamic> toDynamicList(List<ExtendedAssetEntity> list) {
+  static List<dynamic> toDynamicList(List<FlAssetEntity> list) {
     List<dynamic> value = [];
     for (var element in list) {
       if (element.realValue != null) {
@@ -117,16 +117,12 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   }
 }
 
-class _MultipleAssetsPickerState extends State<MultipleAssetsPicker> {
+class _MultipleAssetsPickerState
+    extends FlAssetsPickerState<MultipleAssetsPicker> {
   @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(listener);
-  }
-
   void listener() {
     widget.onChanged?.call(widget.controller.entities);
-    if (mounted) setState(() {});
+    super.listener();
   }
 
   @override
@@ -156,25 +152,23 @@ class _MultipleAssetsPickerState extends State<MultipleAssetsPicker> {
         children: children);
   }
 
-  /// 资源预览 item
-  Widget buildEntry(MapEntry<int, ExtendedAssetEntity> item) {
-    final entity = item.value;
-    final config = widget.itemConfig;
+  /// 资源预览 asset
+  Widget buildEntry(MapEntry<int, FlAssetEntity> asset) {
+    final entity = asset.value;
     Widget current = FlAssetsPicker.assetBuilder(entity, true);
-    if (entity.type == AssetType.video) {
-      current = Stack(children: [
-        SizedBox.expand(child: current),
-        Align(alignment: Alignment.center, child: config.play),
-      ]);
-    }
-    if (config.backgroundColor != null) {
-      current = ColoredBox(color: config.backgroundColor!, child: current);
-    }
+    current = buildVideo(entity, current);
+    current = buildBackgroundColor(current);
     current = GestureDetector(
         onTap: () {
-          widget.controller.preview(context, initialIndex: item.key);
+          widget.controller.preview(context, initialIndex: asset.key);
         },
-        child: widget.itemBuilder?.call(item.value, item.key) ?? current);
+        child: widget.itemBuilder?.call(asset.value, asset.key) ?? current);
+    current = buildDelete(entity, current);
+    current = buildBorderRadius(current);
+    return current;
+  }
+
+  Widget buildDelete(FlAssetEntity asset, Widget current) {
     if (widget.allowDelete) {
       current = Stack(children: [
         SizedBox.expand(child: current),
@@ -183,39 +177,21 @@ class _MultipleAssetsPickerState extends State<MultipleAssetsPicker> {
             top: 4,
             child: GestureDetector(
               onTap: () {
-                widget.controller.delete(entity);
+                widget.controller.delete(asset);
               },
               child: widget.itemConfig.delete,
             ))
       ]);
-    }
-    if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
   }
 
   /// 选择框
   Widget get buildPicker {
-    final config = widget.itemConfig;
-    Widget current = config.pick;
-    if (config.backgroundColor != null) {
-      current = ColoredBox(color: config.backgroundColor!, child: current);
-    }
-    if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
-    }
-    return GestureDetector(
-        onTap: () {
-          widget.controller.pickActions(context);
-        },
-        child: current);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.controller.removeListener(listener);
-    if (widget.disposeController) widget.controller.dispose();
+    Widget current = widget.itemConfig.pick;
+    current = buildBackgroundColor(current);
+    current = buildBorderRadius(current);
+    current = buildPickActions(current);
+    return current;
   }
 }

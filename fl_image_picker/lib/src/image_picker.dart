@@ -6,8 +6,7 @@ typedef FlImagePickerCheckPermission = Future<bool> Function(
 typedef PickerActionBuilder = Widget Function(
     BuildContext context, List<PickerActionOptions> actions);
 
-typedef FlImageBuilder = Widget Function(
-    ExtendedXFile entity, bool isThumbnail);
+typedef FlImageBuilder = Widget Function(FlXFile file, bool isThumbnail);
 
 enum AssetType {
   /// The asset is an media
@@ -165,8 +164,7 @@ class ImagePickerOptions {
 }
 
 /// 全部默认 [ImageBuilder]
-FlImageBuilder get _defaultImageBuilder =>
-    (ExtendedXFile entity, bool isThumbnail) {
+FlImageBuilder get _defaultImageBuilder => (FlXFile entity, bool isThumbnail) {
       Widget unsupported() => const Center(child: Text('No preview'));
       if (entity.type == AssetType.image) {
         final imageProvider = entity.toImageProvider();
@@ -201,6 +199,7 @@ abstract class FlImagePicker extends StatefulWidget {
     this.itemConfig = const FlImagePickerItemConfig(),
     required this.controller,
     this.disposeController = false,
+    this.allowDelete = true,
   });
 
   /// 资源控制器
@@ -212,6 +211,9 @@ abstract class FlImagePicker extends StatefulWidget {
   /// item 样式配置
   final FlImagePickerItemConfig itemConfig;
 
+  /// 是否显示删除按钮
+  final bool allowDelete;
+
   /// value 转换为 [ImageProvider]
   static ImageProvider? buildImageProvider(dynamic value) {
     if (value is String) {
@@ -222,7 +224,7 @@ abstract class FlImagePicker extends StatefulWidget {
       }
     } else if (value is Uint8List) {
       return MemoryImage(value);
-    } else if (value is File || value is XFile) {
+    } else if (value is File) {
       return FileImage(value);
     } else if (value is XFile) {
       return FileImage(File(value.path));
@@ -232,7 +234,7 @@ abstract class FlImagePicker extends StatefulWidget {
 
   /// show pick actions
   /// show pick
-  static Future<List<ExtendedXFile>> showPickWithActions(
+  static Future<List<FlXFile>> showPickWithActions(
     BuildContext context,
     List<PickerActionOptions> actions, {
     ImagePickerOptions options = const ImagePickerOptions(),
@@ -260,7 +262,7 @@ abstract class FlImagePicker extends StatefulWidget {
   }
 
   /// show pick
-  static Future<List<ExtendedXFile>> showPick(PickerAction action,
+  static Future<List<FlXFile>> showPick(PickerAction action,
       {ImagePickerOptions options = const ImagePickerOptions()}) async {
     if (action == PickerAction.cancel) return [];
     final permissionState = await checkPermission?.call(action) ?? true;
@@ -278,6 +280,63 @@ abstract class FlImagePicker extends StatefulWidget {
       }).toList();
     }
     return [];
+  }
+}
+
+abstract class FlImagePickerState<T extends FlImagePicker> extends State<T> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(listener);
+  }
+
+  void listener() {
+    if (mounted) setState(() {});
+  }
+
+  Widget buildVideo(FlXFile file, Widget current) {
+    final config = widget.itemConfig;
+    if (file.type == AssetType.video) {
+      current = Stack(children: [
+        SizedBox.expand(child: current),
+        Align(alignment: Alignment.center, child: config.play),
+      ]);
+    }
+    return current;
+  }
+
+  Widget buildBackgroundColor(Widget current) {
+    final config = widget.itemConfig;
+    if (config.backgroundColor != null) {
+      current = ColoredBox(color: config.backgroundColor!, child: current);
+    }
+    return current;
+  }
+
+  Widget buildBorderRadius(Widget current) {
+    final config = widget.itemConfig;
+    if (config.borderRadius != null) {
+      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
+    }
+    return current;
+  }
+
+  Widget buildPickActions(Widget current, {bool reset = false}) {
+    if (widget.controller.allowPick) {
+      current = GestureDetector(
+          onTap: () {
+            widget.controller.pickActions(context, reset: reset);
+          },
+          child: current);
+    }
+    return current;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    widget.controller.removeListener(listener);
+    if (widget.disposeController) widget.controller.dispose();
   }
 }
 

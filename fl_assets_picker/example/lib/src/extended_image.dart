@@ -11,7 +11,7 @@ class ExtendedImageWithImagePicker extends ExtendedImage {
       : super(image: image, enableLoadState: true);
 
   /// previewed > renovated > fileAsync
-  static ImageProvider? assetEntityToImageProvider(ExtendedAssetEntity entity) {
+  static ImageProvider? assetEntityToImageProvider(FlAssetEntity entity) {
     ImageProvider? provider;
     if (entity.previewed != null) {
       provider =

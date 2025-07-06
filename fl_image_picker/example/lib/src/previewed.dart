@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class ImageBuilder extends StatelessWidget {
   const ImageBuilder(this.xFile, {super.key, this.isThumbnail = true});
 
-  final ExtendedXFile xFile;
+  final FlXFile xFile;
 
   /// 是否优先预览缩略图
   final bool isThumbnail;

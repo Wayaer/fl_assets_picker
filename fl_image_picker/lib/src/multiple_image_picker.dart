@@ -28,7 +28,7 @@ class MultipleImagePickerListBuilderConfig {
 typedef MultipleImagePickerListBuilder = Widget Function(List<Widget> images);
 
 typedef MultiplePickerListItemBuilder = Widget Function(
-    ExtendedXFile item, int index);
+    FlXFile file, int index);
 
 class MultipleImagePicker extends FlImagePicker {
   const MultipleImagePicker({
@@ -40,14 +40,10 @@ class MultipleImagePicker extends FlImagePicker {
     this.itemBuilder,
     this.builderConfig = const MultipleImagePickerListBuilderConfig(),
     this.builder,
-    this.allowDelete = true,
   });
 
-  /// 是否显示删除按钮
-  final bool allowDelete;
-
   /// 资源选择变化
-  final ValueChanged<List<ExtendedXFile>>? onChanged;
+  final ValueChanged<List<FlXFile>>? onChanged;
 
   /// wrap UI 样式配置
   final MultipleImagePickerListBuilderConfig builderConfig;
@@ -62,37 +58,37 @@ class MultipleImagePicker extends FlImagePicker {
   State<MultipleImagePicker> createState() => _MultipleImagePickerState();
 
   /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static List<ExtendedXFile> convertPaths(List<String> paths,
+  static List<FlXFile> convertPaths(List<String> paths,
       {AssetType assetsType = AssetType.image}) {
-    List<ExtendedXFile> list = [];
+    List<FlXFile> list = [];
     for (var element in paths) {
       if (element.isNotEmpty) {
-        list.add(ExtendedXFile.fromPreviewed(element, assetsType));
+        list.add(FlXFile.fromPreviewed(element, assetsType));
       }
     }
     return list;
   }
 
   /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static List<ExtendedXFile> convertUrls(String url,
+  static List<FlXFile> convertUrls(String url,
       {AssetType assetsType = AssetType.image, String? splitPattern}) {
-    List<ExtendedXFile> list = [];
+    List<FlXFile> list = [];
     if (url.isEmpty) return list;
     if (splitPattern != null && url.contains(splitPattern)) {
       final urls = url.split(splitPattern);
       for (var element in urls) {
         if (element.isNotEmpty) {
-          list.add(ExtendedXFile.fromPreviewed(element, assetsType));
+          list.add(FlXFile.fromPreviewed(element, assetsType));
         }
       }
     } else {
-      list.add(ExtendedXFile.fromPreviewed(url, assetsType));
+      list.add(FlXFile.fromPreviewed(url, assetsType));
     }
     return list;
   }
 
   /// 具体的数据  顺序为 url > path > file
-  static List<String> toStringList(List<ExtendedXFile> list) {
+  static List<String> toStringList(List<FlXFile> list) {
     List<String> value = [];
     for (var element in list) {
       if (element.realValueStr != null) {
@@ -103,7 +99,7 @@ class MultipleImagePicker extends FlImagePicker {
   }
 
   /// 具体的数据  顺序为 url > path > file
-  static List<dynamic> toDynamicList(List<ExtendedXFile> list) {
+  static List<dynamic> toDynamicList(List<FlXFile> list) {
     List<dynamic> value = [];
     for (var element in list) {
       if (element.realValue != null) {
@@ -114,16 +110,12 @@ class MultipleImagePicker extends FlImagePicker {
   }
 }
 
-class _MultipleImagePickerState extends State<MultipleImagePicker> {
+class _MultipleImagePickerState
+    extends FlImagePickerState<MultipleImagePicker> {
   @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(listener);
-  }
-
   void listener() {
     widget.onChanged?.call(widget.controller.entities);
-    if (mounted) setState(() {});
+    super.listener();
   }
 
   @override
@@ -154,24 +146,22 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
   }
 
   /// 资源预览 item
-  Widget buildEntry(MapEntry<int, ExtendedXFile> item) {
-    final entity = item.value;
-    final config = widget.itemConfig;
-    Widget current = FlImagePicker.imageBuilder(entity, true);
-    if (entity.type == AssetType.video) {
-      current = Stack(children: [
-        SizedBox.expand(child: current),
-        Align(alignment: Alignment.center, child: config.play),
-      ]);
-    }
-    if (config.backgroundColor != null) {
-      current = ColoredBox(color: config.backgroundColor!, child: current);
-    }
+  Widget buildEntry(MapEntry<int, FlXFile> item) {
+    final file = item.value;
+    Widget current = FlImagePicker.imageBuilder(file, true);
+    current = buildVideo(file, current);
+    current = buildBackgroundColor(current);
     current = GestureDetector(
         onTap: () {
           widget.controller.preview(context, initialIndex: item.key);
         },
         child: widget.itemBuilder?.call(item.value, item.key) ?? current);
+    current = buildDelete(file, current);
+    current = buildBorderRadius(current);
+    return current;
+  }
+
+  Widget buildDelete(FlXFile file, Widget current) {
     if (widget.allowDelete) {
       current = Stack(children: [
         SizedBox.expand(child: current),
@@ -180,39 +170,21 @@ class _MultipleImagePickerState extends State<MultipleImagePicker> {
             top: 4,
             child: GestureDetector(
               onTap: () {
-                widget.controller.delete(entity);
+                widget.controller.delete(file);
               },
               child: widget.itemConfig.delete,
             ))
       ]);
-    }
-    if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
     }
     return current;
   }
 
   /// 选择框
   Widget get buildPicker {
-    final config = widget.itemConfig;
-    Widget current = config.pick;
-    if (config.backgroundColor != null) {
-      current = ColoredBox(color: config.backgroundColor!, child: current);
-    }
-    if (config.borderRadius != null) {
-      current = ClipRRect(borderRadius: config.borderRadius!, child: current);
-    }
-    return GestureDetector(
-        onTap: () {
-          widget.controller.pickActions(context);
-        },
-        child: current);
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    widget.controller.removeListener(listener);
-    if (widget.disposeController) widget.controller.dispose();
+    Widget current = widget.itemConfig.pick;
+    current = buildBackgroundColor(current);
+    current = buildBorderRadius(current);
+    current = buildPickActions(current);
+    return current;
   }
 }

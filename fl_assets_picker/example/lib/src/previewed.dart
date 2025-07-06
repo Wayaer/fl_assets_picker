@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 class AssetBuilder extends StatelessWidget {
   const AssetBuilder(this.entity, {super.key, this.isThumbnail = true});
 
-  final ExtendedAssetEntity entity;
+  final FlAssetEntity entity;
 
   /// 是否优先预览缩略图
   final bool isThumbnail;

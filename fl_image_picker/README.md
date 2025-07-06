@@ -1,10 +1,11 @@
 ## fl_image_picker
 
 - 简单封装 `image_picker`
-- Web [image_picker](https://wayaer.github.io/fl_assets_picker/fl_image_picker/example/app/web/index.html#/)
+- Web [Example](https://wayaer.github.io/fl_assets_picker/fl_image_picker/example/app/web/index.html#/)
+
+- 初始化
 
 ```dart
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -30,38 +31,76 @@ void main() {
     }
     return false;
   };
-
-  /// 设置多选框 点击方法预览的弹出方式
-  FlImagePicker.previewModalPopup = (_, Widget widget) => widget.popupDialog();
-
-  /// 设置多选框 点击预览的UI组件
-  FlImagePicker.previewBuilder = (context, entity, allEntity) {
-    return FlPreviewGesturePageView(
-        pageView: ExtendedImageGesturePageView.builder(
-            itemCount: allEntity.length,
-            controller:
-            ExtendedPageController(initialPage: allEntity.indexOf(entity)),
-            itemBuilder: (_, int index) =>
-                FlImagePicker.imageBuilder(allEntity[index], false)));
-  };
-
-  /// 设置错误回调的提示
-  FlImagePicker.errorCallback = (ErrorDes des) {
-    switch (des) {
-      case ErrorDes.maxBytes:
-        showToast('资源过大');
-        break;
-      case ErrorDes.maxCount:
-        showToast('超过最大数量');
-        break;
-      case ErrorDes.maxVideoCount:
-        showToast('超过最大视频数量');
-        break;
-    }
-  };
   runApp();
 }
 
+```
+
+- 自定义 ImagePickerController
+
+```dart
+/// 自定义 ImagePickerController
+class CustomImagePickerController extends ImagePickerController {
+  CustomImagePickerController({super.actions,
+    super.allowPick = true,
+    super.entities,
+    super.options = const ImagePickerOptions()});
+
+  @override
+  Future<void> pick(PickerAction action, {bool reset = false}) async {
+    log('Start Pick');
+    super.pick(action, reset: reset);
+  }
+
+  @override
+  Future<void> pickActions(BuildContext context,
+      {bool requestFocus = true, bool reset = false}) async {
+    log('Start Pick Actions');
+    super.pickActions(context, reset: reset, requestFocus: requestFocus);
+  }
+
+  @override
+  FlXFileRenovate? get onRenovate =>
+          (AssetType type, XFile file) async {
+        if (type == AssetType.image) {
+          return await compressImage(file);
+        }
+        return null;
+      };
+
+  @override
+  Future<void> delete(FlXFile file) async {
+    final value = await CupertinoAlertDialog(
+        content: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            constraints: const BoxConstraints(maxHeight: 100),
+            child: const Text('确定要删除么')),
+        actions: [
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(false);
+              },
+              child: const BText('取消', fontSize: 14, color: Colors.grey)),
+          Universal(
+              height: 45,
+              alignment: Alignment.center,
+              onTap: () {
+                pop(true);
+              },
+              child: const BText('确定', fontSize: 14, color: Colors.grey)),
+        ]).popupCupertinoModal<bool?>();
+    if (value == true) return super.delete(file);
+  }
+
+  @override
+  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
+    final builder = buildPreviewModal(initialIndex: initialIndex);
+    if (context.mounted) return await builder.popupDialog<T>();
+    return super.preview(context, initialIndex: initialIndex);
+  }
+}
 ```
 
 ```dart
@@ -77,17 +116,15 @@ MultipleImagePicker();
 ```dart
 
 void fun() {
-  /// 选择Actions
+
+  /// 选择 action
   FlImagePicker.showPickActions();
 
-  /// 最原始的选择器
+  /// 调用 ImagePicker
   FlImagePicker.showPick();
 
-  /// 最原始的多选择器 只能图片多选
-  FlImagePicker.showPickMultipleImage();
-
   /// 以上两个方法依次调用
-  FlImagePicker.showPickWithOptionalActions();
+  FlImagePicker.showPickWithActions();
 }
 
 ```

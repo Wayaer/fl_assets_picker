@@ -2,7 +2,7 @@ part of '../fl_assets_picker.dart';
 
 class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
   AssetsPickerController({
-    List<ExtendedAssetEntity>? entities,
+    List<FlAssetEntity>? entities,
     List<PickerActionOptions>? actions,
     this.allowPick = true,
     super.assetConfig = const AssetPickerConfig(),
@@ -10,13 +10,21 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
     super.useRootNavigator = true,
     super.pageRouteBuilderForAssetPicker,
     super.pageRouteBuilderForCameraPicker,
+    this.getFileAsync = false,
+    this.getThumbnailDataAsync = false,
   })  : entities = entities ?? [],
         actions = actions ?? defaultPickerActionOptions;
 
-  /// 选择的资源
-  final List<ExtendedAssetEntity> entities;
+  /// 是否异步获取文件
+  final bool getFileAsync;
 
-  set entities(List<ExtendedAssetEntity> entities) {
+  /// 是否异步获取缩略图
+  final bool getThumbnailDataAsync;
+
+  /// 选择的资源
+  final List<FlAssetEntity> entities;
+
+  set entities(List<FlAssetEntity> entities) {
     this.entities.clear();
     this.entities.addAll(entities);
     notifyListeners();
@@ -34,7 +42,7 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
   final bool allowPick;
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  ExtendedAssetEntityRenovate? get onRenovate => null;
+  FlAssetEntityRenovate? get onRenovate => null;
 
   /// 选择图片
   Future<void> pickAssets(BuildContext context, {bool reset = false}) async {
@@ -46,7 +54,7 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
     if (assets.isEmpty) return;
     if (reset) entities.clear();
     for (final asset in assets) {
-      entities.add(await asset.toExtended(renovate: onRenovate));
+      entities.add(await toExtended(asset));
     }
     notifyListeners();
   }
@@ -55,13 +63,13 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
   Future<void> pickFromCamera(BuildContext context,
       {bool reset = false}) async {
     if (!allowPick) return;
-    final entity = await FlAssetsPicker.showPickFromCamera(context,
+    final asset = await FlAssetsPicker.showPickFromCamera(context,
         pickerConfig: cameraConfig,
         useRootNavigator: useRootNavigator,
         pageRouteBuilder: pageRouteBuilderForCameraPicker);
-    if (entity == null) return;
+    if (asset == null) return;
     if (reset) entities.clear();
-    entities.add(await entity.toExtended(renovate: onRenovate));
+    entities.add(await toExtended(asset));
     notifyListeners();
   }
 
@@ -78,15 +86,21 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
       if (assets.isEmpty) return;
       if (reset) entities.clear();
       for (final asset in assets) {
-        entities.add(await asset.toExtended(renovate: onRenovate));
+        entities.add(await toExtended(asset));
       }
       notifyListeners();
     }
   }
 
+  /// 对图片进行扩展，例如 压缩 裁剪 上传
+  Future<FlAssetEntity> toExtended(AssetEntity asset) => asset.toExtended(
+      onRenovate: onRenovate,
+      getFileAsync: getFileAsync,
+      getThumbnailDataAsync: getThumbnailDataAsync);
+
   /// 删除图片
-  Future<void> delete(ExtendedAssetEntity entity) async {
-    entities.remove(entity);
+  Future<void> delete(FlAssetEntity asset) async {
+    entities.remove(asset);
     notifyListeners();
   }
 
@@ -102,6 +116,6 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
 
   /// 构建预览 Widget
   Widget buildPreviewModal({int initialIndex = 0}) =>
-      FlImagePickerPreviewPageView(
+      FlAssetsPickerPreviewPageView(
           controller: this, initialIndex: initialIndex);
 }

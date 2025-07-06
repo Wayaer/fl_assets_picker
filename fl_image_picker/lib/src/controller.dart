@@ -2,7 +2,7 @@ part of '../fl_image_picker.dart';
 
 class ImagePickerController with ChangeNotifier {
   ImagePickerController({
-    List<ExtendedXFile>? entities,
+    List<FlXFile>? entities,
     List<PickerActionOptions>? actions,
     this.allowPick = true,
     this.options = const ImagePickerOptions(),
@@ -13,9 +13,9 @@ class ImagePickerController with ChangeNotifier {
   final ImagePickerOptions options;
 
   /// 选择的资源
-  final List<ExtendedXFile> entities;
+  final List<FlXFile> entities;
 
-  set entities(List<ExtendedXFile> entities) {
+  set entities(List<FlXFile> entities) {
     this.entities.clear();
     this.entities.addAll(entities);
     notifyListeners();
@@ -44,7 +44,7 @@ class ImagePickerController with ChangeNotifier {
   }
 
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
-  ExtendedXFileRenovate? get onRenovate => null;
+  FlXFileRenovate? get onRenovate => null;
 
   /// 弹窗选择类型
   Future<void> pickActions(BuildContext context,
@@ -56,8 +56,8 @@ class ImagePickerController with ChangeNotifier {
   }
 
   /// 删除图片
-  Future<void> delete(ExtendedXFile entity) async {
-    entities.remove(entity);
+  Future<void> delete(FlXFile file) async {
+    entities.remove(file);
     notifyListeners();
   }
 

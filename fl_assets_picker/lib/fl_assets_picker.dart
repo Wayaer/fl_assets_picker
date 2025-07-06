@@ -17,9 +17,9 @@ part 'src/asset_builder.dart';
 
 part 'src/asset_picker.dart';
 
-part 'src/multiple_asset_picker.dart';
+part 'src/multiple_assets_picker.dart';
 
-part 'src/single_asset_picker.dart';
+part 'src/single_assets_picker.dart';
 
 part 'src/extension.dart';
 

@@ -1,7 +1,7 @@
 part of '../fl_assets_picker.dart';
 
-class ExtendedAssetEntity extends AssetEntity {
-  ExtendedAssetEntity.fromPreviewed({
+class FlAssetEntity extends AssetEntity {
+  FlAssetEntity.fromPreviewed({
     required this.previewed,
     super.width = 0,
     super.height = 0,
@@ -12,7 +12,7 @@ class ExtendedAssetEntity extends AssetEntity {
         isLocalData = false,
         super(typeInt: assetType.index, id: previewed.hashCode.toString());
 
-  const ExtendedAssetEntity({
+  const FlAssetEntity({
     this.thumbnailDataAsync,
     this.renovated,
     this.fileAsync,
@@ -54,7 +54,7 @@ class ExtendedAssetEntity extends AssetEntity {
   dynamic get realValue => previewed ?? renovated ?? fileAsync;
 }
 
-extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
+extension ExtensionFlAssetEntity on FlAssetEntity {
   AssetEntity toAssetEntity() => AssetEntity(
       id: id,
       typeInt: typeInt,
@@ -85,17 +85,19 @@ extension ExtensionExtendedAssetEntity on ExtendedAssetEntity {
   }
 }
 
-typedef ExtendedAssetEntityRenovate = FutureOr<dynamic> Function(
-    AssetEntity entity);
+typedef FlAssetEntityRenovate = FutureOr<dynamic> Function(AssetEntity asset);
 
 extension ExtensionAssetEntity on AssetEntity {
-  ///  to [ExtendedAssetEntity] and renovate [AssetEntity];
-  Future<ExtendedAssetEntity> toExtended(
-      {ExtendedAssetEntityRenovate? renovate}) async {
-    return ExtendedAssetEntity(
-        thumbnailDataAsync: await thumbnailData,
-        fileAsync: await file,
-        renovated: await renovate?.call(this),
+  ///  to [FlAssetEntity] and renovate [AssetEntity];
+  Future<FlAssetEntity> toExtended({
+    FlAssetEntityRenovate? onRenovate,
+    bool getFileAsync = false,
+    bool getThumbnailDataAsync = false,
+  }) async {
+    return FlAssetEntity(
+        thumbnailDataAsync: getThumbnailDataAsync ? await thumbnailData : null,
+        fileAsync: getFileAsync ? await file : null,
+        renovated: await onRenovate?.call(this),
         id: id,
         typeInt: typeInt,
         width: width,
