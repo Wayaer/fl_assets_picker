@@ -162,3 +162,65 @@ class FlPickerActionBuilder extends StatelessWidget {
     return CupertinoActionSheet(cancelButton: cancel, actions: list);
   }
 }
+
+/// 图片预览器
+class FlAssetsPickerPreviewModal extends StatelessWidget {
+  const FlAssetsPickerPreviewModal({
+    super.key,
+    required this.child,
+    this.close,
+    this.overlay,
+    this.backgroundColor = Colors.black87,
+  });
+
+  final Widget child;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
+
+  /// 背景色
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: backgroundColor,
+        child: Stack(children: [
+          SizedBox.expand(child: child),
+          if (overlay != null) SizedBox.expand(child: overlay!),
+          Positioned(
+              right: 6,
+              top: MediaQuery.of(context).viewPadding.top,
+              child: close ?? const CloseButton(color: Colors.white)),
+        ]));
+  }
+}
+
+/// 图片预览器
+class FlAssetsPickerPreviewPageView extends StatelessWidget {
+  const FlAssetsPickerPreviewPageView(
+      {super.key, required this.entities, this.initialIndex = 0});
+
+  /// 资源列表
+  final List<FlAssetEntity> entities;
+
+  /// 初始索引
+  final int initialIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final length = entities.length;
+    final initialPage = min(length, initialIndex);
+    return FlAssetsPickerPreviewModal(
+        child: PageView.builder(
+            controller: PageController(initialPage: initialPage),
+            itemCount: length,
+            itemBuilder: (_, int index) {
+              return Center(
+                  child: FlAssetsPicker.assetBuilder(entities[index], false));
+            }));
+  }
+}

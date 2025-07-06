@@ -1,4 +1,4 @@
-## 5.0.0
+## 5.1.1
 
 * Breaking change， Please refer to
   the [example](https://github.com/Wayaer/fl_assets_picker/blob/main/fl_assets_picker/example/lib/main.dart)

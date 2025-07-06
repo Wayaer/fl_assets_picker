@@ -281,6 +281,18 @@ abstract class FlImagePicker extends StatefulWidget {
     }
     return [];
   }
+
+  /// 全屏预览
+  static Future<T?> preview<T>(BuildContext context, List<FlXFile> entities,
+      {int initialIndex = 0}) async {
+    final builder = FlImagePickerPreviewPageView(
+        entities: entities, initialIndex: initialIndex);
+    if (context.mounted) {
+      return await showCupertinoModalPopup<T>(
+          context: context, builder: (_) => builder);
+    }
+    return null;
+  }
 }
 
 abstract class FlImagePickerState<T extends FlImagePicker> extends State<T> {
@@ -337,63 +349,5 @@ abstract class FlImagePickerState<T extends FlImagePicker> extends State<T> {
     super.dispose();
     widget.controller.removeListener(listener);
     if (widget.disposeController) widget.controller.dispose();
-  }
-}
-
-/// 图片预览器
-class FlImagePickerPreviewModal extends StatelessWidget {
-  const FlImagePickerPreviewModal({
-    super.key,
-    required this.child,
-    this.close,
-    this.overlay,
-    this.backgroundColor = Colors.black87,
-  });
-
-  final Widget child;
-
-  /// 关闭按钮
-  final Widget? close;
-
-  /// 在图片的上层
-  final Widget? overlay;
-
-  /// 背景色
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-        color: backgroundColor,
-        child: Stack(children: [
-          SizedBox.expand(child: child),
-          if (overlay != null) SizedBox.expand(child: overlay!),
-          Positioned(
-              right: 6,
-              top: MediaQuery.of(context).viewPadding.top,
-              child: close ?? const CloseButton(color: Colors.white)),
-        ]));
-  }
-}
-
-/// 图片预览器
-class FlImagePickerPreviewPageView extends StatelessWidget {
-  const FlImagePickerPreviewPageView(
-      {super.key, required this.controller, this.initialIndex = 0});
-
-  final ImagePickerController controller;
-  final int initialIndex;
-
-  @override
-  Widget build(BuildContext context) {
-    final length = controller.entities.length;
-    final initialPage = min(length, initialIndex);
-    return FlImagePickerPreviewModal(
-        child: PageView.builder(
-            controller: PageController(initialPage: initialPage),
-            itemCount: length,
-            itemBuilder: (_, int index) => Center(
-                child: FlImagePicker.imageBuilder(
-                    controller.entities[index], false))));
   }
 }

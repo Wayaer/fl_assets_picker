@@ -1,6 +1,6 @@
 name: fl_image_picker
 description: fl_image_picker is used to take photos of the device assets selection and camera and record videos
-version: 3.0.0
+version: 3.0.1
 repository: https://github.com/Wayaer/fl_assets_picker/tree/main/fl_image_picker
 
 environment:

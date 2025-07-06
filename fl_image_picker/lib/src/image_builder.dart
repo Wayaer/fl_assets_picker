@@ -168,3 +168,62 @@ class FlPickerActionBuilder extends StatelessWidget {
     return CupertinoActionSheet(cancelButton: cancel, actions: list);
   }
 }
+
+/// 图片预览器
+class FlImagePickerPreviewModal extends StatelessWidget {
+  const FlImagePickerPreviewModal({
+    super.key,
+    required this.child,
+    this.close,
+    this.overlay,
+    this.backgroundColor = Colors.black87,
+  });
+
+  final Widget child;
+
+  /// 关闭按钮
+  final Widget? close;
+
+  /// 在图片的上层
+  final Widget? overlay;
+
+  /// 背景色
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        color: backgroundColor,
+        child: Stack(children: [
+          SizedBox.expand(child: child),
+          if (overlay != null) SizedBox.expand(child: overlay!),
+          Positioned(
+              right: 6,
+              top: MediaQuery.of(context).viewPadding.top,
+              child: close ?? const CloseButton(color: Colors.white)),
+        ]));
+  }
+}
+
+/// 图片预览器
+class FlImagePickerPreviewPageView extends StatelessWidget {
+  const FlImagePickerPreviewPageView(
+      {super.key, required this.entities, this.initialIndex = 0});
+
+  /// 选择的资源
+  final List<FlXFile> entities;
+
+  /// 初始 index
+  final int initialIndex;
+
+  @override
+  Widget build(BuildContext context) {
+    final initialPage = min(entities.length, initialIndex);
+    return FlImagePickerPreviewModal(
+        child: PageView.builder(
+            controller: PageController(initialPage: initialPage),
+            itemCount: entities.length,
+            itemBuilder: (_, int index) => Center(
+                child: FlImagePicker.imageBuilder(entities[index], false))));
+  }
+}

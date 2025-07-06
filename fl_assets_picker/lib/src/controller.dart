@@ -105,17 +105,8 @@ class AssetsPickerController extends FlAssetPickerOptions with ChangeNotifier {
   }
 
   /// 全屏预览
-  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
-    final builder = buildPreviewModal(initialIndex: initialIndex);
-    if (context.mounted) {
-      return await showCupertinoModalPopup<T>(
-          context: context, builder: (_) => builder);
-    }
-    return null;
+  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) {
+    return FlAssetsPicker.preview<T>(context, entities,
+        initialIndex: initialIndex);
   }
-
-  /// 构建预览 Widget
-  Widget buildPreviewModal({int initialIndex = 0}) =>
-      FlAssetsPickerPreviewPageView(
-          controller: this, initialIndex: initialIndex);
 }

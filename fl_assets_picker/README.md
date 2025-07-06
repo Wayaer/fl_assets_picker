@@ -110,9 +110,10 @@ class CustomAssetsPickerController extends AssetsPickerController {
 
   @override
   Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
-    final builder = buildPreviewModal(initialIndex: initialIndex);
+    final builder = FlAssetsPickerPreviewPageView(
+        entities: entities, initialIndex: initialIndex);
     if (context.mounted) return await builder.popupDialog<T>();
-    return super.preview(context, initialIndex: initialIndex);
+    return null;
   }
 }
 ```

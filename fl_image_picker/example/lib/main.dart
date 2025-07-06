@@ -120,9 +120,10 @@ class CustomImagePickerController extends ImagePickerController {
 
   @override
   Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
-    final builder = buildPreviewModal(initialIndex: initialIndex);
+    final builder = FlImagePickerPreviewPageView(
+        entities: entities, initialIndex: initialIndex);
     if (context.mounted) return await builder.popupDialog<T>();
-    return super.preview(context, initialIndex: initialIndex);
+    return null;
   }
 }
 
