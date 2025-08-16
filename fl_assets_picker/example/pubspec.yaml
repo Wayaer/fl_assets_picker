@@ -4,18 +4,17 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: '>=3.13.0'
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.27.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  fl_extended: ^1.8.0
+  fl_extended: ^1.9.1
   permission_handler: ^12.0.1
   flutter_image_compress: ^2.4.0
   device_info_plus: ^11.5.0
   fl_video: ^1.4.1
-  extended_image: ^9.1.0
   fl_assets_picker:
     path: ../
 

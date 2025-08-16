@@ -114,14 +114,18 @@ class CustomAssetsPickerController extends AssetsPickerController {
               onTap: () {
                 pop(false);
               },
-              child: const BText('取消', fontSize: 14, color: Colors.grey)),
+              child: const Text(
+                '取消',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              )),
           Universal(
               height: 45,
               alignment: Alignment.center,
               onTap: () {
                 pop(true);
               },
-              child: const BText('确定', fontSize: 14, color: Colors.grey)),
+              child: const Text('确定',
+                  style: TextStyle(fontSize: 14, color: Colors.grey))),
         ]).popupCupertinoModal<bool?>();
     if (value == true) return super.delete(asset);
   }
