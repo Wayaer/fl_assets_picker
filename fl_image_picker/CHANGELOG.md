@@ -1,3 +1,7 @@
+## 3.1.0
+
+* Change the `ImagePickerOptions` to the `FlImagePickerOptions`
+
 ## 3.0.1
 
 * Breaking change， Please refer to

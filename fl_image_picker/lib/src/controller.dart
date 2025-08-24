@@ -5,12 +5,12 @@ class ImagePickerController with ChangeNotifier {
     List<FlXFile>? entities,
     List<PickerActionOptions>? actions,
     this.allowPick = true,
-    this.options = const ImagePickerOptions(),
+    this.options = const FlImagePickerOptions(),
   })  : entities = entities ?? [],
         actions = actions ?? defaultImagePickerActionOptions;
 
   /// 资源选择参数
-  final ImagePickerOptions options;
+  final FlImagePickerOptions options;
 
   /// 选择的资源
   final List<FlXFile> entities;

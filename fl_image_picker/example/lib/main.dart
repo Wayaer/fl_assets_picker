@@ -69,7 +69,7 @@ class CustomImagePickerController extends ImagePickerController {
       {super.actions,
       super.allowPick = true,
       super.entities,
-      super.options = const ImagePickerOptions()});
+      super.options = const FlImagePickerOptions()});
 
   @override
   Future<void> pick(PickerAction action, {bool reset = false}) async {

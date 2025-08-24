@@ -69,7 +69,7 @@ enum PickerAction {
 
   /// pick image or video
   Future<List<XFile>> pick(
-      {ImagePickerOptions options = const ImagePickerOptions()}) async {
+      {FlImagePickerOptions options = const FlImagePickerOptions()}) async {
     List<XFile> xFils = [];
     switch (this) {
       case PickerAction.image:
@@ -133,8 +133,8 @@ enum PickerAction {
 }
 
 /// [ImagePicker] pick options
-class ImagePickerOptions {
-  const ImagePickerOptions({
+class FlImagePickerOptions {
+  const FlImagePickerOptions({
     this.limit,
     this.preferredCameraDevice = CameraDevice.rear,
 
@@ -237,7 +237,7 @@ abstract class FlImagePicker extends StatefulWidget {
   static Future<List<FlXFile>> showPickWithActions(
     BuildContext context,
     List<PickerActionOptions> actions, {
-    ImagePickerOptions options = const ImagePickerOptions(),
+    FlImagePickerOptions options = const FlImagePickerOptions(),
   }) async {
     final actionOption = await showPickActions(context, actions);
     if (actionOption == null) return [];
@@ -263,7 +263,7 @@ abstract class FlImagePicker extends StatefulWidget {
 
   /// show pick
   static Future<List<FlXFile>> showPick(PickerAction action,
-      {ImagePickerOptions options = const ImagePickerOptions()}) async {
+      {FlImagePickerOptions options = const FlImagePickerOptions()}) async {
     if (action == PickerAction.cancel) return [];
     final permissionState = await checkPermission?.call(action) ?? true;
     if (permissionState) {
