@@ -1,6 +1,7 @@
 ## 3.1.0
 
 * Change the `ImagePickerOptions` to the `FlImagePickerOptions`
+* Relax dependency versions
 
 ## 3.0.1
 

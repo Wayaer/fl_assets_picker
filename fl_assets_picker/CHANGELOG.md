@@ -1,3 +1,7 @@
+## 5.1.2
+
+* Relax dependency versions
+
 ## 5.1.1
 
 * Breaking change， Please refer to
