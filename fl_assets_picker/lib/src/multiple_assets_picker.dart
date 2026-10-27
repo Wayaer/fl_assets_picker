@@ -27,8 +27,7 @@ class MultipleAssetsPickerListBuilderConfig {
 
 typedef MultipleAssetsPickerListBuilder = Widget Function(List<Widget> images);
 
-typedef MultiplePickerListItemBuilder = Widget Function(
-    FlAssetEntity asset, int index);
+typedef MultiplePickerListItemBuilder = Widget Function(FlAssetEntity asset, int index);
 
 class MultipleAssetsPicker extends FlAssetsPicker {
   const MultipleAssetsPicker({
@@ -61,43 +60,38 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   @override
   State<MultipleAssetsPicker> createState() => _MultipleAssetsPickerState();
 
-  /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static List<FlAssetEntity> convertPaths(List<String> paths,
-      {AssetType assetsType = AssetType.image}) {
-    List<FlAssetEntity> list = [];
-    for (var element in paths) {
+  /// [paths] 文件地址转换 `List<FlAssetEntity>` 默认类型为  [AssetType.image]
+  static List<FlAssetEntity> convertPaths(List<String> paths, {AssetType assetType = AssetType.image}) {
+    final list = <FlAssetEntity>[];
+    for (final element in paths) {
       if (element.isNotEmpty) {
-        list.add(FlAssetEntity.fromPreviewed(
-            previewed: element, assetType: assetsType));
+        list.add(FlAssetEntity.fromPreviewed(previewed: element, assetType: assetType));
       }
     }
     return list;
   }
 
-  /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static List<FlAssetEntity> convertUrls(String url,
-      {AssetType assetsType = AssetType.image, String? splitPattern}) {
-    List<FlAssetEntity> list = [];
+  /// [url] 地址转换 `List<FlAssetEntity>` 默认类型为  [AssetType.image]
+  static List<FlAssetEntity> convertUrls(String url, {AssetType assetType = AssetType.image, String? splitPattern}) {
+    final list = <FlAssetEntity>[];
     if (url.isEmpty) return list;
     if (splitPattern != null && url.contains(splitPattern)) {
       final urls = url.split(splitPattern);
-      for (var element in urls) {
+      for (final element in urls) {
         if (element.isNotEmpty) {
-          list.add(FlAssetEntity.fromPreviewed(
-              previewed: element, assetType: assetsType));
+          list.add(FlAssetEntity.fromPreviewed(previewed: element, assetType: assetType));
         }
       }
     } else {
-      list.add(
-          FlAssetEntity.fromPreviewed(assetType: assetsType, previewed: url));
+      list.add(FlAssetEntity.fromPreviewed(assetType: assetType, previewed: url));
     }
     return list;
   }
 
   /// 具体的数据  顺序为 url > path > file
   static List<String> toStringList(List<FlAssetEntity> list) {
-    List<String> value = [];
-    for (var element in list) {
+    final value = <String>[];
+    for (final element in list) {
       if (element.realValueStr != null) {
         value.add(element.realValueStr!);
       }
@@ -107,8 +101,8 @@ class MultipleAssetsPicker extends FlAssetsPicker {
 
   /// 具体的数据  顺序为 url > path > file
   static List<dynamic> toDynamicList(List<FlAssetEntity> list) {
-    List<dynamic> value = [];
-    for (var element in list) {
+    final value = <dynamic>[];
+    for (final element in list) {
       if (element.realValue != null) {
         value.add(element.realValue!);
       }
@@ -117,8 +111,7 @@ class MultipleAssetsPicker extends FlAssetsPicker {
   }
 }
 
-class _MultipleAssetsPickerState
-    extends FlAssetsPickerState<MultipleAssetsPicker> {
+class _MultipleAssetsPickerState extends FlAssetsPickerState<MultipleAssetsPicker> {
   @override
   void listener() {
     widget.onChanged?.call(widget.controller.entities);
@@ -127,42 +120,45 @@ class _MultipleAssetsPickerState
 
   @override
   Widget build(BuildContext context) {
-    final children =
-        widget.controller.entities.asMap().entries.map(buildEntry).toList();
+    final children = widget.controller.entities.asMap().entries.map(buildEntry).toList();
     if (widget.controller.allowPick) children.add(buildPicker);
     if (widget.builder != null) return widget.builder!(children);
     final builderConfig = widget.builderConfig;
     SliverGridDelegate gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: builderConfig.crossAxisCount,
-        mainAxisSpacing: builderConfig.mainAxisSpacing,
-        crossAxisSpacing: builderConfig.crossAxisSpacing,
-        childAspectRatio: builderConfig.childAspectRatio);
+      crossAxisCount: builderConfig.crossAxisCount,
+      mainAxisSpacing: builderConfig.mainAxisSpacing,
+      crossAxisSpacing: builderConfig.crossAxisSpacing,
+      childAspectRatio: builderConfig.childAspectRatio,
+    );
     if (builderConfig.maxCrossAxisExtent != null) {
       gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: builderConfig.maxCrossAxisExtent!,
-          mainAxisSpacing: builderConfig.mainAxisSpacing,
-          crossAxisSpacing: builderConfig.crossAxisSpacing,
-          childAspectRatio: builderConfig.childAspectRatio);
+        maxCrossAxisExtent: builderConfig.maxCrossAxisExtent!,
+        mainAxisSpacing: builderConfig.mainAxisSpacing,
+        crossAxisSpacing: builderConfig.crossAxisSpacing,
+        childAspectRatio: builderConfig.childAspectRatio,
+      );
     }
     return GridView(
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
-        gridDelegate: gridDelegate,
-        children: children);
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: EdgeInsets.zero,
+      gridDelegate: gridDelegate,
+      children: children,
+    );
   }
 
   /// 资源预览 asset
   Widget buildEntry(MapEntry<int, FlAssetEntity> asset) {
     final entity = asset.value;
-    Widget current = FlAssetsPicker.assetBuilder(entity, true);
+    Widget current = widget.controller.buildPreview(entity, true);
     current = buildVideo(entity, current);
     current = buildBackgroundColor(current);
     current = GestureDetector(
-        onTap: () {
-          widget.controller.preview(context, initialIndex: asset.key);
-        },
-        child: widget.itemBuilder?.call(asset.value, asset.key) ?? current);
+      onTap: () {
+        widget.controller.preview(context, initialIndex: asset.key);
+      },
+      child: widget.itemBuilder?.call(asset.value, asset.key) ?? current,
+    );
     current = buildDelete(entity, current);
     current = buildBorderRadius(current);
     return current;
@@ -170,9 +166,10 @@ class _MultipleAssetsPickerState
 
   Widget buildDelete(FlAssetEntity asset, Widget current) {
     if (widget.allowDelete) {
-      current = Stack(children: [
-        SizedBox.expand(child: current),
-        Positioned(
+      current = Stack(
+        children: [
+          SizedBox.expand(child: current),
+          Positioned(
             right: 4,
             top: 4,
             child: GestureDetector(
@@ -180,8 +177,10 @@ class _MultipleAssetsPickerState
                 widget.controller.delete(asset);
               },
               child: widget.itemConfig.delete,
-            ))
-      ]);
+            ),
+          ),
+        ],
+      );
     }
     return current;
   }

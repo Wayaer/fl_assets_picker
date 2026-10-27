@@ -7,7 +7,6 @@ class SingleImagePicker extends FlImagePicker {
     super.disposeController = false,
     super.itemConfig = const FlImagePickerItemConfig(),
     this.onChanged,
-    this.size = 60,
     this.height = 60,
     this.width = 60,
   });
@@ -15,25 +14,21 @@ class SingleImagePicker extends FlImagePicker {
   /// 资源选择变化
   final ValueChanged<FlXFile?>? onChanged;
 
-  /// [size] > [height]、[width]
-  final double? size;
   final double height;
   final double width;
 
-  /// [paths] 文件地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static FlXFile? convertPaths(String path,
-      {AssetType assetsType = AssetType.image}) {
+  /// [paths] 文件地址转换 `FlXFile` 默认类型为  [AssetType.image]
+  static FlXFile? convertPaths(String path, {AssetType assetType = AssetType.image}) {
     if (path.isNotEmpty) {
-      return FlXFile.fromPreviewed(path, assetsType);
+      return FlXFile.fromPreviewed(path, assetType);
     }
     return null;
   }
 
-  /// [url] 地址转换 `List<ExtendedImageModel>` 默认类型为  [AssetType.image]
-  static FlXFile? convertUrl(String url,
-      {AssetType assetsType = AssetType.image}) {
+  /// [url] 地址转换 `FlXFile` 默认类型为  [AssetType.image]
+  static FlXFile? convertUrl(String url, {AssetType assetType = AssetType.image}) {
     if (url.isNotEmpty) {
-      return FlXFile.fromPreviewed(url, assetsType);
+      return FlXFile.fromPreviewed(url, assetType);
     }
     return null;
   }
@@ -59,9 +54,7 @@ class _SingleImagePickerState extends FlImagePickerState<SingleImagePicker> {
       current = buildVideo(file, current);
     }
     current = buildBackgroundColor(current);
-    current = SizedBox.fromSize(
-        size: Size(widget.size ?? widget.width, widget.size ?? widget.height),
-        child: current);
+    current = SizedBox.fromSize(size: Size(widget.width, widget.height), child: current);
     current = buildBorderRadius(current);
     current = buildPickActions(current, reset: true);
     return current;
@@ -71,6 +64,6 @@ class _SingleImagePickerState extends FlImagePickerState<SingleImagePicker> {
     if (file.realValue == null) {
       return widget.itemConfig.pick;
     }
-    return FlImagePicker.imageBuilder(file, true);
+    return widget.controller.buildPreview(file, true);
   }
 }

@@ -1,12 +1,21 @@
 part of '../fl_image_picker.dart';
 
-typedef FlImagePickerCheckPermission = Future<bool> Function(
-    PickerAction action);
+typedef FlImagePreviewBuilder = Widget Function(FlXFile file, bool isThumbnail);
 
-typedef PickerActionBuilder = Widget Function(
-    BuildContext context, List<PickerActionOptions> actions);
+@Deprecated('Use FlImagePreviewBuilder instead')
+typedef FlImageBuilder = FlImagePreviewBuilder;
 
-typedef FlImageBuilder = Widget Function(FlXFile file, bool isThumbnail);
+typedef FlImagePickerPermissionRequest = Future<bool> Function(PickerAction action);
+
+@Deprecated('Use FlImagePickerPermissionRequest instead')
+typedef FlImagePickerCheckPermission = FlImagePickerPermissionRequest;
+
+typedef FlImagePickerActionSheetBuilder = Widget Function(BuildContext context, List<PickerActionOptions> actions);
+
+@Deprecated('Use FlImagePickerActionSheetBuilder instead')
+typedef PickerActionBuilder = FlImagePickerActionSheetBuilder;
+
+typedef FlImagePickerErrorHandler = void Function(Object error, StackTrace stackTrace);
 
 enum AssetType {
   /// The asset is an media
@@ -21,110 +30,101 @@ enum AssetType {
 
 enum PickerAction {
   /// 仅图片
-  image,
+  image(AssetType.image),
 
   /// 仅图片 多选
-  multiImage,
+  multiImage(AssetType.image),
 
   /// 仅视频
-  video,
+  video(AssetType.video),
 
   /// 仅媒体
-  media,
+  media(AssetType.media),
 
   /// 仅媒体 多选
-  multiMedia,
+  multiMedia(AssetType.media),
 
   /// 拍照
-  takePicture,
+  takePicture(AssetType.image),
 
   /// 相机录像
-  cameraRecording,
+  cameraRecording(AssetType.video),
 
   /// 取消
-  cancel,
-  ;
+  cancel(AssetType.media);
 
-  /// to [AssetType]
-  AssetType toAssetType() {
-    switch (this) {
-      case PickerAction.image:
-        return AssetType.image;
-      case PickerAction.multiImage:
-        return AssetType.image;
-      case PickerAction.video:
-        return AssetType.video;
-      case PickerAction.takePicture:
-        return AssetType.image;
-      case PickerAction.cameraRecording:
-        return AssetType.video;
-      case PickerAction.cancel:
-        return AssetType.media;
-      case PickerAction.media:
-        return AssetType.media;
-      case PickerAction.multiMedia:
-        return AssetType.media;
-    }
-  }
+  const PickerAction(this.assetType);
+
+  /// 对应的 [AssetType]
+  final AssetType assetType;
 
   /// pick image or video
-  Future<List<XFile>> pick(
-      {FlImagePickerOptions options = const FlImagePickerOptions()}) async {
+  Future<List<XFile>> pick({FlImagePickerOptions options = const FlImagePickerOptions()}) async {
     List<XFile> xFils = [];
     switch (this) {
       case PickerAction.image:
         final result = await FlImagePicker.imagePicker.pickImage(
-            source: ImageSource.gallery,
-            maxWidth: options.maxWidth,
-            maxHeight: options.maxHeight,
-            imageQuality: options.imageQuality,
-            requestFullMetadata: options.requestFullMetadata,
-            preferredCameraDevice: options.preferredCameraDevice);
+          source: ImageSource.gallery,
+          maxWidth: options.maxWidth,
+          maxHeight: options.maxHeight,
+          imageQuality: options.imageQuality,
+          requestFullMetadata: options.requestFullMetadata,
+          preferredCameraDevice: options.preferredCameraDevice,
+        );
         if (result != null) xFils.add(result);
         break;
       case PickerAction.multiImage:
         xFils = await FlImagePicker.imagePicker.pickMultiImage(
-            limit: options.limit,
-            maxWidth: options.maxWidth,
-            maxHeight: options.maxHeight,
-            imageQuality: options.imageQuality,
-            requestFullMetadata: options.requestFullMetadata);
+          limit: options.limit,
+          maxWidth: options.maxWidth,
+          maxHeight: options.maxHeight,
+          imageQuality: options.imageQuality,
+          requestFullMetadata: options.requestFullMetadata,
+        );
         break;
       case PickerAction.video:
         final result = await FlImagePicker.imagePicker.pickVideo(
-            source: ImageSource.gallery, maxDuration: options.maxDuration);
+          source: ImageSource.gallery,
+          maxDuration: options.maxDuration,
+        );
         if (result != null) xFils.add(result);
         break;
       case PickerAction.takePicture:
         final result = await FlImagePicker.imagePicker.pickImage(
-            source: ImageSource.camera,
-            maxWidth: options.maxWidth,
-            maxHeight: options.maxHeight,
-            imageQuality: options.imageQuality,
-            requestFullMetadata: options.requestFullMetadata,
-            preferredCameraDevice: options.preferredCameraDevice);
+          source: ImageSource.camera,
+          maxWidth: options.maxWidth,
+          maxHeight: options.maxHeight,
+          imageQuality: options.imageQuality,
+          requestFullMetadata: options.requestFullMetadata,
+          preferredCameraDevice: options.preferredCameraDevice,
+        );
         if (result != null) xFils.add(result);
         break;
       case PickerAction.cameraRecording:
         final result = await FlImagePicker.imagePicker.pickVideo(
-            source: ImageSource.camera, maxDuration: options.maxDuration);
+          source: ImageSource.camera,
+          maxDuration: options.maxDuration,
+          preferredCameraDevice: options.preferredCameraDevice,
+        );
         if (result != null) xFils.add(result);
         break;
       case PickerAction.media:
         final result = await FlImagePicker.imagePicker.pickMedia(
-            maxWidth: options.maxWidth,
-            maxHeight: options.maxHeight,
-            imageQuality: options.imageQuality,
-            requestFullMetadata: options.requestFullMetadata);
+          maxWidth: options.maxWidth,
+          maxHeight: options.maxHeight,
+          imageQuality: options.imageQuality,
+          requestFullMetadata: options.requestFullMetadata,
+        );
         if (result != null) xFils.add(result);
         break;
       case PickerAction.multiMedia:
         xFils = await FlImagePicker.imagePicker.pickMultipleMedia(
-            limit: options.limit,
-            maxWidth: options.maxWidth,
-            maxHeight: options.maxHeight,
-            imageQuality: options.imageQuality,
-            requestFullMetadata: options.requestFullMetadata);
+          limit: options.limit,
+          maxWidth: options.maxWidth,
+          maxHeight: options.maxHeight,
+          imageQuality: options.imageQuality,
+          requestFullMetadata: options.requestFullMetadata,
+        );
         break;
       case PickerAction.cancel:
     }
@@ -142,6 +142,7 @@ class FlImagePickerOptions {
     this.maxWidth,
     this.maxHeight,
     this.imageQuality,
+    this.requestFullMetadata = true,
 
     /// video
     this.maxDuration,
@@ -157,42 +158,41 @@ class FlImagePickerOptions {
   final double? maxWidth;
   final double? maxHeight;
   final int? imageQuality;
-  final bool requestFullMetadata = true;
+
+  /// 是否请求完整的元数据（例如地理位置）
+  final bool requestFullMetadata;
 
   /// video
   final Duration? maxDuration;
 }
 
-/// 全部默认 [ImageBuilder]
-FlImageBuilder get _defaultImageBuilder => (FlXFile entity, bool isThumbnail) {
-      Widget unsupported() => const Center(child: Text('No preview'));
-      if (entity.type == AssetType.image) {
-        final imageProvider = entity.toImageProvider();
-        if (imageProvider != null) {
-          return Image(
-              image: imageProvider,
-              fit: isThumbnail ? BoxFit.cover : BoxFit.contain);
-        }
-      }
-      return unsupported();
-    };
+/// 默认资源预览渲染，子类可通过 [ImagePickerController.buildPreview] 重写
+Widget _defaultImagePreviewBuilder(FlXFile file, bool isThumbnail) {
+  Widget unsupported() => const Center(child: Text('No preview'));
+  if (file.type == AssetType.image) {
+    final imageProvider = file.toImageProvider();
+    if (imageProvider != null) {
+      return Image(image: imageProvider, fit: isThumbnail ? BoxFit.cover : BoxFit.contain);
+    }
+  }
+  return unsupported();
+}
 
-/// 默认 [PickerActionBuilder]
-PickerActionBuilder get _defaultActionsBuilder =>
-    (_, List<PickerActionOptions> actions) => FlPickerActionBuilder(actions);
+/// 默认来源选择弹层，子类可通过 [ImagePickerController.buildActionSheet] 重写
+Widget _defaultActionSheetBuilder(BuildContext context, List<PickerActionOptions> actions) =>
+    FlPickerActionBuilder(actions);
+
+void _reportPickerError(FlImagePickerErrorHandler? onError, Object error, StackTrace stackTrace) {
+  if (onError != null) {
+    onError(error, stackTrace);
+    return;
+  }
+  FlutterError.reportError(FlutterErrorDetails(exception: error, stack: stackTrace, library: 'fl_image_picker'));
+}
 
 abstract class FlImagePicker extends StatefulWidget {
-  /// image picker
+  /// image picker，可通过替换该实例注入自定义实现
   static ImagePicker imagePicker = ImagePicker();
-
-  /// imageBuilder
-  static FlImageBuilder imageBuilder = _defaultImageBuilder;
-
-  /// 权限申请
-  static FlImagePickerCheckPermission? checkPermission;
-
-  /// 类型来源选择器
-  static PickerActionBuilder actionsBuilder = _defaultActionsBuilder;
 
   const FlImagePicker({
     super.key,
@@ -215,18 +215,26 @@ abstract class FlImagePicker extends StatefulWidget {
   final bool allowDelete;
 
   /// value 转换为 [ImageProvider]
+  ///
+  /// 支持 [ImageProvider]、网络地址、本地文件路径、asset 路径、[Uint8List]、[File]、[XFile]
   static ImageProvider? buildImageProvider(dynamic value) {
+    if (value is ImageProvider) return value;
     if (value is String) {
-      if (value.startsWith('http') || value.startsWith('blob:http')) {
+      if (value.startsWith('http') || value.startsWith('blob:')) {
         return NetworkImage(value);
-      } else {
-        return AssetImage(value);
       }
-    } else if (value is Uint8List) {
-      return MemoryImage(value);
-    } else if (value is File) {
+      if (!kIsWeb && File(value).existsSync()) {
+        return FileImage(File(value));
+      }
+      return AssetImage(value);
+    }
+    if (value is Uint8List) return MemoryImage(value);
+    if (value is File) {
+      if (kIsWeb) return NetworkImage(value.path);
       return FileImage(value);
-    } else if (value is XFile) {
+    }
+    if (value is XFile) {
+      if (kIsWeb) return NetworkImage(value.path);
       return FileImage(File(value.path));
     }
     return null;
@@ -238,39 +246,51 @@ abstract class FlImagePicker extends StatefulWidget {
     BuildContext context,
     List<PickerActionOptions> actions, {
     FlImagePickerOptions options = const FlImagePickerOptions(),
+    FlImagePickerPermissionRequest? requestPermission,
+    FlImagePickerActionSheetBuilder actionSheetBuilder = _defaultActionSheetBuilder,
+    FlImagePickerErrorHandler? onError,
   }) async {
-    final actionOption = await showPickActions(context, actions);
+    final actionOption = await showPickActions(context, actions, actionSheetBuilder: actionSheetBuilder);
     if (actionOption == null) return [];
-    return await showPick(actionOption.action, options: options);
+    return showPick(actionOption.action, options: options, requestPermission: requestPermission, onError: onError);
   }
 
   /// show pick actions
   static Future<PickerActionOptions?> showPickActions(
-      BuildContext context, List<PickerActionOptions> actions) async {
+    BuildContext context,
+    List<PickerActionOptions> actions, {
+    FlImagePickerActionSheetBuilder actionSheetBuilder = _defaultActionSheetBuilder,
+  }) async {
     if (actions.isEmpty) return null;
     PickerActionOptions? action;
-    final effectiveActions =
-        actions.where((e) => e.action != PickerAction.cancel);
+    final effectiveActions = actions.where((e) => e.action != PickerAction.cancel);
+    if (effectiveActions.isEmpty) return null;
     if (effectiveActions.length == 1) {
       action = effectiveActions.first;
     } else {
       action = await showCupertinoModalPopup<PickerActionOptions?>(
-          context: context,
-          builder: (BuildContext context) => actionsBuilder(context, actions));
+        context: context,
+        builder: (BuildContext context) => actionSheetBuilder(context, actions),
+      );
     }
     return action;
   }
 
   /// show pick
-  static Future<List<FlXFile>> showPick(PickerAction action,
-      {FlImagePickerOptions options = const FlImagePickerOptions()}) async {
+  static Future<List<FlXFile>> showPick(
+    PickerAction action, {
+    FlImagePickerOptions options = const FlImagePickerOptions(),
+    FlImagePickerPermissionRequest? requestPermission,
+    FlImagePickerErrorHandler? onError,
+  }) async {
     if (action == PickerAction.cancel) return [];
-    final permissionState = await checkPermission?.call(action) ?? true;
-    if (permissionState) {
+    try {
+      final permissionState = await requestPermission?.call(action) ?? true;
+      if (!permissionState) return [];
       final files = await action.pick(options: options);
       return files.map((file) {
         AssetType assetType = AssetType.media;
-        final mimeType = file.mimeType ?? lookupMimeType(file.path);
+        final mimeType = file.mimeType ?? lookupMimeType(file.name) ?? lookupMimeType(file.path);
         if (mimeType?.startsWith('video') ?? false) {
           assetType = AssetType.video;
         } else if (mimeType?.startsWith('image') ?? false) {
@@ -278,18 +298,27 @@ abstract class FlImagePicker extends StatefulWidget {
         }
         return file.toExtended(assetType);
       }).toList();
+    } catch (error, stackTrace) {
+      _reportPickerError(onError, error, stackTrace);
+      return [];
     }
-    return [];
   }
 
   /// 全屏预览
-  static Future<T?> preview<T>(BuildContext context, List<FlXFile> entities,
-      {int initialIndex = 0}) async {
+  static Future<T?> preview<T>(
+    BuildContext context,
+    List<FlXFile> entities, {
+    int initialIndex = 0,
+    FlImagePreviewBuilder previewBuilder = _defaultImagePreviewBuilder,
+  }) async {
+    if (entities.isEmpty) return null;
     final builder = FlImagePickerPreviewPageView(
-        entities: entities, initialIndex: initialIndex);
+      entities: entities,
+      initialIndex: initialIndex,
+      previewBuilder: previewBuilder,
+    );
     if (context.mounted) {
-      return await showCupertinoModalPopup<T>(
-          context: context, builder: (_) => builder);
+      return await showCupertinoModalPopup<T>(context: context, builder: (_) => builder);
     }
     return null;
   }
@@ -309,10 +338,12 @@ abstract class FlImagePickerState<T extends FlImagePicker> extends State<T> {
   Widget buildVideo(FlXFile file, Widget current) {
     final config = widget.itemConfig;
     if (file.type == AssetType.video) {
-      current = Stack(children: [
-        SizedBox.expand(child: current),
-        Align(alignment: Alignment.center, child: config.play),
-      ]);
+      current = Stack(
+        children: [
+          SizedBox.expand(child: current),
+          Align(alignment: Alignment.center, child: config.play),
+        ],
+      );
     }
     return current;
   }
@@ -336,18 +367,19 @@ abstract class FlImagePickerState<T extends FlImagePicker> extends State<T> {
   Widget buildPickActions(Widget current, {bool reset = false}) {
     if (widget.controller.allowPick) {
       current = GestureDetector(
-          onTap: () {
-            widget.controller.pickActions(context, reset: reset);
-          },
-          child: current);
+        onTap: () {
+          widget.controller.pickActions(context, reset: reset);
+        },
+        child: current,
+      );
     }
     return current;
   }
 
   @override
   void dispose() {
-    super.dispose();
     widget.controller.removeListener(listener);
     if (widget.disposeController) widget.controller.dispose();
+    super.dispose();
   }
 }

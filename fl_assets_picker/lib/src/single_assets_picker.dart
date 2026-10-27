@@ -7,7 +7,6 @@ class SingleAssetsPicker extends FlAssetsPicker {
     super.disposeController = false,
     super.itemConfig = const FlAssetsPickerItemConfig(),
     this.onChanged,
-    this.size = 60,
     this.height = 60,
     this.width = 60,
   });
@@ -15,26 +14,21 @@ class SingleAssetsPicker extends FlAssetsPicker {
   /// 资源选择变化
   final ValueChanged<FlAssetEntity?>? onChanged;
 
-  /// [size] > [height]、[width]
-  final double? size;
   final double height;
   final double width;
 
-  /// [paths] 文件地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static FlAssetEntity? convertPath(String path,
-      {AssetType assetsType = AssetType.image}) {
+  /// [paths] 文件地址转换 `FlAssetEntity` 默认类型为  [AssetType.image]
+  static FlAssetEntity? convertPath(String path, {AssetType assetType = AssetType.image}) {
     if (path.isNotEmpty) {
-      return FlAssetEntity.fromPreviewed(
-          previewed: path, assetType: assetsType);
+      return FlAssetEntity.fromPreviewed(previewed: path, assetType: assetType);
     }
     return null;
   }
 
-  /// [url] 地址转换 `List<ExtendedAssetModel>` 默认类型为  [AssetType.image]
-  static FlAssetEntity? convertUrl(String url,
-      {AssetType assetsType = AssetType.image}) {
+  /// [url] 地址转换 `FlAssetEntity` 默认类型为  [AssetType.image]
+  static FlAssetEntity? convertUrl(String url, {AssetType assetType = AssetType.image}) {
     if (url.isNotEmpty) {
-      return FlAssetEntity.fromPreviewed(previewed: url, assetType: assetsType);
+      return FlAssetEntity.fromPreviewed(previewed: url, assetType: assetType);
     }
     return null;
   }
@@ -60,9 +54,7 @@ class _SingleAssetsPickerState extends FlAssetsPickerState<SingleAssetsPicker> {
       current = buildVideo(asset, current);
     }
     current = buildBackgroundColor(current);
-    current = SizedBox.fromSize(
-        size: Size(widget.size ?? widget.width, widget.size ?? widget.height),
-        child: current);
+    current = SizedBox.fromSize(size: Size(widget.width, widget.height), child: current);
     current = buildBorderRadius(current);
     current = buildPickActions(current, reset: true);
     return current;
@@ -72,6 +64,6 @@ class _SingleAssetsPickerState extends FlAssetsPickerState<SingleAssetsPicker> {
     if (asset.realValue == null) {
       return widget.itemConfig.pick;
     }
-    return FlAssetsPicker.assetBuilder(asset, true);
+    return widget.controller.buildPreview(asset, true);
   }
 }

@@ -1,3 +1,29 @@
+## 7.0.0
+
+* Breaking change: `AssetsPickerController.onRenovate` is now a constructor field instead of a getter,
+  subclasses should pass `super.onRenovate`.
+* Update `wechat_assets_picker` to `10.1.3`, `wechat_camera_picker` to `4.6.0`, `photo_manager` to `3.12.0`,
+  `extended_image` to `10.1.0`, `extended_image_library` to `5.0.1`.
+* Align minimum SDK with dependencies: Dart `>=3.8.0`, Flutter `>=3.29.0`.
+* Gallery selection now supports macOS; camera remains Android/iOS.
+* Fix `FlAssetsPicker.buildImageProvider` throwing for `XFile` values.
+* Add missing fields to `AssetPickerConfig.copyWith/merge` and `CameraPickerConfig.copyWith/merge`.
+* Fix `CameraPickerConfig.merge` not merging `previewTransformBuilder`.
+* Fix `CameraPickerConfig.copyWith` not being able to change `previewVideoViewType`.
+* Fix `showPickAssetsWithDelegate` missing the path entity type parameter, making custom delegates unusable.
+* Breaking change: remove `SingleAssetsPicker.size`, use `width`/`height`.
+* Breaking change: remove `FlAssetsPicker.assetBuilder`, `checkPermission` and `actionsBuilder`;
+  override `AssetsPickerController.buildPreview`, `requestPermission` and `buildActionSheet` instead.
+* Fix controllers notifying listeners after being disposed and overlapping pick requests.
+* Fix `FlAssetEntity.fromPreviewed` generating colliding ids.
+* Return `null` for empty `realValueStr`.
+* Recognize local file path strings in `FlAssetsPicker.buildImageProvider`.
+* Add `onError` to picker APIs and controllers for plugin/renovate failures.
+* Fix preview `PageController` leak and out-of-range initial index.
+* Replace deprecated `latitude`/`longitude` with `latLng`, add `isTrashed` support.
+* `realValueStr` now also resolves `renovated` values.
+* Rebuild examples with Flutter 3.47 and new UI.
+
 ## 6.0.0
 
 * Update dependencies

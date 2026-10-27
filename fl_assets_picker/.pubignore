@@ -1,0 +1,33 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Flutter/Dart/Pub related
+/pubspec.lock
+**/doc/api/
+.dart_tool/
+.packages
+build/
+
+# Example build outputs
+/example/app/
+/example/build/
+/example/ios/Pods/
+/example/macos/Pods/
+/example/ios/Podfile.lock
+/example/macos/Podfile.lock

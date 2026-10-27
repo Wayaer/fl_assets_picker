@@ -11,28 +11,28 @@ class PickerActionOptions {
 }
 
 List<PickerActionOptions> get defaultImagePickerActionOptions => [
-      PickerActionOptions(action: PickerAction.image, text: Text('单图片选择')),
-      PickerActionOptions(action: PickerAction.multiImage, text: Text('多图片选择')),
-      PickerActionOptions(action: PickerAction.video, text: Text('单视频选择')),
-      PickerActionOptions(action: PickerAction.media, text: Text('单媒体选择')),
-      PickerActionOptions(action: PickerAction.multiMedia, text: Text('多媒体选择')),
-      PickerActionOptions(action: PickerAction.takePicture, text: Text('相机拍照')),
-      PickerActionOptions(
-          action: PickerAction.cameraRecording, text: Text('相机录像')),
-      PickerActionOptions(
-          action: PickerAction.cancel,
-          text: Text('取消', style: TextStyle(color: Colors.red))),
-    ];
+  PickerActionOptions(action: PickerAction.image, text: Text('单图片选择')),
+  PickerActionOptions(action: PickerAction.multiImage, text: Text('多图片选择')),
+  PickerActionOptions(action: PickerAction.video, text: Text('单视频选择')),
+  PickerActionOptions(action: PickerAction.media, text: Text('单媒体选择')),
+  PickerActionOptions(action: PickerAction.multiMedia, text: Text('多媒体选择')),
+  PickerActionOptions(action: PickerAction.takePicture, text: Text('相机拍照')),
+  PickerActionOptions(action: PickerAction.cameraRecording, text: Text('相机录像')),
+  PickerActionOptions(
+    action: PickerAction.cancel,
+    text: Text('取消', style: TextStyle(color: Colors.red)),
+  ),
+];
 
 /// 图片选择器 item 配置
 class FlImagePickerItemConfig {
-  const FlImagePickerItemConfig(
-      {this.backgroundColor,
-      this.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      this.pick = const FlImagePickerPickIcon(),
-      this.delete = const FlImagePickerDeleteIcon(),
-      this.play = const Icon(Icons.play_circle_outline,
-          size: 30, color: Color(0x804D4D4D))});
+  const FlImagePickerItemConfig({
+    this.backgroundColor,
+    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.pick = const FlImagePickerPickIcon(),
+    this.delete = const FlImagePickerDeleteIcon(),
+    this.play = const Icon(Icons.play_circle_outline, size: 30, color: Color(0x804D4D4D)),
+  });
 
   /// 颜色
   final Color? backgroundColor;
@@ -103,45 +103,46 @@ class FlImagePickerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: alignment,
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            shape: shape,
-            border: borderColor == null
-                ? null
-                : Border.all(color: borderColor!, width: borderWidth),
-            borderRadius: borderRadius),
-        padding: padding,
-        child: icon ?? Icon(iconData, size: size, color: iconColor));
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        shape: shape,
+        border: borderColor == null ? null : Border.all(color: borderColor!, width: borderWidth),
+        borderRadius: borderRadius,
+      ),
+      padding: padding,
+      child: icon ?? Icon(iconData, size: size, color: iconColor),
+    );
   }
 }
 
 /// Pick icon
 class FlImagePickerPickIcon extends FlImagePickerIcon {
-  const FlImagePickerPickIcon(
-      {super.key,
-      super.icon,
-      super.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      super.borderColor = const Color(0x804D4D4D),
-      super.iconColor = const Color(0x804D4D4D),
-      super.backgroundColor,
-      super.shape,
-      super.iconData = Icons.add,
-      super.size = 30})
-      : super(alignment: Alignment.center);
+  const FlImagePickerPickIcon({
+    super.key,
+    super.icon,
+    super.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    super.borderColor = const Color(0x804D4D4D),
+    super.iconColor = const Color(0x804D4D4D),
+    super.backgroundColor,
+    super.shape,
+    super.iconData = Icons.add,
+    super.size = 30,
+  }) : super(alignment: Alignment.center);
 }
 
 /// Delete icon
 class FlImagePickerDeleteIcon extends FlImagePickerIcon {
-  const FlImagePickerDeleteIcon(
-      {super.key,
-      super.icon,
-      super.iconColor = Colors.white,
-      super.backgroundColor = Colors.redAccent,
-      super.size = 12,
-      super.shape = BoxShape.circle,
-      super.iconData = Icons.close,
-      super.padding = const EdgeInsets.all(2)});
+  const FlImagePickerDeleteIcon({
+    super.key,
+    super.icon,
+    super.iconColor = Colors.white,
+    super.backgroundColor = Colors.redAccent,
+    super.size = 12,
+    super.shape = BoxShape.circle,
+    super.iconData = Icons.close,
+    super.padding = const EdgeInsets.all(2),
+  });
 }
 
 /// [PickerActionOptions] Action builder
@@ -152,13 +153,14 @@ class FlPickerActionBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> list = [];
+    final list = <Widget>[];
     Widget? cancel;
-    for (var element in actions) {
+    for (final element in actions) {
       final entry = CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(context).maybePop(element),
-          isDefaultAction: false,
-          child: element.text);
+        onPressed: () => Navigator.of(context).maybePop(element),
+        isDefaultAction: false,
+        child: element.text,
+      );
       if (element.action != PickerAction.cancel) {
         list.add(entry);
       } else {
@@ -193,22 +195,30 @@ class FlImagePickerPreviewModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-        color: backgroundColor,
-        child: Stack(children: [
+      color: backgroundColor,
+      child: Stack(
+        children: [
           SizedBox.expand(child: child),
           if (overlay != null) SizedBox.expand(child: overlay!),
           Positioned(
-              right: 6,
-              top: MediaQuery.of(context).viewPadding.top,
-              child: close ?? const CloseButton(color: Colors.white)),
-        ]));
+            right: 6,
+            top: MediaQuery.of(context).viewPadding.top,
+            child: close ?? const CloseButton(color: Colors.white),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 /// 图片预览器
-class FlImagePickerPreviewPageView extends StatelessWidget {
-  const FlImagePickerPreviewPageView(
-      {super.key, required this.entities, this.initialIndex = 0});
+class FlImagePickerPreviewPageView extends StatefulWidget {
+  const FlImagePickerPreviewPageView({
+    super.key,
+    required this.entities,
+    this.initialIndex = 0,
+    this.previewBuilder = _defaultImagePreviewBuilder,
+  });
 
   /// 选择的资源
   final List<FlXFile> entities;
@@ -216,14 +226,43 @@ class FlImagePickerPreviewPageView extends StatelessWidget {
   /// 初始 index
   final int initialIndex;
 
+  /// 资源预览渲染
+  final FlImagePreviewBuilder previewBuilder;
+
+  @override
+  State<FlImagePickerPreviewPageView> createState() => _FlImagePickerPreviewPageViewState();
+}
+
+class _FlImagePickerPreviewPageViewState extends State<FlImagePickerPreviewPageView> {
+  late final PageController controller;
+
+  int get initialPage {
+    final length = widget.entities.length;
+    if (length == 0) return 0;
+    return max(0, min(widget.initialIndex, length - 1));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller = PageController(initialPage: initialPage);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final initialPage = min(entities.length, initialIndex);
+    final entities = widget.entities;
     return FlImagePickerPreviewModal(
-        child: PageView.builder(
-            controller: PageController(initialPage: initialPage),
-            itemCount: entities.length,
-            itemBuilder: (_, int index) => Center(
-                child: FlImagePicker.imageBuilder(entities[index], false))));
+      child: PageView.builder(
+        controller: controller,
+        itemCount: entities.length,
+        itemBuilder: (_, int index) => Center(child: widget.previewBuilder(entities[index], false)),
+      ),
+    );
   }
 }

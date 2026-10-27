@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:math';
-import 'dart:typed_data';
+
 import 'package:mime/mime.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:universal_io/io.dart';

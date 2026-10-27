@@ -1,131 +1,161 @@
-## fl_image_picker
+[Web example](https://wayaer.github.io/fl_assets_picker/fl_image_picker/example/app/web/index.html#/)
 
-- 简单封装 `image_picker`
-- Web [Example](https://wayaer.github.io/fl_assets_picker/fl_image_picker/example/app/web/index.html#/)
+# fl_image_picker
 
-- 初始化
+基于 `image_picker` 的简单封装，提供图片/视频选择、拍照、录像和全屏预览能力。
+
+- 支持 Android、iOS、macOS、Windows、Linux、Web
+- 完整示例：[example](https://github.com/Wayaer/fl_assets_picker/tree/main/fl_image_picker/example)
+
+## 初始化
+
+无需全局初始化，资源渲染、权限请求和来源弹层都通过重写控制器定制。
 
 ```dart
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  /// 先设置 资源渲染组件（默认仅支持图片预览）
-  FlImagePicker.imageBuilder = (entity, bool isThumbnail) =>
-      ImageBuilder(entity, isThumbnail: isThumbnail);
-
-  /// 设置权限申请回调
-  FlImagePicker.checkPermission = (PickerOptionalActions action) async {
-    if (!isMobile) return true;
-    if (action == PickerOptionalActions.image || action == PickerOptionalActions.video) {
-      if (isIOS) {
-        return (await Permission.photos.request()).isGranted;
-      } else if (isAndroid) {
-        bool resultStorage = (await Permission.storage.request()).isGranted;
-        return resultStorage;
-      }
-      return false;
-    } else if (action == PickerOptionalActions.takePictures ||
-        action == PickerOptionalActions.recording) {
-      final permissionState = await Permission.camera.request();
-      return permissionState.isGranted;
-    }
-    return false;
-  };
-  runApp();
+  runApp(const App());
 }
-
 ```
 
-- 自定义 ImagePickerController
+## 控制器
 
 ```dart
-/// 自定义 ImagePickerController
 class CustomImagePickerController extends ImagePickerController {
-  CustomImagePickerController({super.actions,
-    super.allowPick = true,
+  CustomImagePickerController({
     super.entities,
-    super.options = const ImagePickerOptions()});
+    super.actions,
+    super.allowPick,
+    super.options = const FlImagePickerOptions(
+      limit: 9,
+      maxWidth: 1600,
+      maxHeight: 1600,
+      imageQuality: 85,
+      maxDuration: Duration(minutes: 2),
+      requestFullMetadata: true,
+    ),
+    super.onRenovate = compressImage,
+  });
 
+  /// 资源渲染（缩略图 / 全屏预览）
   @override
-  Future<void> pick(PickerAction action, {bool reset = false}) async {
-    log('Start Pick');
-    super.pick(action, reset: reset);
+  Widget buildPreview(FlXFile file, bool isThumbnail) =>
+      ImageBuilder(file, isThumbnail: isThumbnail);
+
+  /// 权限申请
+  @override
+  Future<bool> requestPermission(PickerAction action) async {
+    if (action == PickerAction.takePicture ||
+        action == PickerAction.cameraRecording) {
+      return (await Permission.camera.request()).isGranted;
+    }
+    if (action == PickerAction.image || action == PickerAction.video) {
+      if (isIOS) return (await Permission.photos.request()).isGranted;
+      if (isAndroid) return (await Permission.storage.request()).isGranted;
+    }
+    return true;
   }
 
+  /// 来源选择弹层
   @override
-  Future<void> pickActions(BuildContext context,
-      {bool unfocus = true, bool reset = false}) async {
-    log('Start Pick Actions');
-    super.pickActions(context, reset: reset, unfocus: unfocus);
-  }
-
-  @override
-  FlXFileRenovate? get onRenovate =>
-          (AssetType type, XFile file) async {
-        if (type == AssetType.image) {
-          return await compressImage(file);
-        }
-        return null;
-      };
+  Widget buildActionSheet(BuildContext context, List<PickerActionOptions> actions) =>
+      MyActionSheet(actions: actions);
 
   @override
   Future<void> delete(FlXFile file) async {
-    final value = await CupertinoAlertDialog(
-        content: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            constraints: const BoxConstraints(maxHeight: 100),
-            child: const Text('确定要删除么')),
-        actions: [
-          Universal(
-              height: 45,
-              alignment: Alignment.center,
-              onTap: () {
-                pop(false);
-              },
-              child: const BText('取消', fontSize: 14, color: Colors.grey)),
-          Universal(
-              height: 45,
-              alignment: Alignment.center,
-              onTap: () {
-                pop(true);
-              },
-              child: const BText('确定', fontSize: 14, color: Colors.grey)),
-        ]).popupCupertinoModal<bool?>();
-    if (value == true) return super.delete(file);
+    // 自定义删除确认
+    if (await confirmDelete()) return super.delete(file);
   }
 
   @override
-  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) async {
-    final builder = FlImagePickerPreviewPageView(
-        entities: entities, initialIndex: initialIndex);
-    if (context.mounted) return await builder.popupDialog<T>();
-    return null;
+  Future<T?> preview<T>(BuildContext context, {int initialIndex = 0}) {
+    return super.preview(context, initialIndex: initialIndex);
   }
 }
 ```
 
+## 组件
+
 ```dart
 /// 单选
-SingleImagePicker();
+SingleImagePicker(
+  controller: controller,
+  width: 80,
+  height: 80,
+  itemConfig: const FlImagePickerItemConfig(
+    borderRadius: BorderRadius.all(Radius.circular(12)),
+  ),
+  onChanged: (FlXFile? file) {},
+);
 
 /// 多选
-MultipleImagePicker();
+MultipleImagePicker(
+  controller: controller,
+  allowDelete: true,
+  builderConfig: const MultipleImagePickerListBuilderConfig(crossAxisCount: 4),
+  itemConfig: const FlImagePickerItemConfig(),
+  itemBuilder: (FlXFile file, int index) => MyItem(file, index),
+  onChanged: (List<FlXFile> files) {},
+);
 ```
 
-直接调用方法选择
+## 静态方法
 
 ```dart
+/// 选择来源
+FlImagePicker.showPickActions(
+  context,
+  defaultImagePickerActionOptions,
+  actionSheetBuilder: controller.buildActionSheet,
+);
 
-void fun() {
+/// 直接选择
+FlImagePicker.showPick(
+  PickerAction.image,
+  options: const FlImagePickerOptions(),
+  requestPermission: controller.requestPermission,
+);
+FlImagePicker.showPick(
+  PickerAction.multiMedia,
+  options: const FlImagePickerOptions(limit: 9),
+  requestPermission: controller.requestPermission,
+);
 
-  /// 选择 action
-  FlImagePicker.showPickActions();
+/// 先选来源再选择
+FlImagePicker.showPickWithActions(
+  context,
+  defaultImagePickerActionOptions,
+  options: const FlImagePickerOptions(),
+  requestPermission: controller.requestPermission,
+  actionSheetBuilder: controller.buildActionSheet,
+);
 
-  /// 调用 ImagePicker
-  FlImagePicker.showPick();
-
-  /// 以上两个方法依次调用
-  FlImagePicker.showPickWithActions();
-}
-
+/// 全屏预览
+FlImagePicker.preview(
+  context,
+  entities,
+  initialIndex: 0,
+  previewBuilder: controller.buildPreview,
+);
 ```
+
+## PickerAction
+
+| 值 | 说明 |
+| --- | --- |
+| `image` | 单图片 |
+| `multiImage` | 多图片 |
+| `video` | 单视频 |
+| `media` | 单媒体（图片或视频） |
+| `multiMedia` | 多媒体 |
+| `takePicture` | 相机拍照 |
+| `cameraRecording` | 相机录像 |
+| `cancel` | 取消 |
+
+## 扩展能力
+
+- `XFile.toExtended(AssetType)`：转换为 `FlXFile`。
+- `FlXFile.toRenovated()`：对文件重新编辑（压缩、裁剪、上传等）。
+- `FlXFile.toImageProvider()`：按 `previewed > renovated > path` 生成 `ImageProvider`。
+- `FlImagePicker.buildImageProvider()`：支持 `ImageProvider`、网络地址、asset 路径、`Uint8List`、`File`、`XFile`。
+- `MultipleImagePicker.convertPaths/convertUrls/toStringList/toDynamicList`。

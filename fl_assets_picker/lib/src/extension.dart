@@ -1,16 +1,18 @@
 part of '../fl_assets_picker.dart';
 
 class FlAssetEntity extends AssetEntity {
+  static int _previewedIdCounter = 0;
+
   FlAssetEntity.fromPreviewed({
     required this.previewed,
     super.width = 0,
     super.height = 0,
     required AssetType assetType,
-  })  : thumbnailDataAsync = null,
-        fileAsync = null,
-        renovated = null,
-        isLocalData = false,
-        super(typeInt: assetType.index, id: previewed.hashCode.toString());
+  }) : thumbnailDataAsync = null,
+       fileAsync = null,
+       renovated = null,
+       isLocalData = false,
+       super(typeInt: assetType.index, id: 'previewed_${_previewedIdCounter++}');
 
   FlAssetEntity({
     this.thumbnailDataAsync,
@@ -23,16 +25,16 @@ class FlAssetEntity extends AssetEntity {
     super.duration = 0,
     super.orientation = 0,
     super.isFavorite = false,
+    super.isTrashed = false,
     super.title,
     super.createDateSecond,
     super.modifiedDateSecond,
     super.relativePath,
-    super.latitude,
-    super.longitude,
+    super.latLng,
     super.mimeType,
     super.subtype = 0,
-  })  : isLocalData = true,
-        previewed = null;
+  }) : isLocalData = true,
+       previewed = null;
 
   final bool isLocalData;
 
@@ -49,35 +51,50 @@ class FlAssetEntity extends AssetEntity {
   /// 对选中的资源文件重新编辑，例如 压缩 裁剪 上传
   final dynamic renovated;
 
-  String? get realValueStr => previewed ?? fileAsync?.path;
+  /// previewed > renovated > fileAsync 中可转为字符串的值
+  String? get realValueStr {
+    final value = realValue;
+    final String? result = value is String
+        ? value
+        : value is File
+        ? value.path
+        : value is XFile
+        ? value.path
+        : fileAsync?.path;
+    return result == null || result.isEmpty ? null : result;
+  }
 
   dynamic get realValue => previewed ?? renovated ?? fileAsync;
 }
 
 extension ExtensionFlAssetEntity on FlAssetEntity {
   AssetEntity toAssetEntity() => AssetEntity(
-      id: id,
-      typeInt: typeInt,
-      width: width,
-      height: height,
-      duration: duration,
-      orientation: orientation,
-      isFavorite: isFavorite,
-      title: title,
-      createDateSecond: createDateSecond,
-      modifiedDateSecond: modifiedDateSecond,
-      relativePath: relativePath,
-      mimeType: mimeType,
-      subtype: subtype);
+    id: id,
+    typeInt: typeInt,
+    width: width,
+    height: height,
+    duration: duration,
+    orientation: orientation,
+    isFavorite: isFavorite,
+    isTrashed: isTrashed,
+    title: title,
+    createDateSecond: createDateSecond,
+    modifiedDateSecond: modifiedDateSecond,
+    relativePath: relativePath,
+    latLng: latLng,
+    mimeType: mimeType,
+    subtype: subtype,
+  );
 
+  /// 顺序与 [realValue] 保持一致：previewed > renovated > fileAsync
   ImageProvider? toImageProvider() {
     ImageProvider? provider;
-    if (renovated != null) {
+    if (previewed != null) {
+      provider = FlAssetsPicker.buildImageProvider(previewed);
+    } else if (renovated != null) {
       provider = FlAssetsPicker.buildImageProvider(renovated);
     } else if (fileAsync != null) {
       provider = FileImage(fileAsync!);
-    } else if (previewed != null) {
-      provider = FlAssetsPicker.buildImageProvider(previewed);
     }
     return provider;
   }
@@ -93,24 +110,25 @@ extension ExtensionAssetEntity on AssetEntity {
     bool getThumbnailDataAsync = false,
   }) async {
     return FlAssetEntity(
-        thumbnailDataAsync: getThumbnailDataAsync ? await thumbnailData : null,
-        fileAsync: getFileAsync ? await file : null,
-        renovated: await onRenovate?.call(this),
-        id: id,
-        typeInt: typeInt,
-        width: width,
-        height: height,
-        duration: duration,
-        orientation: orientation,
-        isFavorite: isFavorite,
-        title: title,
-        createDateSecond: createDateSecond,
-        modifiedDateSecond: modifiedDateSecond,
-        relativePath: relativePath,
-        latitude: latitude,
-        longitude: longitude,
-        mimeType: mimeType,
-        subtype: subtype);
+      thumbnailDataAsync: getThumbnailDataAsync ? await thumbnailData : null,
+      fileAsync: getFileAsync ? await file : null,
+      renovated: await onRenovate?.call(this),
+      id: id,
+      typeInt: typeInt,
+      width: width,
+      height: height,
+      duration: duration,
+      orientation: orientation,
+      isFavorite: isFavorite,
+      isTrashed: isTrashed,
+      title: title,
+      createDateSecond: createDateSecond,
+      modifiedDateSecond: modifiedDateSecond,
+      relativePath: relativePath,
+      latLng: latLng,
+      mimeType: mimeType,
+      subtype: subtype,
+    );
   }
 }
 
@@ -237,62 +255,83 @@ extension ExtensionAssetPickerConfig on AssetPickerConfig {
 
     /// {@macro wechat_assets_picker.PathNameBuilder}
     PathNameBuilder<AssetPathEntity>? pathNameBuilder,
-  }) =>
-      AssetPickerConfig(
-          selectedAssets: selectedAssets ?? this.selectedAssets,
-          maxAssets: maxAssets ?? this.maxAssets,
-          pageSize: pageSize ?? this.pageSize,
-          gridThumbnailSize: gridThumbnailSize ?? this.gridThumbnailSize,
-          pathThumbnailSize: pathThumbnailSize ?? this.pathThumbnailSize,
-          previewThumbnailSize:
-              previewThumbnailSize ?? this.previewThumbnailSize,
-          requestType: requestType ?? this.requestType,
-          specialPickerType: specialPickerType ?? this.specialPickerType,
-          keepScrollOffset: keepScrollOffset ?? this.keepScrollOffset,
-          sortPathDelegate: sortPathDelegate ?? this.sortPathDelegate,
-          sortPathsByModifiedDate:
-              sortPathsByModifiedDate ?? this.sortPathsByModifiedDate,
-          filterOptions: filterOptions ?? this.filterOptions,
-          gridCount: gridCount ?? this.gridCount,
-          themeColor: themeColor ?? this.themeColor,
-          pickerTheme: pickerTheme ?? this.pickerTheme,
-          textDelegate: textDelegate ?? this.textDelegate,
-          loadingIndicatorBuilder:
-              loadingIndicatorBuilder ?? this.loadingIndicatorBuilder,
-          selectPredicate: selectPredicate ?? this.selectPredicate,
-          shouldRevertGrid: shouldRevertGrid ?? this.shouldRevertGrid,
-          limitedPermissionOverlayPredicate:
-              limitedPermissionOverlayPredicate ??
-                  this.limitedPermissionOverlayPredicate,
-          pathNameBuilder: pathNameBuilder ?? this.pathNameBuilder);
+
+    /// 自定义 item 列表
+    List<SpecialItem<AssetPathEntity>>? specialItems,
+
+    /// 系统资源变化回调
+    AssetsChangeCallback<AssetPathEntity>? assetsChangeCallback,
+
+    /// 系统资源变化时是否刷新
+    AssetsChangeRefreshPredicate<AssetPathEntity>? assetsChangeRefreshPredicate,
+
+    /// 预览时是否自动播放
+    bool? shouldAutoplayPreview,
+
+    /// 是否开启拖拽选择
+    bool? dragToSelect,
+
+    /// 是否启用实况图片
+    bool? enableLivePhoto,
+  }) => AssetPickerConfig(
+    selectedAssets: selectedAssets ?? this.selectedAssets,
+    maxAssets: maxAssets ?? this.maxAssets,
+    pageSize: pageSize ?? this.pageSize,
+    gridThumbnailSize: gridThumbnailSize ?? this.gridThumbnailSize,
+    pathThumbnailSize: pathThumbnailSize ?? this.pathThumbnailSize,
+    previewThumbnailSize: previewThumbnailSize ?? this.previewThumbnailSize,
+    requestType: requestType ?? this.requestType,
+    specialPickerType: specialPickerType ?? this.specialPickerType,
+    keepScrollOffset: keepScrollOffset ?? this.keepScrollOffset,
+    sortPathDelegate: sortPathDelegate ?? this.sortPathDelegate,
+    sortPathsByModifiedDate: sortPathsByModifiedDate ?? this.sortPathsByModifiedDate,
+    filterOptions: filterOptions ?? this.filterOptions,
+    gridCount: gridCount ?? this.gridCount,
+    themeColor: themeColor ?? this.themeColor,
+    pickerTheme: pickerTheme ?? this.pickerTheme,
+    textDelegate: textDelegate ?? this.textDelegate,
+    loadingIndicatorBuilder: loadingIndicatorBuilder ?? this.loadingIndicatorBuilder,
+    selectPredicate: selectPredicate ?? this.selectPredicate,
+    shouldRevertGrid: shouldRevertGrid ?? this.shouldRevertGrid,
+    limitedPermissionOverlayPredicate: limitedPermissionOverlayPredicate ?? this.limitedPermissionOverlayPredicate,
+    pathNameBuilder: pathNameBuilder ?? this.pathNameBuilder,
+    specialItems: specialItems ?? this.specialItems,
+    assetsChangeCallback: assetsChangeCallback ?? this.assetsChangeCallback,
+    assetsChangeRefreshPredicate: assetsChangeRefreshPredicate ?? this.assetsChangeRefreshPredicate,
+    shouldAutoplayPreview: shouldAutoplayPreview ?? this.shouldAutoplayPreview,
+    dragToSelect: dragToSelect ?? this.dragToSelect,
+    enableLivePhoto: enableLivePhoto ?? this.enableLivePhoto,
+  );
 
   AssetPickerConfig merge([AssetPickerConfig? config]) => AssetPickerConfig(
-      selectedAssets: config?.selectedAssets ?? selectedAssets,
-      maxAssets: config?.maxAssets ?? maxAssets,
-      pageSize: config?.pageSize ?? pageSize,
-      gridThumbnailSize: config?.gridThumbnailSize ?? gridThumbnailSize,
-      pathThumbnailSize: config?.pathThumbnailSize ?? pathThumbnailSize,
-      previewThumbnailSize:
-          config?.previewThumbnailSize ?? previewThumbnailSize,
-      requestType: config?.requestType ?? requestType,
-      specialPickerType: config?.specialPickerType ?? specialPickerType,
-      keepScrollOffset: config?.keepScrollOffset ?? keepScrollOffset,
-      sortPathDelegate: config?.sortPathDelegate ?? sortPathDelegate,
-      sortPathsByModifiedDate:
-          config?.sortPathsByModifiedDate ?? sortPathsByModifiedDate,
-      filterOptions: config?.filterOptions ?? filterOptions,
-      gridCount: config?.gridCount ?? gridCount,
-      themeColor: config?.themeColor ?? themeColor,
-      pickerTheme: config?.pickerTheme ?? pickerTheme,
-      textDelegate: config?.textDelegate ?? textDelegate,
-      loadingIndicatorBuilder:
-          loadingIndicatorBuilder ?? loadingIndicatorBuilder,
-      selectPredicate: config?.selectPredicate ?? selectPredicate,
-      shouldRevertGrid: config?.shouldRevertGrid ?? shouldRevertGrid,
-      limitedPermissionOverlayPredicate:
-          config?.limitedPermissionOverlayPredicate ??
-              limitedPermissionOverlayPredicate,
-      pathNameBuilder: config?.pathNameBuilder ?? pathNameBuilder);
+    selectedAssets: config?.selectedAssets ?? selectedAssets,
+    maxAssets: config?.maxAssets ?? maxAssets,
+    pageSize: config?.pageSize ?? pageSize,
+    gridThumbnailSize: config?.gridThumbnailSize ?? gridThumbnailSize,
+    pathThumbnailSize: config?.pathThumbnailSize ?? pathThumbnailSize,
+    previewThumbnailSize: config?.previewThumbnailSize ?? previewThumbnailSize,
+    requestType: config?.requestType ?? requestType,
+    specialPickerType: config?.specialPickerType ?? specialPickerType,
+    keepScrollOffset: config?.keepScrollOffset ?? keepScrollOffset,
+    sortPathDelegate: config?.sortPathDelegate ?? sortPathDelegate,
+    sortPathsByModifiedDate: config?.sortPathsByModifiedDate ?? sortPathsByModifiedDate,
+    filterOptions: config?.filterOptions ?? filterOptions,
+    gridCount: config?.gridCount ?? gridCount,
+    themeColor: config?.themeColor ?? themeColor,
+    pickerTheme: config?.pickerTheme ?? pickerTheme,
+    textDelegate: config?.textDelegate ?? textDelegate,
+    loadingIndicatorBuilder: loadingIndicatorBuilder ?? loadingIndicatorBuilder,
+    selectPredicate: config?.selectPredicate ?? selectPredicate,
+    shouldRevertGrid: config?.shouldRevertGrid ?? shouldRevertGrid,
+    limitedPermissionOverlayPredicate: config?.limitedPermissionOverlayPredicate ?? limitedPermissionOverlayPredicate,
+    pathNameBuilder: config?.pathNameBuilder ?? pathNameBuilder,
+    specialItems: config?.specialItems ?? specialItems,
+    assetsChangeCallback: config?.assetsChangeCallback ?? assetsChangeCallback,
+    assetsChangeRefreshPredicate: config?.assetsChangeRefreshPredicate ?? assetsChangeRefreshPredicate,
+    shouldAutoplayPreview: config?.shouldAutoplayPreview ?? shouldAutoplayPreview,
+    dragToSelect: config?.dragToSelect ?? dragToSelect,
+    enableLivePhoto: config?.enableLivePhoto ?? enableLivePhoto,
+  );
 }
 
 extension ExtensionCameraPickerConfig on CameraPickerConfig {
@@ -355,6 +394,9 @@ extension ExtensionCameraPickerConfig on CameraPickerConfig {
     /// 默认为 15 秒，可以使用 `null` 来设置无限制的视频录制
     Duration? maximumRecordingDuration,
 
+    /// 录制视频最短时长
+    Duration? minimumRecordingDuration,
+
     /// Theme data for the picker.
     /// 选择器的主题
     ThemeData? theme,
@@ -386,6 +428,9 @@ extension ExtensionCameraPickerConfig on CameraPickerConfig {
     /// {@macro wechat_camera_picker.PreviewTransformBuilder}
     PreviewTransformBuilder? previewTransformBuilder,
 
+    /// 视频预览使用的渲染方式
+    VideoViewType? previewVideoViewType,
+
     /// Whether the camera should be locked to the specific orientation
     /// during captures.
     /// 摄像机在拍摄时锁定的旋转角度
@@ -399,72 +444,86 @@ extension ExtensionCameraPickerConfig on CameraPickerConfig {
 
     /// {@macro wechat_camera_picker.XFileCapturedCallback}
     XFileCapturedCallback? onXFileCaptured,
-  }) =>
-      CameraPickerConfig(
-          enableRecording: enableRecording ?? this.enableRecording,
-          onlyEnableRecording: onlyEnableRecording ?? this.onlyEnableRecording,
-          enableTapRecording: enableTapRecording ?? this.enableTapRecording,
-          enableAudio: enableAudio ?? this.enableAudio,
-          enableSetExposure: enableSetExposure ?? this.enableSetExposure,
-          enableExposureControlOnPoint:
-              enableExposureControlOnPoint ?? this.enableExposureControlOnPoint,
-          enablePinchToZoom: enablePinchToZoom ?? this.enablePinchToZoom,
-          enablePullToZoomInRecord:
-              enablePullToZoomInRecord ?? this.enablePullToZoomInRecord,
-          enableScaledPreview: enableScaledPreview ?? this.enableScaledPreview,
-          shouldDeletePreviewFile:
-              shouldDeletePreviewFile ?? this.shouldDeletePreviewFile,
-          shouldAutoPreviewVideo:
-              shouldAutoPreviewVideo ?? this.shouldAutoPreviewVideo,
-          maximumRecordingDuration:
-              maximumRecordingDuration ?? this.maximumRecordingDuration,
-          theme: theme ?? this.theme,
-          textDelegate: textDelegate ?? this.textDelegate,
-          cameraQuarterTurns: cameraQuarterTurns ?? this.cameraQuarterTurns,
-          resolutionPreset: resolutionPreset ?? this.resolutionPreset,
-          imageFormatGroup: imageFormatGroup ?? this.imageFormatGroup,
-          preferredLensDirection:
-              preferredLensDirection ?? this.preferredLensDirection,
-          lockCaptureOrientation:
-              lockCaptureOrientation ?? this.lockCaptureOrientation,
-          foregroundBuilder: foregroundBuilder ?? this.foregroundBuilder,
-          previewTransformBuilder:
-              previewTransformBuilder ?? this.previewTransformBuilder,
-          onEntitySaving: onEntitySaving ?? this.onEntitySaving,
-          onError: onError ?? this.onError,
-          onXFileCaptured: onXFileCaptured ?? this.onXFileCaptured);
+
+    /// 首次使用相机时首选的闪光灯模式
+    FlashMode? preferredFlashMode,
+
+    /// 录制时长未达到 [minimumRecordingDuration] 时回调
+    VoidCallback? onMinimumRecordDurationNotMet,
+
+    /// 拍摄确认回调
+    void Function(AssetEntity asset)? onPickConfirmed,
+
+    /// 权限请求配置
+    PermissionRequestOption? permissionRequestOption,
+
+    /// 系统状态栏样式
+    SystemUiOverlayStyle? systemOverlayStyle,
+  }) => CameraPickerConfig(
+    enableRecording: enableRecording ?? this.enableRecording,
+    onlyEnableRecording: onlyEnableRecording ?? this.onlyEnableRecording,
+    enableTapRecording: enableTapRecording ?? this.enableTapRecording,
+    enableAudio: enableAudio ?? this.enableAudio,
+    enableSetExposure: enableSetExposure ?? this.enableSetExposure,
+    enableExposureControlOnPoint: enableExposureControlOnPoint ?? this.enableExposureControlOnPoint,
+    enablePinchToZoom: enablePinchToZoom ?? this.enablePinchToZoom,
+    enablePullToZoomInRecord: enablePullToZoomInRecord ?? this.enablePullToZoomInRecord,
+    enableScaledPreview: enableScaledPreview ?? this.enableScaledPreview,
+    shouldDeletePreviewFile: shouldDeletePreviewFile ?? this.shouldDeletePreviewFile,
+    shouldAutoPreviewVideo: shouldAutoPreviewVideo ?? this.shouldAutoPreviewVideo,
+    maximumRecordingDuration: maximumRecordingDuration ?? this.maximumRecordingDuration,
+    minimumRecordingDuration: minimumRecordingDuration ?? this.minimumRecordingDuration,
+    theme: theme ?? this.theme,
+    textDelegate: textDelegate ?? this.textDelegate,
+    cameraQuarterTurns: cameraQuarterTurns ?? this.cameraQuarterTurns,
+    resolutionPreset: resolutionPreset ?? this.resolutionPreset,
+    imageFormatGroup: imageFormatGroup ?? this.imageFormatGroup,
+    preferredLensDirection: preferredLensDirection ?? this.preferredLensDirection,
+    preferredFlashMode: preferredFlashMode ?? this.preferredFlashMode,
+    lockCaptureOrientation: lockCaptureOrientation ?? this.lockCaptureOrientation,
+    foregroundBuilder: foregroundBuilder ?? this.foregroundBuilder,
+    previewTransformBuilder: previewTransformBuilder ?? this.previewTransformBuilder,
+    previewVideoViewType: previewVideoViewType ?? this.previewVideoViewType,
+    onEntitySaving: onEntitySaving ?? this.onEntitySaving,
+    onError: onError ?? this.onError,
+    onXFileCaptured: onXFileCaptured ?? this.onXFileCaptured,
+    onMinimumRecordDurationNotMet: onMinimumRecordDurationNotMet ?? this.onMinimumRecordDurationNotMet,
+    onPickConfirmed: onPickConfirmed ?? this.onPickConfirmed,
+    permissionRequestOption: permissionRequestOption ?? this.permissionRequestOption,
+    systemOverlayStyle: systemOverlayStyle ?? this.systemOverlayStyle,
+  );
 
   CameraPickerConfig merge([CameraPickerConfig? config]) => CameraPickerConfig(
-      enableRecording: config?.enableRecording ?? enableRecording,
-      onlyEnableRecording: config?.onlyEnableRecording ?? onlyEnableRecording,
-      enableTapRecording: config?.enableTapRecording ?? enableTapRecording,
-      enableAudio: config?.enableAudio ?? enableAudio,
-      enableSetExposure: config?.enableSetExposure ?? enableSetExposure,
-      enableExposureControlOnPoint:
-          config?.enableExposureControlOnPoint ?? enableExposureControlOnPoint,
-      enablePinchToZoom: config?.enablePinchToZoom ?? enablePinchToZoom,
-      enablePullToZoomInRecord:
-          config?.enablePullToZoomInRecord ?? enablePullToZoomInRecord,
-      enableScaledPreview: config?.enableScaledPreview ?? enableScaledPreview,
-      shouldDeletePreviewFile:
-          config?.shouldDeletePreviewFile ?? shouldDeletePreviewFile,
-      shouldAutoPreviewVideo:
-          config?.shouldAutoPreviewVideo ?? shouldAutoPreviewVideo,
-      maximumRecordingDuration:
-          config?.maximumRecordingDuration ?? maximumRecordingDuration,
-      theme: config?.theme ?? theme,
-      textDelegate: config?.textDelegate ?? textDelegate,
-      cameraQuarterTurns: config?.cameraQuarterTurns ?? cameraQuarterTurns,
-      resolutionPreset: config?.resolutionPreset ?? resolutionPreset,
-      imageFormatGroup: config?.imageFormatGroup ?? imageFormatGroup,
-      preferredLensDirection:
-          config?.preferredLensDirection ?? preferredLensDirection,
-      lockCaptureOrientation:
-          config?.lockCaptureOrientation ?? lockCaptureOrientation,
-      foregroundBuilder: config?.foregroundBuilder ?? foregroundBuilder,
-      previewTransformBuilder:
-          previewTransformBuilder ?? previewTransformBuilder,
-      onEntitySaving: config?.onEntitySaving ?? onEntitySaving,
-      onError: config?.onError ?? onError,
-      onXFileCaptured: config?.onXFileCaptured ?? onXFileCaptured);
+    enableRecording: config?.enableRecording ?? enableRecording,
+    onlyEnableRecording: config?.onlyEnableRecording ?? onlyEnableRecording,
+    enableTapRecording: config?.enableTapRecording ?? enableTapRecording,
+    enableAudio: config?.enableAudio ?? enableAudio,
+    enableSetExposure: config?.enableSetExposure ?? enableSetExposure,
+    enableExposureControlOnPoint: config?.enableExposureControlOnPoint ?? enableExposureControlOnPoint,
+    enablePinchToZoom: config?.enablePinchToZoom ?? enablePinchToZoom,
+    enablePullToZoomInRecord: config?.enablePullToZoomInRecord ?? enablePullToZoomInRecord,
+    enableScaledPreview: config?.enableScaledPreview ?? enableScaledPreview,
+    shouldDeletePreviewFile: config?.shouldDeletePreviewFile ?? shouldDeletePreviewFile,
+    shouldAutoPreviewVideo: config?.shouldAutoPreviewVideo ?? shouldAutoPreviewVideo,
+    maximumRecordingDuration: config?.maximumRecordingDuration ?? maximumRecordingDuration,
+    minimumRecordingDuration: config?.minimumRecordingDuration ?? minimumRecordingDuration,
+    theme: config?.theme ?? theme,
+    textDelegate: config?.textDelegate ?? textDelegate,
+    cameraQuarterTurns: config?.cameraQuarterTurns ?? cameraQuarterTurns,
+    resolutionPreset: config?.resolutionPreset ?? resolutionPreset,
+    imageFormatGroup: config?.imageFormatGroup ?? imageFormatGroup,
+    preferredLensDirection: config?.preferredLensDirection ?? preferredLensDirection,
+    preferredFlashMode: config?.preferredFlashMode ?? preferredFlashMode,
+    lockCaptureOrientation: config?.lockCaptureOrientation ?? lockCaptureOrientation,
+    foregroundBuilder: config?.foregroundBuilder ?? foregroundBuilder,
+    previewTransformBuilder: config?.previewTransformBuilder ?? previewTransformBuilder,
+    previewVideoViewType: config?.previewVideoViewType ?? previewVideoViewType,
+    onEntitySaving: config?.onEntitySaving ?? onEntitySaving,
+    onError: config?.onError ?? onError,
+    onXFileCaptured: config?.onXFileCaptured ?? onXFileCaptured,
+    onMinimumRecordDurationNotMet: config?.onMinimumRecordDurationNotMet ?? onMinimumRecordDurationNotMet,
+    onPickConfirmed: config?.onPickConfirmed ?? onPickConfirmed,
+    permissionRequestOption: config?.permissionRequestOption ?? permissionRequestOption,
+    systemOverlayStyle: config?.systemOverlayStyle ?? systemOverlayStyle,
+  );
 }

@@ -7,7 +7,6 @@
 **/*sync/
 .sconsign.dblite
 .tags*
-.lock
 **/.vagrant/
 **/DerivedData/
 Icon?

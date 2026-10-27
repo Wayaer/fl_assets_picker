@@ -11,22 +11,23 @@ class PickerActionOptions {
 }
 
 List<PickerActionOptions> get defaultPickerActionOptions => [
-      PickerActionOptions(action: PickerAction.gallery, text: Text('图库选择')),
-      PickerActionOptions(action: PickerAction.camera, text: Text('相机拍摄')),
-      PickerActionOptions(
-          action: PickerAction.cancel,
-          text: Text('取消', style: TextStyle(color: Colors.red))),
-    ];
+  PickerActionOptions(action: PickerAction.gallery, text: Text('图库选择')),
+  PickerActionOptions(action: PickerAction.camera, text: Text('相机拍摄')),
+  PickerActionOptions(
+    action: PickerAction.cancel,
+    text: Text('取消', style: TextStyle(color: Colors.red)),
+  ),
+];
 
 /// 图片选择器 item 配置
 class FlAssetsPickerItemConfig {
-  const FlAssetsPickerItemConfig(
-      {this.backgroundColor,
-      this.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      this.pick = const FlAssetsPickerPickIcon(),
-      this.delete = const FlAssetsPickerDeleteIcon(),
-      this.play = const Icon(Icons.play_circle_outline,
-          size: 30, color: Color(0x804D4D4D))});
+  const FlAssetsPickerItemConfig({
+    this.backgroundColor,
+    this.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    this.pick = const FlAssetsPickerPickIcon(),
+    this.delete = const FlAssetsPickerDeleteIcon(),
+    this.play = const Icon(Icons.play_circle_outline, size: 30, color: Color(0x804D4D4D)),
+  });
 
   /// 颜色
   final Color? backgroundColor;
@@ -97,45 +98,46 @@ class FlAssetsPickerIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        alignment: alignment,
-        decoration: BoxDecoration(
-            color: backgroundColor,
-            shape: shape,
-            border: borderColor == null
-                ? null
-                : Border.all(color: borderColor!, width: borderWidth),
-            borderRadius: borderRadius),
-        padding: padding,
-        child: icon ?? Icon(iconData, size: size, color: iconColor));
+      alignment: alignment,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        shape: shape,
+        border: borderColor == null ? null : Border.all(color: borderColor!, width: borderWidth),
+        borderRadius: borderRadius,
+      ),
+      padding: padding,
+      child: icon ?? Icon(iconData, size: size, color: iconColor),
+    );
   }
 }
 
 /// Pick icon
 class FlAssetsPickerPickIcon extends FlAssetsPickerIcon {
-  const FlAssetsPickerPickIcon(
-      {super.key,
-      super.icon,
-      super.borderRadius = const BorderRadius.all(Radius.circular(8)),
-      super.borderColor = const Color(0x804D4D4D),
-      super.iconColor = const Color(0x804D4D4D),
-      super.backgroundColor,
-      super.shape,
-      super.iconData = Icons.add,
-      super.size = 30})
-      : super(alignment: Alignment.center);
+  const FlAssetsPickerPickIcon({
+    super.key,
+    super.icon,
+    super.borderRadius = const BorderRadius.all(Radius.circular(8)),
+    super.borderColor = const Color(0x804D4D4D),
+    super.iconColor = const Color(0x804D4D4D),
+    super.backgroundColor,
+    super.shape,
+    super.iconData = Icons.add,
+    super.size = 30,
+  }) : super(alignment: Alignment.center);
 }
 
 /// Delete icon
 class FlAssetsPickerDeleteIcon extends FlAssetsPickerIcon {
-  const FlAssetsPickerDeleteIcon(
-      {super.key,
-      super.icon,
-      super.iconColor = Colors.white,
-      super.backgroundColor = Colors.redAccent,
-      super.size = 12,
-      super.shape = BoxShape.circle,
-      super.iconData = Icons.close,
-      super.padding = const EdgeInsets.all(2)});
+  const FlAssetsPickerDeleteIcon({
+    super.key,
+    super.icon,
+    super.iconColor = Colors.white,
+    super.backgroundColor = Colors.redAccent,
+    super.size = 12,
+    super.shape = BoxShape.circle,
+    super.iconData = Icons.close,
+    super.padding = const EdgeInsets.all(2),
+  });
 }
 
 /// [PickerActionOptions] Action builder
@@ -146,13 +148,14 @@ class FlPickerActionBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> list = [];
+    final list = <Widget>[];
     Widget? cancel;
-    for (var element in actions) {
+    for (final element in actions) {
       final entry = CupertinoActionSheetAction(
-          onPressed: () => Navigator.of(context).maybePop(element),
-          isDefaultAction: false,
-          child: element.text);
+        onPressed: () => Navigator.of(context).maybePop(element),
+        isDefaultAction: false,
+        child: element.text,
+      );
       if (element.action != PickerAction.cancel) {
         list.add(entry);
       } else {
@@ -187,22 +190,30 @@ class FlAssetsPickerPreviewModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-        color: backgroundColor,
-        child: Stack(children: [
+      color: backgroundColor,
+      child: Stack(
+        children: [
           SizedBox.expand(child: child),
           if (overlay != null) SizedBox.expand(child: overlay!),
           Positioned(
-              right: 6,
-              top: MediaQuery.of(context).viewPadding.top,
-              child: close ?? const CloseButton(color: Colors.white)),
-        ]));
+            right: 6,
+            top: MediaQuery.of(context).viewPadding.top,
+            child: close ?? const CloseButton(color: Colors.white),
+          ),
+        ],
+      ),
+    );
   }
 }
 
 /// 图片预览器
-class FlAssetsPickerPreviewPageView extends StatelessWidget {
-  const FlAssetsPickerPreviewPageView(
-      {super.key, required this.entities, this.initialIndex = 0});
+class FlAssetsPickerPreviewPageView extends StatefulWidget {
+  const FlAssetsPickerPreviewPageView({
+    super.key,
+    required this.entities,
+    this.initialIndex = 0,
+    this.previewBuilder = _defaultAssetPreviewBuilder,
+  });
 
   /// 资源列表
   final List<FlAssetEntity> entities;
@@ -210,17 +221,45 @@ class FlAssetsPickerPreviewPageView extends StatelessWidget {
   /// 初始索引
   final int initialIndex;
 
+  /// 资源预览渲染
+  final FlAssetPreviewBuilder previewBuilder;
+
+  @override
+  State<FlAssetsPickerPreviewPageView> createState() => _FlAssetsPickerPreviewPageViewState();
+}
+
+class _FlAssetsPickerPreviewPageViewState extends State<FlAssetsPickerPreviewPageView> {
+  late final PageController controller;
+
+  int get initialPage {
+    final length = widget.entities.length;
+    if (length == 0) return 0;
+    return max(0, min(widget.initialIndex, length - 1));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    controller = PageController(initialPage: initialPage);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final length = entities.length;
-    final initialPage = min(length, initialIndex);
+    final entities = widget.entities;
     return FlAssetsPickerPreviewModal(
-        child: PageView.builder(
-            controller: PageController(initialPage: initialPage),
-            itemCount: length,
-            itemBuilder: (_, int index) {
-              return Center(
-                  child: FlAssetsPicker.assetBuilder(entities[index], false));
-            }));
+      child: PageView.builder(
+        controller: controller,
+        itemCount: entities.length,
+        itemBuilder: (_, int index) {
+          return Center(child: widget.previewBuilder(entities[index], false));
+        },
+      ),
+    );
   }
 }

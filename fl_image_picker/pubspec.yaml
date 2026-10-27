@@ -1,21 +1,27 @@
 name: fl_image_picker
-description: fl_image_picker is used to take photos of the device assets selection and camera and record videos
-version: 3.1.0
+description: A lightweight image_picker wrapper for picking images and videos, taking photos, recording videos and previewing media across platforms.
+version: 4.0.0
 repository: https://github.com/Wayaer/fl_assets_picker/tree/main/fl_image_picker
+issue_tracker: https://github.com/Wayaer/fl_assets_picker/issues
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
-  flutter: '>=3.24.0'
+  sdk: '>=3.11.0 <4.0.0'
+  flutter: '>=3.41.0'
 
 dependencies:
   flutter:
     sdk: flutter
-  image_picker: '>=1.1.0 <3.0.0'
-  mime: '>=2.0.0 <4.0.0'
-  universal_io: '>=2.0.0 <4.0.0'
+  image_picker: ^1.2.4
+  mime: ^2.1.0
+  universal_io: ^2.3.1
 
 dev_dependencies:
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
+
+topics:
+  - image-picker
+  - video-picker
+  - camera
